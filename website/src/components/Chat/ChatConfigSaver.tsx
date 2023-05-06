@@ -1,19 +1,17 @@
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { ChatConfigFormData } from "src/types/Chat";
+import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
 import { CachedChatConfig, setConfigCache } from "src/utils/chat";
 
-import { useChatPluginContext } from "./ChatPluginContext";
-
 export const ChatConfigSaver = ({
-  selectedPresetName: selectedPreset,
+  selectedPresetName,
   hyrated,
+  plugins,
 }: {
   selectedPresetName: string;
-  isCustomPreset: boolean;
   hyrated: boolean;
+  plugins: PluginEntry[];
 }) => {
-  const { plugins } = useChatPluginContext();
   const { getValues, watch } = useFormContext<ChatConfigFormData>();
   const { model_config_name, plugins: selectedPlugins, ...preset_config } = { ...watch(), ...getValues() };
   console.log(`model_config_name: ${model_config_name}`);
@@ -22,15 +20,16 @@ export const ChatConfigSaver = ({
     if (hyrated) {
       const config: CachedChatConfig = {
         model_config_name,
-        plugins: plugins,
-        selectedPreset: selectedPreset,
+        plugins: plugins.filter((p) => !p.trusted), // only save non-trusted, custom plugins
+        selectedPreset: selectedPresetName,
         custom_presets: [],
         custom_preset_config: preset_config,
         selectedPlugins: selectedPlugins,
       };
       setConfigCache(config);
+      console.log("saved config", config);
     }
-  }, [hyrated, model_config_name, plugins, preset_config, selectedPlugins, selectedPreset]);
+  }, [hyrated, model_config_name, plugins, preset_config, selectedPlugins, selectedPresetName]);
 
   return null;
 };

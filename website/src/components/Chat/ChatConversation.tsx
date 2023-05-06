@@ -283,7 +283,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>
           <div className="max-w-3xl">
-            <JsonCard>{useFormContext<ChatConfigFormData>().getValues("plugins")}</JsonCard>
+            <JsonCard>{useFormContext<ChatConfigFormData>().getValues()}</JsonCard>
           </div>
         </SimpleBar>
 

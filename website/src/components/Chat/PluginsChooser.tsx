@@ -1,10 +1,7 @@
-import { AttachmentIcon } from "@chakra-ui/icons";
 import {
   Avatar,
   Box,
   Button,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   Menu,
@@ -24,10 +21,10 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { AlertCircle, CheckCircle2, Edit, Eye, Plus } from "lucide-react";
+import { AlertCircle, CheckCircle2, Edit, Eye, Paperclip, Plus } from "lucide-react";
 import { X } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { useCallback, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
 import { MouseEvent } from "react";
 import { useFormContext } from "react-hook-form";
 import SimpleBar from "simplebar-react";
@@ -37,17 +34,16 @@ import { API_ROUTES } from "src/lib/routes";
 import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
 
 import { JsonCard } from "../JsonCard";
-import { useChatPluginContext } from "./ChatPluginContext";
 
 export type PluginsChooserProps = {
   plugins: PluginEntry[];
+  setPlugins: Dispatch<SetStateAction<PluginEntry[]>>;
 };
 
-export const PluginsChooser = () => {
+export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => {
   const { t } = useTranslation("chat");
   const { t: tCommon } = useTranslation();
   const { setValue, getValues } = useFormContext<ChatConfigFormData>();
-  const { plugins, setPlugins } = useChatPluginContext();
   const [selectedForEditPluginIndex, setSelectedForEditPluginIndex] = useState<number | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -67,9 +63,8 @@ export const PluginsChooser = () => {
     (index: number) => {
       setSelectedForEditPluginIndex(index);
       onOpen();
-      console.log(plugins[index]);
     },
-    [onOpen, plugins]
+    [onOpen]
   );
 
   const isCreatePlugin = selectedForEditPluginIndex === null;
@@ -130,7 +125,7 @@ export const PluginsChooser = () => {
     } catch (e) {
       if (e instanceof OasstError) {
         toast({
-          title: "Unable to load",
+          title: "Unable to load plugin",
           status: "error",
         });
       }
@@ -152,11 +147,23 @@ export const PluginsChooser = () => {
 
   const selectedPlugin = getValues("plugins")?.[0];
 
+  const handleUnSelect = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation();
+      setValue("plugins", [], { shouldDirty: true });
+    },
+    [setValue]
+  );
+
   return (
-    <FormControl>
-      <FormLabel>{t("plugins")}</FormLabel>
-      <Menu placement="auto" isLazy lazyBehavior="keepMounted">
-        <MenuButton as={Button} width="100%" size="lg">
+    <>
+      <Menu placement="bottom" isLazy lazyBehavior="keepMounted">
+        <MenuButton
+          as={Button}
+          width="100%"
+          size="lg"
+          rightIcon={selectedPlugin ? <X onClick={handleUnSelect} /> : undefined}
+        >
           {selectedPlugin ? (
             <Box display="flex" gap={2}>
               <PluginImage plugin={selectedPlugin}></PluginImage>
@@ -166,12 +173,12 @@ export const PluginsChooser = () => {
             </Box>
           ) : (
             <Box display="flex" justifyContent="center" gap={2}>
-              <AttachmentIcon boxSize="5" />
+              <Paperclip />
               {t("plugins")}
             </Box>
           )}
         </MenuButton>
-        <MenuList w="235px" pb="0" mr="100px">
+        <MenuList w="235px" pb="0">
           <SimpleBar
             style={{ maxHeight: "250px" }}
             classNames={{
@@ -183,13 +190,12 @@ export const PluginsChooser = () => {
                 key={index}
                 index={index}
                 plugin={plugin}
-                onChange={handlePluginSelect}
+                onSelect={handlePluginSelect}
                 onEdit={handlePluginEdit}
                 onDelete={handlePluginDelete}
               ></PluginOption>
             ))}
           </SimpleBar>
-
           <MenuItem
             bg="gray.100"
             _hover={{ bg: "gray.200" }}
@@ -199,7 +205,15 @@ export const PluginsChooser = () => {
             }}
           >
             <Box w="100%" display="flex" justifyContent="center">
-              <IconButton aria-label={t("add_plugin")} icon={<Plus />} size="sm" bg="transparent" />
+              <IconButton
+                aria-label={t("add_plugin")}
+                icon={<Plus />}
+                size="sm"
+                bg="transparent"
+                _hover={{
+                  bg: "transparent",
+                }}
+              />
             </Box>
           </MenuItem>
         </MenuList>
@@ -220,20 +234,20 @@ export const PluginsChooser = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </FormControl>
+    </>
   );
 };
 
 const PluginOption = ({
   index,
   plugin,
-  onChange: onChange,
+  onSelect: onChange,
   onDelete,
   onEdit,
 }: {
   index: number;
   plugin: PluginEntry;
-  onChange: (index: number) => void;
+  onSelect: (index: number) => void;
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
 }) => {

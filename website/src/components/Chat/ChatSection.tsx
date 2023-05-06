@@ -1,13 +1,13 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
 
-import { ChatConfigDesktop } from "./ChatConfigDesktop";
-import { useChatContext } from "./ChatContext";
+import { ChatConfig } from "./ChatConfig";
+import { ChatProvider } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
-import { ChatPluginContextProvider } from "./ChatPluginContext";
+import { useChatInitialData } from "./ChatInitialDataContext";
 
 export const ChatSection = ({ chatId }: { chatId: string | null }) => {
-  const { modelInfos } = useChatContext();
+  const { modelInfos } = useChatInitialData();
 
   console.assert(modelInfos.length > 0, "No model config was found");
 
@@ -21,11 +21,10 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
 
   return (
     <FormProvider {...form}>
-      <ChatPluginContextProvider>
+      <ChatProvider>
         <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
-        <ChatConfigDesktop />
-      </ChatPluginContextProvider>
-      {/* <ChatConfigSaver /> */}
+        <ChatConfig />
+      </ChatProvider>
     </FormProvider>
   );
 };
