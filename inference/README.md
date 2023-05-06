@@ -80,3 +80,5 @@ To update the api docs, once the inference server is running run below command t
 ```bash
 wget localhost:8000/openapi.json -O docs/docs/api/inference-openapi.json
 ```
+
+Then make a PR to have the updated docs merged.
