@@ -23,7 +23,7 @@ import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversat
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
 import { ChatWarning } from "./ChatWarning";
-import { ChatFeedback } from "./ChatFeedback";
+import { EncourageMessage } from "./EncourageMessage";
 
 interface ChatConversationProps {
   chatId: string;
@@ -292,7 +292,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       </Box>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage}></ChatForm>
       <ChatWarning />
-      <ChatFeedback onFeedbackSubmit={() => {}} />
+      <EncourageMessage />
     </Box>
   );
 });
