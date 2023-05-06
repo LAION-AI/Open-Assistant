@@ -123,9 +123,6 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
     }
   }, [presets, selectedPlugins, handlePresetChange, getValues]);
 
-  // const config = getValues(); // have to use getValues to here to access latest value
-  // console.log("config", config);
-  console.log("rerender");
   return (
     <>
       <Stack gap="4">

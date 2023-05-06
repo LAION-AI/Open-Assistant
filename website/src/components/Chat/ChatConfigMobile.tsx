@@ -11,7 +11,6 @@ export const ChatConfigMobile = memo(function ChatConfigDrawer({ children }: { c
 
   const { closeConfigDrawer } = useChatActions();
   const { isConfigDrawerOpen } = useChatState();
-  console.log(isConfigDrawerOpen);
   return (
     <>
       <Drawer placement="right" onClose={closeConfigDrawer} isOpen={isConfigDrawerOpen}>
@@ -29,14 +28,12 @@ export const ChatConfigMobile = memo(function ChatConfigDrawer({ children }: { c
 export const ChatConfigMobileTrigger = () => {
   const { t } = useTranslation("chat");
   const { openConfigDrawer } = useChatActions();
+
   return (
     <ChatInputIconButton
       aria-label={t("config_title")}
       icon={Settings}
-      onClick={() => {
-        console.log("open config drawer");
-        openConfigDrawer();
-      }}
+      onClick={openConfigDrawer}
       borderRadius="xl"
       display={{ base: "flex", xl: "none" }}
     />

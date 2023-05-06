@@ -15,7 +15,6 @@ export const ChatConfigSaver = ({
   const { getValues, watch } = useFormContext<ChatConfigFormData>();
   const { model_config_name, plugins: selectedPlugins, ...preset_config } = { ...watch(), ...getValues() };
   useEffect(() => {
-    console.log(hyrated.current);
     if (hyrated.current) {
       const config: CachedChatConfig = {
         model_config_name,
