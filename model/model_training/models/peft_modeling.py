@@ -99,4 +99,3 @@ def save_adapter_model_from_ckpt(save_config: SaveLoraConfig):
     model.save_pretrained(save_config.adapter_save_path, torch_dtype=save_config.dtype)
     tokenizer.save_pretrained(save_config.adapter_save_path)
     torch.save(new_embs, Path(save_config.adapter_save_path).joinpath("extra_embeddings.pt"))
-
