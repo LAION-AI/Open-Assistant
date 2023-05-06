@@ -1,4 +1,29 @@
-FILTER_BY_WORDS = ["openai"]
+FILTER_BY_WORDS = [
+    "as a language model",
+    "as an AI language model",
+    "As a large language model",
+    "As an AI ",
+    "an AI language model you don't have",
+    "As an AI language model, I cannot",
+    "As an AI language model, I do not",
+    "As an AI language model, I am not able",
+    "As an AI language model, I don't have personal",
+    "I am an AI language model and do not",
+    "As an AI language model, I don't have",
+    "As an AI language model, I am only able",
+    "AI language model and I do not",
+    "As an AI language model, I cannot modify",
+    "As an AI language model, I do not",
+    "I know as an AI language model you don't have",
+    "as an AI language model, you cannot",
+    "I'm sorry, but as an AI language model",
+    "As an AI language model, I don't have",
+    "I'm an AI ",
+    "I am an AI ",
+    "my name is OpenAI",
+    "trained by OpenAI",
+    "as an OpenAI language model",
+]
 
 
 def _filter_by_words(text: str, filter_words: list[str] | None = None) -> None | str:
@@ -13,6 +38,6 @@ def _filter_by_words(text: str, filter_words: list[str] | None = None) -> None |
     """
     filter_words = filter_words or FILTER_BY_WORDS
     for word in filter_words:
-        if word in text.lower():
+        if word.lower() in text.lower():
             return None
     return text

@@ -3,6 +3,7 @@
 """
 from datasets import load_dataset
 from model_training.custom_datasets.formatting import DatasetEntry
+from model_training.custom_datasets.utils import _filter_by_words
 from torch.utils.data import Dataset
 
 INSTRUCTION_DATASETS = {
@@ -51,6 +52,8 @@ class InstructionDataset(Dataset):
                 and len(data[self.instruction_column].strip()) > 0
                 and data[self.response_column] is not None
                 and len(data[self.response_column].strip()) > 0
+                and _filter_by_words(data[self.instruction_column])
+                and _filter_by_words(data[self.response_column])
             ):
                 self.dataset.append(data)
             else:

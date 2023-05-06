@@ -547,18 +547,20 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
-            self.rows.append(self._process_instruction(line))
+            if (c := self._process_instruction(line)) is not None:
+                self.rows.append(c)
 
     def _process_instruction(self, row: dict[str, str]) -> DatasetEntry | None:
         context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
         # further remove references
         context = context.replace("[citation needed]", "")
         context = self.citation_regex.sub("", context)
-        return DatasetEntry.from_strings(
-            context=context,
-            questions=[row["INSTRUCTION"]],
-            answers=[row["RESPONSE"]],
-        )
+        if _filter_by_words(row["INSTRUCTION"]) and _filter_by_words(row["RESPONSE"]):
+            return DatasetEntry.from_strings(
+                context=context,
+                questions=[row["INSTRUCTION"]],
+                answers=[row["RESPONSE"]],
+            )
 
     def __len__(self) -> int:
         return len(self.rows)
@@ -575,7 +577,7 @@ class AlpacaGpt4(Dataset):
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
-        data = load_dataset("teknium/GPT4-LLM-Cleaned", cache_dir=cache_dir)    # alternative: vicgalle/alpaca-gpt4
+        data = load_dataset("teknium/GPT4-LLM-Cleaned", cache_dir=cache_dir)  # alternative: vicgalle/alpaca-gpt4
         for line in data["train"]:
             if (conv := self._process_instruction(line)) is not None:
                 self.rows.append(conv)
