@@ -1,8 +1,10 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/model/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 ## Reproduction directions
 
 Here are some minimal commands to tun to whole pipeline on the collected data.
 
-**make sure python >= 3.10, othersie, you would meet the
+**make sure python >= 3.10, otherwise, you would meet the
 [[issue]](https://github.com/tiangolo/typer/issues/371#issuecomment-1288987924)**
 
 1. First create the data path location.
@@ -36,7 +38,7 @@ cd model_training
 # export shared modules
 export PYTHONPATH=$PYTHONPATH:../../oasst-shared
 
-CUDA_VISIBLE_DEVICES=1 python trainer_sft.py --configs defaults oa_dataset_only pythia --cache_dir $DATA_PATH --output_dir $MODEL_PATH/sft_model
+python trainer_sft.py --configs defaults oa_dataset_only pythia --cache_dir $DATA_PATH --output_dir $MODEL_PATH/sft_model
 
 # if you want to use wandb, add
 --wandb_entity your_username/team_name
@@ -84,3 +86,8 @@ export REWARD_MODEL=$MODEL_PATH/reward_model/$(ls -t $MODEL_PATH/reward_model/ |
 cd ../../model_training
 python trainer_rl.py --configs defaults_rlhf --cache_dir $DATA_PATH --rank_model $REWARD_MODEL --sft_model $SFT_MODEL --output_dir $MODEL_PATH/rl_model
 ```
+
+# Message and Token Format
+
+See the `MESSAGE_AND_TOKEN_FORMAT.md` file for information about the pattern we
+are using.

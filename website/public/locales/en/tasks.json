@@ -4,7 +4,8 @@
   "default": {
     "unchanged_title": "No changes",
     "unchanged_message": "Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "continue_anyway": "Continue anyway",
+    "markdownguide": "Styling with markdown supported"
   },
   "no_more_tasks": "Looks like no tasks were found.",
   "random": {
@@ -16,20 +17,23 @@
     "desc": "Write initial prompts to help Open Assistant to try replying to diverse messages. (enter into lottery)",
     "overview": "Create an initial message to send to the assistant",
     "instruction": "Provide the initial prompts",
-    "response_placeholder": "Write your prompt here..."
+    "response_placeholder": "Write your prompt here...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "reply_as_user": {
     "label": "Reply as User",
     "desc": "Chat with Open Assistant and help improve its responses as you interact with it.",
     "overview": "Given the following conversation, provide an adequate reply",
     "instruction": "Provide the user's reply",
-    "response_placeholder": "Write your reply here..."
+    "response_placeholder": "Write your reply here...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "reply_as_assistant": {
     "label": "Reply as Assistant",
     "desc": "Help Open Assistant improve its responses to conversations with other users.",
     "overview": "Given the following conversation, provide an adequate reply",
-    "response_placeholder": "Write your reply here..."
+    "response_placeholder": "Write your reply here...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "rank_user_replies": {
     "label": "Rank User Replies",

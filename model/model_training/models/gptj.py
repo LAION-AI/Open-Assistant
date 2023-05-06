@@ -74,7 +74,7 @@ class FrozenBNBEmbedding(nn.Module):
 
     def forward(self, input, **kwargs):
         with torch.no_grad():
-            # note: both quantuized weights and input indices are *not* differentiable
+            # note: both quantized weights and input indices are *not* differentiable
             weight_deq = dequantize_blockwise(self.weight, absmax=self.absmax, code=self.code)
             output = F.embedding(input, weight_deq, **kwargs)
         if self.adapter:

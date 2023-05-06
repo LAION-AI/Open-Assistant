@@ -1,9 +1,8 @@
 import { Box, Heading, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import { getTransparentHeaderLayout } from "src/components/Layout";
 import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
 import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const PrivacyPolicy = () => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");
@@ -169,7 +168,7 @@ const PrivacyPolicy = () => {
         <title>Privacy Policy - Open Assistant</title>
         <meta name="description" content="Open Assistant's Privacy Policy" />
       </Head>
-      <Box fontFamily="Inter" p="6" className="oa-basic-theme">
+      <Box p="6" className="oa-basic-theme">
         <Box className="max-w-4xl mx-auto">
           <Stack spacing="6" mb="6">
             <Heading as="h1" size="xl" color="blue.500">
@@ -222,7 +221,5 @@ const PrivacyPolicy = () => {
     </>
   );
 };
-
-PrivacyPolicy.getLayout = getTransparentHeaderLayout;
 
 export default PrivacyPolicy;

@@ -14,7 +14,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
-from starlette.status import HTTP_204_NO_CONTENT
+from starlette.status import HTTP_202_ACCEPTED, HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -325,7 +325,19 @@ def mark_message_deleted(
     pr.mark_messages_deleted(message_id)
 
 
-@router.post("/{message_id}/emoji", response_model=protocol.Message)
+@router.put("/{message_id}/undelete", status_code=HTTP_202_ACCEPTED, response_model=None)
+def undelete_message(
+    *,
+    message_id: UUID,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
+    pr.undelete_deleted_message(message_id)
+
+
+@router.post("/{message_id}/emoji", status_code=HTTP_202_ACCEPTED)
 def post_message_emoji(
     *,
     message_id: UUID,

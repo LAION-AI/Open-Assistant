@@ -14,7 +14,8 @@ class ChatUser(HttpUser):
     wait_time = between(1, 2)
     conversation_length = random.randint(3, 20)
     time_to_respond = random.randint(3, 5)  # for the user
-    model_id = "_lorem"
+    # model_config_name = "distilgpt2"
+    model_config_name = "_lorem"
 
     @task
     def chat(self):
@@ -24,7 +25,7 @@ class ChatUser(HttpUser):
         client.create_chat()
 
         for _ in range(self.conversation_length):
-            for _ in client.send_message("hello", self.model_id):
+            for _ in client.send_message("hello", self.model_config_name):
                 pass
 
             time.sleep(self.time_to_respond)

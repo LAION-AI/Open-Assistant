@@ -1,0 +1,56 @@
+name: "${model_name}"
+backend: "pytorch"
+default_model_filename: "traced-model.pt"
+max_batch_size: 25
+
+parameters {
+  key: "model_name"
+  value: {
+    string_value: "${model_name}"
+  }
+}
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+    gpus: [0]
+  }
+]
+
+input [
+  {
+    name: "input_ids"
+    data_type: TYPE_INT32
+    dims: [-1]
+  },
+  {
+    name: "attention_mask"
+    data_type: TYPE_INT32
+    dims: [-1]
+  }
+]
+
+output [
+  {
+    name: "rewards"
+    data_type: ${output_type}
+    dims: [-1]
+  }
+]
+
+parameters {
+  key: "data_type"
+  value: {
+    string_value: "${dtype}"
+  }
+}
+
+parameters: {
+  key: "INFERENCE_MODE"
+  value: {
+    string_value: "true"
+  }
+}
+
+version_policy: {specific: {versions: [1]}}

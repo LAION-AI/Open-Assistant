@@ -4,6 +4,7 @@ from uuid import UUID
 from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
+from oasst_shared import utils as shared_utils
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
@@ -70,6 +71,7 @@ class UserRepository:
     def update_user(
         self,
         id: UUID,
+        display_name: Optional[str] = None,
         enabled: Optional[bool] = None,
         notes: Optional[str] = None,
         show_on_leaderboard: Optional[bool] = None,
@@ -85,7 +87,6 @@ class UserRepository:
             raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
         user: User = self.db.query(User).filter(User.id == id).first()
-
         if user is None:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
@@ -97,14 +98,18 @@ class UserRepository:
             user.show_on_leaderboard = show_on_leaderboard
         if tos_acceptance:
             user.tos_acceptance_date = utcnow()
+        if display_name is not None:
+            user.display_name = display_name
 
         self.db.add(user)
+
         return user
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_user_deleted(self, id: UUID) -> None:
         """
         Update a user by global user ID to set deleted flag. Only trusted clients may delete users.
+        User deletion anonymises the data of the user.
 
         Raises:
             OasstError: 403 if untrusted client attempts to delete a user. 404 if user with ID not found.
@@ -118,6 +123,12 @@ class UserRepository:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
         user.deleted = True
+
+        # Anonymise user data
+        user.display_name = shared_utils.DELETED_USER_DISPLAY_NAME
+        # Ensure uniqueness of (username, auth_method, api_client_id) Index
+        user.username = f"{shared_utils.DELETED_USER_ID_PREFIX}{user.id}"
+        user.show_on_leaderboard = False
 
         self.db.add(user)
 

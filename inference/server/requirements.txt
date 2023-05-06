@@ -1,8 +1,13 @@
 aiohttp
 alembic
 asyncpg
+authlib
 cryptography==39.0.0
 fastapi[all]==0.88.0
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+gunicorn
 loguru
 nvidia-ml-py
 prometheus-fastapi-instrumentator
@@ -13,4 +18,6 @@ python-jose[cryptography]==3.3.0
 redis
 sqlmodel
 sse-starlette
+uuid7==0.1.0
+uvicorn[standard]
 websockets

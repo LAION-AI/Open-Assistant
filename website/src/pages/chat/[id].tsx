@@ -1,52 +1,39 @@
-import { Button, Card, CardBody, Flex } from "@chakra-ui/react";
-import { List } from "lucide-react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { Flags } from "react-feature-flags";
-import { ChatConversation } from "src/components/Chat/ChatConversation";
-import { getDashboardLayout } from "src/components/Layout";
+import { ChatContextProvider } from "src/components/Chat/ChatContext";
+import { ChatSection } from "src/components/Chat/ChatSection";
+import { ChatLayout } from "src/components/Layout/ChatLayout";
+import { get } from "src/lib/api";
+import { ModelInfo, PluginEntry } from "src/types/Chat";
+export { getServerSideProps } from "src/lib/defaultServerSideProps";
+import useSWRImmutable from "swr/immutable";
 
-const Chat = ({ id }: { id: string }) => {
+const Chat = () => {
+  const { query } = useRouter();
+  const id = query.id as string;
   const { t } = useTranslation(["common", "chat"]);
+  const { data: modelInfos } = useSWRImmutable<ModelInfo[]>("/api/chat/models", get, {
+    keepPreviousData: true,
+  });
+  const { data: plugins } = useSWRImmutable<PluginEntry[]>("/api/chat/plugins", get, {
+    keepPreviousData: true,
+  });
 
   return (
     <>
       <Head>
         <title>{t("chat")}</title>
       </Head>
-
-      <Flags authorizedFlags={["chat"]}>
-        <Card>
-          <CardBody>
-            <Flex direction="column" gap="2">
-              <Link href="/chat">
-                <Button leftIcon={<List />} size="lg">
-                  {t("chat:back_to_chat_list")}
-                </Button>
-              </Link>
-
-              <ChatConversation chatId={id} />
-            </Flex>
-          </CardBody>
-        </Card>
-      </Flags>
+      {modelInfos && plugins && (
+        <ChatContextProvider modelInfos={modelInfos} plugins={plugins}>
+          <ChatSection chatId={id} />
+        </ChatContextProvider>
+      )}
     </>
   );
 };
 
-Chat.getLayout = getDashboardLayout;
-
-export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string }> = async ({
-  locale = "en",
-  params,
-}) => ({
-  props: {
-    id: params.id,
-    ...(await serverSideTranslations(locale)),
-  },
-});
+Chat.getLayout = ChatLayout;
 
 export default Chat;

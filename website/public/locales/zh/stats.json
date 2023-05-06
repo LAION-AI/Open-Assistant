@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "低品质终止",
+  "assistant": "助手",
+  "backlog_ranking": "积压排名",
+  "choose_a_language": "选择语言",
+  "count": "计数",
+  "growing": "增长",
+  "halted_by_moderator": "被管理员停止",
+  "human_messages_by_lang": "按语言分类的用户回复",
+  "human_messages_by_role": "按角色分类的用户回复",
+  "initial_prompt_review": "初始提示词的审核",
+  "language_stats": "语言统计",
+  "message_trees_by_state": "消息树状态",
+  "message_trees_states_by_lang": "语言分类的消息树状态",
+  "prompt_lottery_waiting": "等待被抽样的提示词",
+  "prompter": "提示词工程师",
+  "ranking": "排行榜",
+  "ready_for_export": "准备导出",
+  "stats": "数据统计",
+  "users_accepted_tos": "接受服务条款的用户"
+}

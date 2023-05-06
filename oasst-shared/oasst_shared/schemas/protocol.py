@@ -26,7 +26,7 @@ class TaskRequestType(str, enum.Enum):
 class User(BaseModel):
     id: str
     display_name: str
-    auth_method: Literal["discord", "local", "system"]
+    auth_method: Literal["discord", "google", "local", "system"]
 
 
 class Account(BaseModel):
@@ -38,6 +38,11 @@ class Account(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class TokenPair(BaseModel):
+    access_token: Token
+    refresh_token: Token
 
 
 class FrontEndUser(User):
@@ -460,6 +465,7 @@ class UserScore(BaseModel):
     display_name: str
 
     leader_score: int = 0
+    level: int = 0  # between 0 and 100
 
     base_date: Optional[datetime]
     modified_date: Optional[datetime]

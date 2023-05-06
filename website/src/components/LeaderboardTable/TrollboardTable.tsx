@@ -1,12 +1,12 @@
-import { Box, CircularProgress, Flex, IconButton, Link, Tooltip } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, IconButton } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Mail, ThumbsDown, ThumbsUp, User } from "lucide-react";
+import { ThumbsDown, ThumbsUp, User } from "lucide-react";
 import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
-import { Discord } from "../Icons/Discord";
+import { UserDisplayNameCell } from "../UserDisplayNameCell";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
@@ -24,17 +24,14 @@ const columns: DataTableColumnDef<TrollboardEntity>[] = [
   },
   columnHelper.accessor("display_name", {
     header: "Display name",
-    cell: ({ getValue, row }) => {
-      const isEmail = row.original.auth_method === "local";
+    cell: ({ row }) => {
+      const user = row.original;
       return (
-        <Flex gap="2" alignItems="center">
-          <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-            {getValue()}
-          </Link>
-          <Tooltip label={`This user signin with ${isEmail ? "email" : "discord"}`}>
-            {isEmail ? <Mail size="20"></Mail> : <Discord size="20"></Discord>}
-          </Tooltip>
-        </Flex>
+        <UserDisplayNameCell
+          authMethod={user.auth_method}
+          displayName={user.display_name}
+          userId={user.user_id}
+        ></UserDisplayNameCell>
       );
     },
   }),

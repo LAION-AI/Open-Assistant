@@ -1,0 +1,9 @@
+{
+  "delete_account": "注销账户",
+  "delete_account_data": "通过任务, 投票和聊天服务为 Open Assistant 贡献的数据都将被保留. 不过, 这些数据是完全匿名的.",
+  "delete_account_intro": "注销账户需确认以下事项:",
+  "delete_account_leaderboard": "已删除的用户将不再显示在排行榜上.",
+  "delete_account_permanent": "注销账户是永久且不可撤销的",
+  "go_to_dashboard": "返回面板",
+  "yes_delete": "确认, 永久注销我的账户"
+}

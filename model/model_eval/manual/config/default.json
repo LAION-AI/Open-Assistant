@@ -6,9 +6,10 @@
       "do_sample": true,
       "temperature": 1.0
     },
-    "pre_text": "You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible",
+    "pre_text": "You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible.",
     "bot_name": "Joi",
-    "human_name": "User"
+    "human_name": "User",
+    "add_prefix_tokens": false
   },
   "configurations": [
     {

@@ -1,10 +1,9 @@
 import { Box, Button, Center, Link, Text, theme, useColorModeValue } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import { AlertTriangle } from "lucide-react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import { EmptyState } from "src/components/EmptyState";
-import { getTransparentHeaderLayout } from "src/components/Layout";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
 
 function Error() {
   const { t } = useTranslation();
@@ -41,7 +40,5 @@ function Error() {
     </>
   );
 }
-
-Error.getLayout = getTransparentHeaderLayout;
 
 export default Error;

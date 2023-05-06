@@ -1,12 +1,14 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/safety/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Train & Evaluate Safety models
 
 This is the Open Assistant Safety Folder and contains the following:
 
 - Model training scripts
-- Model infrence scripts
+- Model inference scripts
 - Data processing scripts
 
-## Mission Statment
+## Mission Statement
 
 Our mission at LAION-AI OpenAssistant safety team is to create a safety pipeline
 that is not only compatible with the OpenAssistant model and project but can
@@ -26,17 +28,16 @@ community.
 ## Why create a safety pipeline?
 
 Open source and extendable safety pipelines unfortunately do not exist on the
-same on the same scale as those in ChatGPT and other commerical systems. To
-further research in implementable, accurate, and extendable safety pipelines,
-Open Assistant Safety Team will continue to push models and code to the public.
-Much research has been done in things like toxicity detection and bias
-mitigation in LLMs, however the implementation of such research in systems that
-use language models as conversational agents in production settings has largely
-gone undocumented. Furthermore, safety systems that interact with diverse
-communities of users must be able accommodate user prefrences. This is paramount
-in introducing LLM based systems all over the world. We hope that our work will
-generate more research in this field, and allow others to create safe LLM based
-systems.
+same scale as those in ChatGPT and other commercial systems. To further research
+in implementable, accurate, and extendable safety pipelines, Open Assistant
+Safety Team will continue to push models and code to the public. Much research
+has been done in things like toxicity detection and bias mitigation in LLMs,
+however the implementation of such research in systems that use language models
+as conversational agents in production settings has largely gone undocumented.
+Furthermore, safety systems that interact with diverse communities of users must
+be able accommodate user preferences. This is paramount in introducing LLM based
+systems all over the world. We hope that our work will generate more research in
+this field, and allow others to create safe LLM based systems.
 
 ## Training
 

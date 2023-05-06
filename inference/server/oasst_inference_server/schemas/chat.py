@@ -5,19 +5,17 @@ import pydantic
 from oasst_shared.schemas import inference
 
 
-class CreateMessageRequest(pydantic.BaseModel):
+class CreatePrompterMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
-    work_parameters: inference.WorkParameters = pydantic.Field(default_factory=inference.WorkParameters)
-
-    @property
-    def worker_compat_hash(self) -> str:
-        return inference.compat_hash(model_name=self.work_parameters.model_name)
 
 
-class CreateMessageResponse(pydantic.BaseModel):
-    prompter_message: inference.MessageRead
-    assistant_message: inference.MessageRead
+class CreateAssistantMessageRequest(pydantic.BaseModel):
+    parent_id: str
+    model_config_name: str
+    sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
+    plugins: list[inference.PluginEntry] = pydantic.Field(default_factory=list[inference.PluginEntry])
+    used_plugin: inference.PluginUsed | None = None
 
 
 class PendingResponseEvent(pydantic.BaseModel):
@@ -34,6 +32,7 @@ class TokenResponseEvent(pydantic.BaseModel):
 class ErrorResponseEvent(pydantic.BaseModel):
     event_type: Literal["error"] = "error"
     error: str
+    message: inference.MessageRead | None = None
 
 
 class MessageResponseEvent(pydantic.BaseModel):
@@ -41,7 +40,16 @@ class MessageResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
-ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
+class SafePromptResponseEvent(pydantic.BaseModel):
+    event_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+    message: inference.MessageRead
+
+
+ResponseEvent = Annotated[
+    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent, SafePromptResponseEvent],
+    pydantic.Field(discriminator="event_type"),
+]
 
 
 class VoteRequest(pydantic.BaseModel):
@@ -62,6 +70,7 @@ class ChatListRead(pydantic.BaseModel):
     created_at: datetime.datetime
     modified_at: datetime.datetime
     title: str | None
+    hidden: bool = False
 
 
 class ChatRead(ChatListRead):
@@ -70,3 +79,23 @@ class ChatRead(ChatListRead):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListRead]
+    next: str | None = None
+    prev: str | None = None
+
+
+class MessageCancelledException(Exception):
+    def __init__(self, message_id: str):
+        super().__init__(f"Message {message_id} was cancelled")
+        self.message_id = message_id
+
+
+class MessageTimeoutException(Exception):
+    def __init__(self, message: inference.MessageRead):
+        super().__init__(f"Message {message.id} timed out")
+        self.message = message
+
+
+class ChatUpdateRequest(pydantic.BaseModel):
+    title: pydantic.constr(max_length=100) | None = None
+    hidden: bool | None = None
+    allow_data_use: bool | None = None

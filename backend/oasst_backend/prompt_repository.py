@@ -29,6 +29,7 @@ from oasst_backend.models import (
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
+from oasst_backend.utils import discord
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -545,6 +546,8 @@ class PromptRepository:
                     message = self.handle_message_emoji(
                         message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
                     )
+
+                    discord.send_new_report_message(message=message, label_text=text_labels.text, user_id=self.user_id)
 
                 # update existing record for repeated updates (same user no task associated)
                 existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
@@ -1068,6 +1071,37 @@ WHERE message.id = cc.id;
                 )
 
                 parent_ids = self.db.execute(query).scalars().all()
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def undelete_deleted_message(self, message: Message | UUID):
+        """
+        Undelete deleted messages and all their parents.
+        """
+        message_id = None
+        if isinstance(message, UUID):
+            message_id = message
+        elif isinstance(message, Message):
+            message_id = message.id
+        else:
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        query = update(Message).where(Message.id == message_id).values(deleted=False)
+        self.db.execute(query)
+
+        parent_id = None
+        if isinstance(message, UUID):
+            parent_id = self.db.query(Message.parent_id).where(Message.id == message_id).first()[0]
+        elif isinstance(message, Message):
+            parent_id = message.parent_id
+
+        if parent_id is None:
+            return
+
+        # Fetching the entire parent_message so there is no parent_id query executed after
+        parent_message: Message = self.db.query(Message).where(Message.id == parent_id).first()
+
+        if parent_message is not None:
+            self.undelete_deleted_message(parent_message)
 
     def get_stats(self) -> SystemStats:
         """

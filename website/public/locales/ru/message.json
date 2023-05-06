@@ -2,6 +2,7 @@
   "confirm_open_link_body": "Вы действительно хотите перейти по этой ссылке?",
   "confirm_open_link_header": "Подтверждение перехода",
   "copy_message_id": "Скопировать \"message ID\"",
+  "copy_message_text": "Скопировать содержание сообщения",
   "copy_message_link": "Скопировать ссылку на сообщение",
   "label_action": "Классифицировать",
   "label_title": "Классифицировать",
@@ -22,5 +23,7 @@
   "submit_labels": "Отправить",
   "tree_stopped": "Ветка завершена — {{id}}",
   "view_user": "О пользователе",
-  "your_recent_messages": "Ваши Последние сообщения"
+  "your_recent_messages": "Ваши Последние сообщения",
+  "synthetic": "Сгенерировано ИИ",
+  "synthetic_explain": "Это сообщение было сгенерировано ИИ"
 }

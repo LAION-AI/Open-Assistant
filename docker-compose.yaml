@@ -5,14 +5,17 @@ services:
 
   # Use `docker compose --profile frontend-dev up --build --attach-dependencies` to start the services needed to work on the frontend. If you want to also run the inference, add a second `--profile inference` argument.
 
+  # If you update the containers used by the inference profile, please update inference/README.md. Thank you
+
   # The profile ci is used by CI automations. (i.e E2E testing)
 
   # This DB is for the FastAPI Backend.
   db:
+    platform: "${DB_PLATFORM:-}"
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always
-    profiles: ["frontend-dev", "backend-dev", "ci"]
+    profiles: ["frontend-dev", "backend-dev", "ci", "inference-dev"]
     ports:
       - 5432:5432
     environment:
@@ -51,7 +54,7 @@ services:
   webdb:
     image: postgres
     restart: always
-    profiles: ["frontend-dev", "ci"]
+    profiles: ["frontend-dev", "ci", "inference-dev"]
     ports:
       - 5433:5432
     environment:
@@ -98,14 +101,56 @@ services:
       - DEBUG_USE_SEED_DATA=True
       - DEBUG_ALLOW_SELF_LABELING=True
       - MAX_WORKERS=1
-      - DEBUG_SKIP_TOXICITY_CALCULATION=True
-      - DEBUG_SKIP_EMBEDDING_COMPUTATION=True
+      - DEBUG_SKIP_TOXICITY_CALCULATION=False
+      - DEBUG_SKIP_EMBEDDING_COMPUTATION=False
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
-    profiles: ["frontend-dev", "ci"]
+    profiles: ["frontend-dev", "ci", "inference-dev"]
     ports:
       - "8080:8080"
+
+  # The oassist backend celery worker service.
+  backend-worker:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A oasst_backend.celery_worker worker -l info
+    image: oasst-backend-worker
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
+
+  # The oassist backend celery worker service.
+  backend-worker-beat:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A oasst_backend.celery_worker beat -l INFO
+    image: oasst-backend-worker-beat
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
 
   # The oassist web service.
   web:
@@ -128,6 +173,7 @@ services:
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
       - INFERENCE_SERVER_HOST=http://inference-server:8000
+      - ENABLE_CHAT=true
     depends_on:
       webdb:
         condition: service_healthy
@@ -179,8 +225,10 @@ services:
       REDIS_HOST: inference-redis
       POSTGRES_HOST: inference-db
       POSTGRES_DB: oasst_inference
-      DEBUG_API_KEYS: '["0000"]'
+      DEBUG_API_KEYS: "0000"
+      TRUSTED_CLIENT_KEYS: "6969"
       ALLOW_DEBUG_AUTH: "True"
+      API_ROOT: "http://localhost:8000"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
@@ -201,7 +249,7 @@ services:
     image: oasst-inference-worker:dev
     environment:
       API_KEY: "0000"
-      MODEL_ID: distilgpt2
+      MODEL_CONFIG_NAME: ${MODEL_CONFIG_NAME:-distilgpt2}
       BACKEND_URL: "ws://inference-server:8000"
       PARALLELISM: 2
     volumes:
@@ -210,6 +258,18 @@ services:
     deploy:
       replicas: 1
     profiles: ["inference"]
+
+  inference-safety:
+    build:
+      dockerfile: docker/inference/Dockerfile.safety
+      context: .
+    image: oasst-inference-safety:dev
+    environment:
+      PORT: 8002
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/safety:/opt/inference/safety"
+    profiles: ["inference-safety"]
 
   prometheus:
     image: prom/prometheus

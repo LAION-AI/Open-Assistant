@@ -23,6 +23,7 @@ import {
   Link,
   MessageSquare,
   MoreHorizontal,
+  RefreshCw,
   Shield,
   Slash,
   Trash,
@@ -46,6 +47,7 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import useSWRMutation from "swr/mutation";
 
+import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
@@ -75,8 +77,6 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
     const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
-    const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
-
     const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
       onSuccess: (data) => {
         data.emojis["+1"] = data.emojis["+1"] || 0;
@@ -105,11 +105,10 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
           name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
           src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
         }}
-        outline={highlight ? "2px solid black" : undefined}
-        outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
         overflowX="auto"
         onClick={handleOnClick}
+        highlight={highlight}
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
           {showCreatedDate ? (
@@ -250,6 +249,11 @@ const MessageActions = ({
   });
 
   const { trigger: handleDelete } = useDeleteMessage(message.id);
+  const { trigger: undeleteTrigger } = useUndeleteMessage(message.id);
+
+  const handleUndelete = () => {
+    undeleteTrigger();
+  };
 
   const handleStop = () => {
     stopTree();
@@ -271,7 +275,7 @@ const MessageActions = ({
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
   const { locale } = useRouter();
   return (
-    <Menu>
+    <Menu isLazy>
       <MenuButton>
         <MoreHorizontal />
       </MenuButton>
@@ -323,9 +327,13 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
-              {!message.deleted && (
+              {!message.deleted ? (
                 <MenuItem onClick={handleDelete} icon={<Trash />}>
                   {t("common:delete")}
+                </MenuItem>
+              ) : (
+                <MenuItem onClick={handleUndelete} icon={<RefreshCw />}>
+                  Undelete message
                 </MenuItem>
               )}
               <MenuItem onClick={handleStop} icon={<Slash />}>

@@ -1,0 +1,14 @@
+{
+  "default": "Il y a eu un problème !",
+  "err_1000": "Type de tâche non valide",
+  "err_1003": "Type de réponse non valide",
+  "err_1004": "Échec de la demande d'interaction",
+  "err_1005": "Échec de la génération de la tâche",
+  "err_1006": "Aucune tâche du type {{task_type}} n'est actuellement disponible.",
+  "err_1007": "L'interrogation sur la disponibilité des tâches a échoué",
+  "err_1008": "Taille du message trop longue",
+  "err_1009": "Vos messages récents comportent des doublons",
+  "err_1010": "Le texte du message est vide",
+  "err_1011": "Vous ne pouvez pas répondre deux fois au même message",
+  "err_1012": "Vous avez trop de tâches en attente. Veuillez réessayer dans quelques minutes."
+}

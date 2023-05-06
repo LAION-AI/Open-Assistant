@@ -149,6 +149,12 @@ class TreeManagerConfiguration(BaseModel):
     """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
     is exceeded no new initial prompt tasks for that language are generated."""
 
+    init_prompt_disabled_langs: str = ""
+
+    @property
+    def init_prompt_disabled_langs_list(self) -> list[str]:
+        return self.init_prompt_disabled_langs.split(",")
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
@@ -267,6 +273,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_PROMPTER_USER_MINUTES: int = 2
 
     TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
+
+    DISCORD_API_KEY: str | None = None
+    DISCORD_CHANNEL_ID: str | None = None
 
     class Config:
         env_file = ".env"

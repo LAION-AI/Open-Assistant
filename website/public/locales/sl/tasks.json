@@ -1,0 +1,100 @@
+{
+  "any_feedback_on_this_task": "Imate kakšen odziv za to opravilo?",
+  "available_task_count": "{{count}} opravil na voljo.",
+  "default": {
+    "unchanged_title": "Brez sprememb",
+    "unchanged_message": "Ali ste prepričani, da želite nadaljevati?",
+    "continue_anyway": "Nadaljuj.",
+    "markdownguide": "Podprto stiliziranje z uporabo markdown kode."
+  },
+  "no_more_tasks": "Zgleda, da opravil ni na voljo.",
+  "random": {
+    "label": "Počutim se srečno",
+    "desc": "Pomagajte nam izboljšati Open Assistant z naključnim opravilom."
+  },
+  "create_initial_prompt": {
+    "label": "Ustvarite začetne ukaze",
+    "desc": "Napišite začetne ukaze za pomoč pri Open Assistant odgovorih na različna sporočila. (vstop v srečolov)",
+    "overview": "Ustvarite začetno sporočilo, ki bo poslano asistentu",
+    "instruction": "Navedite začetne ukaze",
+    "response_placeholder": "Napišite vaš ukaz tukaj...",
+    "shotcut_tip": "Namig: Uporabljate lahko tipkovnico za bliznjice pri pregledu in predlogah odzivov:"
+  },
+  "reply_as_user": {
+    "label": "Odgovorite kot uporabnik",
+    "desc": "Klepetajte z Open Assistant in tako pomagajte izboljšati njegove odzive med vašim klepetom.",
+    "overview": "Glede na sledeč pogovor navedite ustrezen odgovor",
+    "instruction": "Navedite uporabnikov odgovor.",
+    "response_placeholder": "Napišite vaš odgovor tukaj...",
+    "shotcut_tip": "Namig: Uporabljate lahko tipkovnico za bližnjice pri pregledu in predlogah odzivov:"
+  },
+  "reply_as_assistant": {
+    "label": "Odgovorite kot Asistent",
+    "desc": "Pomagajte izboljšati Open Assistant odgovore med konverzacijami z ostalimi uporabniki.",
+    "overview": "Glede na sledeč pogovor navedite ustrezen odgovor",
+    "response_placeholder": "Napišite vaš odgovor tukaj...",
+    "shotcut_tip": "Namig: Uporabljate lahko tipkovnico za bližnjice pri pregledu in predlogah odzivov:"
+  },
+  "rank_user_replies": {
+    "label": "Razvrstite uporabnikove odgovore",
+    "desc": "Pomagajte izboljšati Open Assistant odgovore med konverzacijami z ostalimi uporabniki.",
+    "overview": "Sledeče odgovore uporabnikov razvrstite od najboljših do najslabših, začenši z najboljšimi in končavši z najslabšimi",
+    "unchanged_title": "Vrstni red nespremenjen",
+
+    "unchanged_message": "Niste spremenili vrstnega reda ukazov. Ali ste prepričani, da želite nadaljevati?",
+    "continue_anyway": "Nadaljujte vseeno"
+  },
+  "rank_assistant_replies": {
+    "label": "Razvrstite odgovore Asistenta",
+    "desc": "Ocena ukazov podeljena s strani Open Assistant bazira glede na njihovo točnost in berljivost.",
+
+    "overview": "Sledeče odgovore Asistenta razvrstite od najboljših do najslabših, začenši z najboljšimi in končavši z najslabšimi.",
+    "unchanged_title": "Vrstni red nespremenjen.",
+    "unchanged_message": "Niste spremenili vrstnega reda ukazov. Ali ste prepričani, da želite nadaljevati?",
+    "continue_anyway": "Nadaljuj vseeno."
+  },
+  "rank_initial_prompts": {
+    "label": "Razvrsti začetne ukaze",
+    "desc": "Ocena ukazov podeljena s strani Open Assistant bazira glede na njihovo točnost in berljivost.",
+    "overview": "Sledeče začetne ukaze razvrstite od najboljših do najslabših, začenši z najboljšimi in končavši z najslabšimi.",
+    "unchanged_title": "Vrstni red nespremenjen.",
+    "unchanged_message": "Niste spremenili vrstnega reda ukazov. Ali ste prepričani, da želite nadaljevati?",
+    "continue_anyway": "Nadaljuj vseeno."
+  },
+  "label_initial_prompt": {
+    "label": "Oznaka začetnega ukaza",
+    "desc": "Navedite oznake za ukaz.",
+    "overview": "Navedite oznake za sledeči ukaz"
+  },
+  "label_prompter_reply": {
+    "label": "Oznaka ukaznega odgovora",
+    "desc": "Navedite oznake za ukaz.",
+    "overview": "Glede na sledeč pogovor navedite oznake za končni ukaz."
+  },
+  "label_assistant_reply": {
+    "label": "Oznaka odgovora Asistenta",
+    "desc": "Navedite oznake za ukaz.",
+    "overview": "Glede na sledeč pogovor navedite oznake za končni ukaz."
+  },
+  "classify_initial_prompt": {
+    "label": "Klasificija začetnga ukaza",
+    "desc": "Navedite oznake za ukaz.",
+    "overview": "Preberi sledeč ukaz in nato odgovori na vprašanje."
+  },
+  "classify_prompter_reply": {
+    "label": "Klasifikacija ukaznega odgovora",
+    "desc": "Navedite oznake za ukaz.",
+    "overview": "Preberite sledeč pogovor in nato odgovorite na vprašanje o zadnjem odgovoru v diskusiji."
+  },
+  "classify_assistant_reply": {
+    "label": "Klasifikacija odgovora Asistenta",
+    "desc": "Navedite oznako za ukaz.",
+    "overview": "Preberite sledeč pogovor in nato odgovorite na vprašanje o zadnjem odgovoru v diskusiji."
+  },
+  "submitted_as": "To bo predloženo kot {{submit_lang}}",
+  "tab_write": "Vpišite",
+  "tab_preview": "Predogled",
+
+  "writing_wrong_langauge_a_b": "Zdi se, da pišete v {{detected_lang}} vendar bo to predloženo kot {{submit_lang}}.",
+  "not_rankable": "Vsi odgovori so dejansko napačni in jih ni mogoče uvrstiti."
+}

@@ -1,0 +1,11 @@
+{
+  "model_name": "theblackcat102/pythia-12b-deduped-sft",
+  "results": {
+    "beam5": -1.563840627670288,
+    "greedy": -0.8911840915679932,
+    "k50": -0.9620318412780762,
+    "magic_numbers": -0.9397581219673157,
+    "mean_reward": "-1.1174922"
+  },
+  "reward_model": "andreaskoepf/oasst-rm-1-pythia-1b"
+}

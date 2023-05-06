@@ -1,0 +1,7 @@
+accelerate
+bitsandbytes
+fastapi
+huggingface_hub
+sse-starlette
+torch
+uvicorn

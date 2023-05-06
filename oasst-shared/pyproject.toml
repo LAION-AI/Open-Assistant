@@ -9,7 +9,9 @@ dependencies = [
     "pydantic==1.10.4",
     "aiohttp==3.8.3",
     "aiohttp[speedups]",
-    "loguru==0.6.0"
+    "loguru==0.6.0",
+    "psutil==5.9.4",
+    "pynvml==11.5.0"
 ]
 
 [project.optional-dependencies]

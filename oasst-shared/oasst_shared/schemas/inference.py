@@ -1,19 +1,16 @@
-import datetime
 import enum
 import platform
 import random
-from typing import Annotated, Literal, Union
+import uuid
+from datetime import datetime
+from typing import Annotated, Any, Literal, Union
 
 import psutil
 import pydantic
 import pynvml
+from oasst_shared.model_configs import ModelConfig
 
 INFERENCE_PROTOCOL_VERSION = "1"
-DEFAULT_MODEL_NAME = "distilgpt2"
-
-
-def compat_hash(*, model_name: str) -> str:
-    return f"{model_name}"
 
 
 class WorkerGpuInfo(pydantic.BaseModel):
@@ -63,50 +60,152 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 
 class WorkerConfig(pydantic.BaseModel):
-    model_name: str = DEFAULT_MODEL_NAME
-    hardware_info: WorkerHardwareInfo = pydantic.Field(default_factory=WorkerHardwareInfo)
+    model_config: ModelConfig
+    max_parallel_requests: int = 1
 
     @property
     def compat_hash(self) -> str:
-        return compat_hash(model_name=self.model_name)
+        return self.model_config.compat_hash
+
+
+class WorkerInfo(pydantic.BaseModel):
+    config: WorkerConfig
+    hardware_info: WorkerHardwareInfo
+
+
+class GpuMetricsInfo(pydantic.BaseModel):
+    gpu_usage: float
+    mem_usage: float
 
 
 class WorkerMetricsInfo(pydantic.BaseModel):
+    created_at: datetime
     cpu_usage: float
     mem_usage: float
     swap_usage: float
-    gpu_usage: float | None = None
-    gpu_memory_usage: float | None = None
+    gpus: list[GpuMetricsInfo] | None = None
 
     def __init__(self, **data):
+        data["created_at"] = datetime.utcnow()
         data["cpu_usage"] = psutil.cpu_percent()
         data["mem_usage"] = psutil.virtual_memory().percent
         data["swap_usage"] = psutil.swap_memory().percent
         try:
             pynvml.nvmlInit()
             data["nvidia_driver_version"] = pynvml.nvmlSystemGetDriverVersion()
-            gpu_usages = []
-            gpu_memory_usages = []
+            gpus = []
             for i in range(pynvml.nvmlDeviceGetCount()):
                 handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-                gpu_usages.append(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
-                gpu_memory_usages.append(pynvml.nvmlDeviceGetMemoryInfo(handle).used)
-            data["gpu_usage"] = sum(gpu_usages) / len(gpu_usages)
-            data["gpu_memory_usage"] = sum(gpu_memory_usages) / len(gpu_memory_usages)
+                gpus.append(
+                    {
+                        "gpu_usage": pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                        "mem_usage": pynvml.nvmlDeviceGetMemoryInfo(handle).used,
+                    }
+                )
+            data["gpus"] = gpus
         except Exception:
             pass
         super().__init__(**data)
 
 
-class WorkParameters(pydantic.BaseModel):
-    model_name: str = DEFAULT_MODEL_NAME
-    max_new_tokens: int = 100
-    do_sample: bool = True
-    top_k: int = 50
-    top_p: float = 0.9
-    temperature: float = 1.0
+class SamplingParameters(pydantic.BaseModel):
+    top_k: int | None = None
+    top_p: float | None = None
+    typical_p: float | None = None
+    temperature: float | None = None
     repetition_penalty: float | None = None
-    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
+    max_new_tokens: int = 1024
+
+
+class PluginApiType(pydantic.BaseModel):
+    type: str
+    url: str
+    has_user_authentication: bool | None = False
+    # NOTE: Some plugins using this field,
+    # instead of has_user_authentication
+    is_user_authenticated: bool | None = False
+
+
+class PluginAuthType(pydantic.BaseModel):
+    type: str
+
+
+class PluginOpenAPIParameter(pydantic.BaseModel):
+    name: str
+    in_: str
+    description: str
+    required: bool
+    schema_: object
+
+
+class PluginOpenAPIEndpoint(pydantic.BaseModel):
+    path: str
+    type: str
+    summary: str
+    operation_id: str
+    url: str
+    params: list[PluginOpenAPIParameter]
+    payload: dict | None = None
+
+
+class PluginConfig(pydantic.BaseModel):
+    schema_version: str
+    name_for_model: str
+    name_for_human: str
+    description_for_human: str
+    description_for_model: str
+    api: PluginApiType
+    auth: PluginAuthType
+    logo_url: str | None = None
+    contact_email: str | None = None
+    legal_info_url: str | None = None
+    endpoints: list[PluginOpenAPIEndpoint] | None = None
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        setattr(self, key, value)
+
+
+class PluginEntry(pydantic.BaseModel):
+    url: str
+    enabled: bool = True
+    plugin_config: PluginConfig | None = None
+    # NOTE: Idea, is to have OA internal plugins as trusted,
+    # and all other plugins as untrusted by default(until proven otherwise)
+    trusted: bool | None = False
+
+
+class PluginExecutionDetails(pydantic.BaseModel):
+    inner_monologue: list[str]
+    final_tool_output: str
+    final_prompt: str
+    final_generation_assisted: bool
+    achieved_depth: int | None = None
+    error_message: str | None = None
+    status: Literal["success", "failure"]
+
+
+class PluginUsed(pydantic.BaseModel):
+    name: str | None = None
+    url: str | None = None
+    trusted: bool | None = None
+    execution_details: PluginExecutionDetails
+
+
+def make_seed() -> int:
+    return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
+
+
+class WorkParameters(pydantic.BaseModel):
+    model_config: ModelConfig
+    sampling_parameters: SamplingParameters = pydantic.Field(default_factory=SamplingParameters)
+    do_sample: bool = True
+    seed: int = pydantic.Field(
+        default_factory=make_seed,
+    )
+    plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
 
 
 class ReportType(str, enum.Enum):
@@ -132,15 +231,27 @@ class MessageState(str, enum.Enum):
     in_progress = "in_progress"
     complete = "complete"
     aborted_by_worker = "aborted_by_worker"
+    cancelled = "cancelled"
+    timeout = "timeout"
 
 
 class MessageRead(pydantic.BaseModel):
     id: str
+    parent_id: str | None
     content: str | None
+    chat_id: str
+    created_at: datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
     reports: list[Report] = []
+    # work parameters will be None on user prompts
+    work_parameters: WorkParameters | None
+    safe_content: str | None
+    safety_level: int | None
+    safety_label: str | None
+    safety_rots: str | None
+    used_plugin: PluginUsed | None = None
 
     @property
     def is_assistant(self) -> bool:
@@ -151,41 +262,135 @@ class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
 
 
-class WorkRequest(pydantic.BaseModel):
+class SafetyParameters(pydantic.BaseModel):
+    level: int = 0
+
+    @pydantic.validator("level")
+    def level_must_be_in_range(cls, v):
+        if v < 0 or v > 9:
+            raise ValueError("level must be in range [0, 9]")
+        return v
+
+
+class SafetyRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: SafetyParameters
+
+
+class SafetyResponse(pydantic.BaseModel):
+    outputs: str
+
+
+class WorkerRequestBase(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class WorkRequest(WorkerRequestBase):
+    request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
+    created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
+    safety_parameters: SafetyParameters = pydantic.Field(default_factory=SafetyParameters)
 
 
-class TokenResponse(pydantic.BaseModel):
+class PingRequest(WorkerRequestBase):
+    request_type: Literal["ping"] = "ping"
+
+
+class ErrorRequest(WorkerRequestBase):
+    request_type: Literal["error"] = "error"
+    error: str
+
+
+class UpgradeProtocolRequest(WorkerRequestBase):
+    request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
+
+
+class WrongApiKeyRequest(WorkerRequestBase):
+    request_type: Literal["wrong_api_key"] = "wrong_api_key"
+
+
+class TerminateRequest(WorkerRequestBase):
+    request_type: Literal["terminate"] = "terminate"
+
+
+class WorkerResponseBase(pydantic.BaseModel):
+    request_id: str | None = None
+
+
+class PongResponse(WorkerResponseBase):
+    response_type: Literal["pong"] = "pong"
+    metrics: WorkerMetricsInfo | None = None
+
+
+class SafePromptResponse(WorkerResponseBase):
+    response_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+    safety_parameters: SafetyParameters
+    safety_label: str
+    safety_rots: str
+
+
+class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
-    log_prob: float
+    log_prob: float | None
     token_id: int
 
 
-class GeneratedTextResponse(pydantic.BaseModel):
+class GeneratedTextResponse(WorkerResponseBase):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
+    metrics: WorkerMetricsInfo | None = None
+    used_plugin: PluginUsed | None = None
 
 
-class InternalFinishedMessageResponse(pydantic.BaseModel):
+class InternalFinishedMessageResponse(WorkerResponseBase):
     response_type: Literal["internal_finished_message"] = "internal_finished_message"
     message: MessageRead
 
 
-class ErrorResponse(pydantic.BaseModel):
+class InternalErrorResponse(WorkerResponseBase):
+    response_type: Literal["internal_error"] = "internal_error"
+    error: str
+    message: MessageRead
+
+
+class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
+    metrics: WorkerMetricsInfo | None = None
     error: str
 
 
-class MetricsResponse(pydantic.BaseModel):
-    response_type: Literal["metrics"] = "metrics"
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+class GeneralErrorResponse(WorkerResponseBase):
+    response_type: Literal["general_error"] = "general_error"
+    metrics: WorkerMetricsInfo | None = None
+    error: str
 
 
-WorkResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
+_WorkerRequest = Union[
+    WorkRequest,
+    PingRequest,
+    ErrorRequest,
+    TerminateRequest,
+    UpgradeProtocolRequest,
+    WrongApiKeyRequest,
+]
+WorkerRequest = Annotated[
+    _WorkerRequest,
+    pydantic.Field(discriminator="request_type"),
+]
+
+WorkerResponse = Annotated[
+    Union[
+        TokenResponse,
+        GeneratedTextResponse,
+        ErrorResponse,
+        PongResponse,
+        InternalFinishedMessageResponse,
+        InternalErrorResponse,
+        SafePromptResponse,
+    ],
     pydantic.Field(discriminator="response_type"),
 ]

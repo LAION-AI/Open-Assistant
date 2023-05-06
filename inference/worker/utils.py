@@ -1,17 +1,28 @@
 import collections
 import random
+import threading
 import time
 from typing import Iterable, Literal
 
 import interface
+import lorem
+import pydantic
 import requests
+import sseclient
+import transformers
+import websocket
+from chat_chain_prompts import V2_PROMPTER_PREFIX
 from loguru import logger
+from oasst_shared.schemas import inference
+from settings import settings
+
+shared_tokenizer_lock = threading.Lock()
 
 
 class TokenBuffer:
     def __init__(self, stop_sequences: list[str]) -> None:
         self.stop_sequences = stop_sequences
-        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=0)
+        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=1)
         self.tokens = collections.deque()
         self.token_lens = collections.deque()
         self.total_len = 0
@@ -35,21 +46,65 @@ class TokenBuffer:
     def finish(self, reason: Literal["length", "eos_token", "stop_sequence"]) -> Iterable[interface.Token]:
         if reason == "stop_sequence":
             end_sequence = ""
+            end_tokens = []
             while self.tokens:
-                end_sequence = self.tokens.pop().text + end_sequence
+                token = self.tokens.pop()
+                end_tokens.append(token)
+                end_sequence = token.text + end_sequence
                 if end_sequence in self.stop_sequences:
                     break
+            else:
+                self.tokens.extend(reversed(end_tokens))
+            yield from self.tokens
+        elif reason == "eos_token":
+            if self.tokens:
+                self.tokens.pop()
             yield from self.tokens
         else:
             yield from self.tokens
 
 
-def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
-    health_url = f"{inference_server_url}/health"
+def truncate_prompt(
+    tokenizer: transformers.PreTrainedTokenizer,
+    worker_config: inference.WorkerConfig,
+    parameters: interface.GenerateStreamParameters,
+    prompt: str,
+    plugin_used: bool,
+):
+    with shared_tokenizer_lock:
+        ids = tokenizer.encode(prompt)
+
+    max_input_length = worker_config.model_config.max_input_length
+
+    # make room for prompter prefix
+    if plugin_used:
+        max_input_length = max_input_length - 1
+
+    max_total_tokens = worker_config.model_config.max_total_length
+    if len(ids) > max_input_length:
+        logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
+        ids = ids[-(max_input_length - 1) :]
+        with shared_tokenizer_lock:
+            prompt = tokenizer.decode(ids)
+            # If there is no prompter prefix, due to truncation, add it back.
+            if V2_PROMPTER_PREFIX not in prompt:
+                prompt = V2_PROMPTER_PREFIX + prompt
+
+    input_length = len(ids)
+    spare = max_total_tokens - input_length - 1
+    if not parameters.max_new_tokens:
+        parameters.max_new_tokens = spare
+    elif parameters.max_new_tokens > spare:
+        logger.warning(f"Max new tokens too high, reducing to {spare}")
+        parameters.max_new_tokens = spare
+    return prompt
+
+
+def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
     time_limit = time.time() + timeout
     while True:
         try:
-            response = requests.get(health_url)
+            response = http.get("/health")
             response.raise_for_status()
         except (requests.HTTPError, requests.ConnectionError):
             if time.time() > time_limit:
@@ -60,3 +115,97 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
         else:
             logger.info("Inference server is ready")
             break
+
+
+def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
+    tokens = text.split()
+    for token in tokens[:-1]:
+        yield interface.GenerateStreamResponse(
+            token=interface.Token(
+                text=token + " ",
+                logprob=0.1,
+                id=0,
+            ),
+        )
+        if pause > 0:
+            time.sleep(pause)
+    yield interface.GenerateStreamResponse(
+        token=interface.Token(
+            text=tokens[-1],
+            logprob=0.1,
+            id=0,
+        ),
+        generated_text=text,
+        details=interface.StreamDetails(
+            finish_reason="length",
+            generated_tokens=len(tokens),
+            seed=seed,
+        ),
+    )
+
+
+def lorem_events(seed):
+    sentence = lorem.paragraph()
+    yield from text_to_events(sentence, seed=seed, pause=0.2)
+
+
+ws_lock = threading.Lock()
+
+
+def send_response(
+    ws: websocket.WebSocket,
+    repsonse: inference.WorkerResponse | inference.WorkerInfo,
+):
+    msg = repsonse.json()
+    with ws_lock:
+        ws.send(msg)
+
+
+class HttpClient(pydantic.BaseModel):
+    base_url: str
+    basic_auth_username: str | None = None
+    basic_auth_password: str | None = None
+
+    @property
+    def auth(self):
+        if self.basic_auth_username and self.basic_auth_password:
+            return (self.basic_auth_username, self.basic_auth_password)
+        else:
+            return None
+
+    def get(self, path: str, **kwargs):
+        return requests.get(self.base_url + path, auth=self.auth, **kwargs)
+
+    def post(self, path: str, **kwargs):
+        return requests.post(self.base_url + path, auth=self.auth, **kwargs)
+
+
+def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
+    http = HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
+    response = http.post(
+        "/generate_stream",
+        json=request.dict(),
+        stream=True,
+        headers={"Accept": "text/event-stream"},
+    )
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from inference server")
+        logger.error(f"Response: {response.text}")
+        raise
+
+    client = sseclient.SSEClient(response)
+    for event in client.events():
+        if event.event == "error":
+            logger.error(f"Error from inference server: {event.data}")
+            yield interface.GenerateStreamResponse(error=event.data)
+            raise RuntimeError(f"Error from inference server: {event.data}")
+        if event.event == "ping":
+            continue
+        stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+        yield stream_response

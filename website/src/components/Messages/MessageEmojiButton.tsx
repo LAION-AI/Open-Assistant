@@ -1,4 +1,5 @@
-import { Button, ButtonProps } from "@chakra-ui/react";
+import { Button, ButtonProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { ElementType, PropsWithChildren } from "react";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { MessageEmoji } from "src/types/Conversation";
 import { emojiIcons } from "src/types/Emoji";
@@ -34,6 +35,32 @@ export const MessageEmojiButton = ({
     forceHideCount !== undefined ? !forceHideCount : (emoji.count > 0 && userReacted) || userIsAuthor || isAdminOrMod;
 
   return (
+    <BaseMessageEmojiButton onClick={onClick} isDisabled={isDisabled} emoji={EmojiIcon} checked={checked} sx={sx}>
+      {showCount && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}
+    </BaseMessageEmojiButton>
+  );
+};
+
+type BaseMessageEmojiButtonProps = PropsWithChildren<{
+  emoji: ElementType<any>;
+  checked?: boolean;
+  onClick?: () => void;
+  isDisabled?: boolean;
+  sx?: ButtonProps["sx"];
+  label?: string;
+}>;
+
+export const BaseMessageEmojiButton = ({
+  emoji: Emoji,
+  checked,
+  onClick,
+  isDisabled,
+  sx,
+  children,
+  label,
+}: BaseMessageEmojiButtonProps) => {
+  const disabledColor = useColorModeValue("gray.500", "gray.400");
+  const button = (
     <Button
       onClick={onClick}
       variant={checked ? "solid" : "ghost"}
@@ -42,17 +69,27 @@ export const MessageEmojiButton = ({
       height="1.6em"
       minWidth={0}
       padding="0"
-      isDisabled={disabled}
+      isDisabled={isDisabled}
       sx={{
         ":hover": {
           backgroundColor: isDisabled ? "transparent" : undefined,
         },
         ...sx,
       }}
-      color={isDisabled ? (checked ? "gray.700" : "gray.500") : undefined}
+      color={isDisabled ? (checked ? "gray.700" : disabledColor) : undefined}
     >
-      <EmojiIcon style={{ height: "1em" }} />
-      {showCount && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}
+      <Emoji style={{ height: "1em" }} />
+      {children}
     </Button>
+  );
+
+  if (!label) {
+    return button;
+  }
+
+  return (
+    <Tooltip label={label} placement="top">
+      {button}
+    </Tooltip>
   );
 };

@@ -6,10 +6,21 @@
     "q0": "Was ist der aktuelle Stand des Projekts?",
     "a0": "Wir befinden uns in einem frühen Stadium der Entwicklung und arbeiten ausgehend von etablierter Forschung bei der Anwendung von RLHF auf große Sprachmodelle (LLMs).",
     "q1": "Wer organisiert die Entwicklung von Open Assistant?",
-    "a1": "Open Assistant ist ein Projekt, das von LAION und Einzelpersonen auf der ganzen Welt organisiert wird. Unser Ziel ist es das Open Assistant Sprachmodell allen Menschen frei zugänglich zu machen."
+    "a1": "Open Assistant ist ein Projekt, das von LAION und Einzelpersonen auf der ganzen Welt organisiert wird. Unser Ziel ist es das Open Assistant Sprachmodell allen Menschen frei zugänglich zu machen.",
+    "q2": "Welche Lizenz benutzt Open Assistant?",
+    "a2": "Der Code und die Modelle werden unter der Apache 2.0 Lizenz herausgegeben.",
+    "q3": "Werden die Trainingsdaten auch veröffentlicht?",
+    "a3": "Ja, unter CC BY 4.0.",
+    "q4": "Wird Open Assistant kostenlos sein?",
+    "a4": "Ja, Open Assistant wird man kostenlos benutzen und modifizieren können.",
+    "q5": "Welche Hardware werde ich brauchen um die Modelle laufen zu lassen?",
+    "a5": "Es wird Versionen geben die auf Verbraucherhardware laufen können."
   },
   "faq_title": "Häufig gestellte Fragen",
+  "help_us_improve": "Hilf uns uns zu verbessern",
+  "hugging_face_link": "Schau Dir unsere HuggingFace Organisation an",
   "join_us_description": "Alle Open-Source-Projekte beginnen mit Leuten wie Dir! Die Open Source Softwareentwicklung ermöglicht es uns gemeinsam unser Wissen und unsere Technologie zum Wohle der Menschheit zur Verfügung stellen. Bist Du dabei? Du findest uns hier:",
   "join_us_title": "Begleiten Sie uns",
-  "subtitle": "Konversations-KI für alle."
+  "subtitle": "Konversations-KI für alle.",
+  "try_our_assistant": "Teste unseren Assistenten"
 }
