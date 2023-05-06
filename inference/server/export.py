@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import contextlib
+import datetime as dt
 import gzip
 import json
 import sys
@@ -197,6 +198,10 @@ def export_chats(
     )
 
 
+def parse_date(date_str: str) -> dt.date:
+    return dt.datetime.strptime(date_str, "%Y-%m-%d").date()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -219,8 +224,28 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="Seed for the anonymizer. If not specified, no anonymization will be performed.",
     )
+    parser.add_argument(
+        "--from-date",
+        type=parse_date,
+        help="Only export chats created on or after this date. Format: YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--to-date",
+        type=parse_date,
+        help="Only export chats created on or before this date. Format: YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--user-id",
+        type=str,
+        help="Only export chats created by this user.",
+    )
+    parser.add_argument(
+        "--chat-id",
+        type=str,
+        help="Only export this chat.",
+    )
+
     # TODO: filters: reported, score, user ID, chat ID, etc
-    # TODO: date range?
     return parser.parse_args()
 
 
