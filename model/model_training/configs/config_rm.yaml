@@ -33,7 +33,7 @@ defaults_rm:
   fuse_gelu: true
   log_wandb: true
   verbose: false
-  output_dir: .saved_models_rm_large
+  output_dir: .saved_models_rm
   use_custom_sampler: false
   residual_dropout: 0.0
   use_flash_attention: false
@@ -41,7 +41,7 @@ defaults_rm:
   per_digit_tokens: false
   datasets_extra: []
   metrics: ["accuracy", "kendalltau"]
-  deepspeed_config: configs/zero_config.json
+  deepspeed_config: configs/zero3_config.json
   max_replies: 5
 
 test_rm_labeling:
@@ -56,18 +56,46 @@ test_rm_labeling:
   max_length: 2048
   use_flash_attention: true
   gradient_checkpointing: true
-  warmup_steps: 50
+  warmup_steps: 100
   dtype: float16
-  gradient_accumulation_steps: 20
-  per_device_train_batch_size: 1
-  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 10
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
   num_train_epochs: 3
-  eval_steps: 251
+  eval_steps: 500
   save_steps: 500
   loss_fn: HybridRMLoss
   datasets:
     - oasst_export_w_label:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk,zh,ja,th,vi"
+        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
+        input_label_path: 2023-04-12_oasst_all.messages.jsonl.gz
+        val_split: 0.1
+
+rm_labeling_deberta_xlarge:
+  is_reward_model: true
+  pooling: last
+  sort_by_length: false
+  use_custom_sampler: true
+  model_name: microsoft/deberta-v2-xlarge
+  learning_rate: 2e-5
+  residual_dropout: 0.0
+  weight_decay: 0.0
+  max_length: 1568
+  use_flash_attention: true
+  gradient_checkpointing: true
+  warmup_steps: 100
+  dtype: float16
+  gradient_accumulation_steps: 20
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  num_train_epochs: 3
+  eval_steps: 500
+  save_steps: 500
+  loss_fn: HybridRMLoss
+  datasets:
+    - oasst_export_w_label:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk,zh,ja,th,vi,ko"
         input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
         input_label_path: 2023-04-12_oasst_all.messages.jsonl.gz
         val_split: 0.1

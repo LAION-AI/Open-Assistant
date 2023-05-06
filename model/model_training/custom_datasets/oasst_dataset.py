@@ -1,6 +1,8 @@
+import random
 from pathlib import Path
 from typing import Literal, Optional
 
+from datasets import load_dataset
 from oasst_data import ExportMessageNode, read_message_trees, read_messages, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -54,6 +56,18 @@ def load_oasst_export_w_label(
         attribute = {attr: msg.labels[attr].value for attr in ATTRIBUTE_KEYS if attr in msg.labels}
         if len(attribute) == len(ATTRIBUTE_KEYS):
             message_label[msg.message_id] = attribute
+
+    dataset = load_dataset("theblackcat102/oasst-red-team")["test"]
+    parent_id2responses = {}
+    for row in dataset:
+        if row["parent_message_id"] not in parent_id2responses:
+            parent_id2responses[row["parent_message_id"]] = []
+        parent_id2responses[row["parent_message_id"]].append(row)
+
+    for msg_id in parent_id2responses.keys():
+        responses = parent_id2responses[msg_id]
+        random.shuffle(responses)
+        parent_id2responses[msg_id] = responses
 
     threads_per_tree = []
     for tree in read_message_trees(input_file_path):
@@ -133,6 +147,12 @@ def load_oasst_export_w_label(
                 if r.message_id in message_label:
                     filtered_replies.append([r.text])
                     labels.append(message_label[r.message_id])
+            parent_id = thread[0].message_id
+            if len(thread) == 1 and parent_id in parent_id2responses and len(parent_id2responses[parent_id]):
+                response = parent_id2responses[parent_id].pop()
+                filtered_replies.append(response["text"])
+                labels.append({attr: response[attr] for attr in ATTRIBUTE_KEYS})
+
             return (prefix, filtered_replies, labels)
         elif mode == "rl":
             return ([m.text for m in thread],)

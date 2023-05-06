@@ -23,7 +23,7 @@ from tritonclient.utils import np_to_triton_dtype
 
 from tokenizers import pre_tokenizers
 
-from .losses import CrossEntropyLoss, HybridRMLoss, PolyLoss, RMCLSLoss, RMLoss
+from .losses import CrossEntropyLoss, HybridBCERMLoss, HybridRMLoss, PolyLoss, RMCLSLoss, RMLoss
 
 
 def _strtobool(x):
@@ -187,7 +187,7 @@ TOKENIZER_CONFIGS = {
     "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
     "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
-    "deberta-v3": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
+    "deberta": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
     "bloom": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
     "electra": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
 }
@@ -316,7 +316,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, check_freeze_la
                 model.config.pooling = conf.pooling
         else:
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                conf.model_name, cache_dir=conf.cache_dir, num_labels=9, torch_dtype=dtype
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=11, torch_dtype=dtype
             )
     else:
         model = get_specific_model(
@@ -392,6 +392,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return RMLoss(beta=score_l2_reg)
     elif loss == "HybridRMLoss":
         return HybridRMLoss(beta=score_l2_reg)
+    elif loss == "HybridBCERMLoss":
+        return HybridBCERMLoss(beta=score_l2_reg)
     elif loss == "RMCLSLoss":
         return RMCLSLoss()
     else:

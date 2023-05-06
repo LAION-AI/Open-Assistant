@@ -12,9 +12,11 @@ ATTRIBUTE_KEYS = [
     "sexual_content",
     "quality",
     "toxicity",
+    "fails_task",
     "humor",
     "creativity",
     "violence",
+    "spam",
 ]
 
 SYSTEM_PROPERTY_DROP_PROBA = 0.5
