@@ -34,8 +34,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
-  const [streamedDrafts, setStreamedDrafts] = useState<string[] | null>([]);
-  const [draftMessages, setDraftMessages] = useState<InferenceMessage[] | null>([]);
+  const [streamedDrafts, setStreamedDrafts] = useState<string[]>([]);
+  const [draftMessages, setDraftMessages] = useState<InferenceMessage[][]>([]);
   const [isAwaitingMessageSelect, setIsAwaitingMessageSelect] = useBoolean();
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
@@ -173,12 +173,21 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         })
       );
 
-      setDraftMessages(complete_draft_messages);
+      setDraftMessages((draftMessages) => [...draftMessages, complete_draft_messages]);
+
       setQueueInfo(null);
       setIsSending.off();
       setIsAwaitingMessageSelect.on();
     },
-    [getConfigValues, setIsSending, setStreamedDrafts, setDraftMessages, setQueueInfo, setIsAwaitingMessageSelect]
+    [
+      getConfigValues,
+      setIsSending,
+      setStreamedDrafts,
+      setDraftMessages,
+      draftMessages,
+      setQueueInfo,
+      setIsAwaitingMessageSelect,
+    ]
   );
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
@@ -248,10 +257,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     async (params: { parentId: string; chatId: string }) => {
       setIsSending.on();
       setReytryingParentId(params.parentId);
-      await createAndFetchAssistantMessage(params);
-      setReytryingParentId(null);
+      await createAssistantDrafts(params);
     },
-    [createAndFetchAssistantMessage, setIsSending]
+    [createAssistantDrafts, setIsSending, isAwaitingMessageSelect]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -314,27 +322,39 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }
 
       if (prompter_message) {
-        await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId: chatId });
+        setDraftMessages([]);
+        await createAssistantDrafts({ parentId: prompter_message.id, chatId: chatId });
       }
 
       setReytryingParentId(null);
     },
-    [createAndFetchAssistantMessage, isSending, setIsSending]
+    [createAssistantDrafts, isSending, setIsSending, setDraftMessages]
   );
 
   const handleDraftPicked = useCallback(
-    async (index) => {
+    async (regen_index, index) => {
       if (!isAwaitingMessageSelect) {
         return toast({
           title: "Draft messages are still generating.",
         });
       }
 
-      setMessages((messages) => [...messages, draftMessages[index]!]);
+      setMessages((messages) => [...messages, draftMessages[regen_index][index]!]);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
-      setDraftMessages(null);
-    }, [isAwaitingMessageSelect, setMessages, messages, draftMessages, setIsAwaitingMessageSelect, setStreamedDrafts, setDraftMessages]
+      setDraftMessages([]);
+      setReytryingParentId(null);
+    },
+    [
+      isAwaitingMessageSelect,
+      setMessages,
+      messages,
+      draftMessages,
+      setIsAwaitingMessageSelect,
+      setStreamedDrafts,
+      setDraftMessages,
+      setReytryingParentId,
+    ]
   );
 
   const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(
@@ -380,7 +400,13 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         ></ChatConversationTree>
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
         {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
-          <ChatAssistantDraftViewer streamedDrafts={streamedDrafts} draftMessages={draftMessages} onDraftPicked={handleDraftPicked} />
+          <ChatAssistantDraftViewer
+            chatId={chatId}
+            streamedDrafts={streamedDrafts}
+            draftMessages={draftMessages}
+            onDraftPicked={handleDraftPicked}
+            onRetry={handleOnRetry}
+          />
         )}
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
@@ -393,7 +419,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 const useAutoScroll = (
   messages: InferenceMessage[],
   streamedResponse: string | null,
-  draftMessages: InferenceMessage[] | null,
+  draftMessages: InferenceMessage[][],
   streamedDrafts: string[] | null
 ) => {
   const enableAutoScroll = useRef(true);
