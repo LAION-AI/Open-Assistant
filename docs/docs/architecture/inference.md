@@ -4,7 +4,7 @@
 
 ```mermaid
 ---
-title: Text Client Workflow
+title: Overview of Text Client Workflow
 ---
 graph LR;
     subgraph OA Server
@@ -13,21 +13,21 @@ graph LR;
     id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"]
     end
 
-    subgraph Text_Client
+    subgraph text-client
     id3["SSEClient(response)"]
     end
 
-    Text_Client == 1. GET ==> /auth/login;
-    /auth/login -- bearer_token, chat_id--> Text_Client;
+    text-client == 1. GET ==> /auth/login;
+    /auth/login -- bearer_token, chat_id--> text-client;
 
-    Text_Client == 2. requests prompt ==> user;
-    user == submits prompt ==> Text_Client;
+    text-client == 2. requests prompt ==> user;
+    user == submits prompt ==> text-client;
 
-    Text_Client == 3. POST ==> id1["/chats/{chat_id}/messages"];
-    id1["/chats/{chat_id}/messages"] -- assistant_message_id --> Text_Client;
+    text-client == 3. POST ==> id1["/chats/{chat_id}/messages"];
+    id1["/chats/{chat_id}/messages"] -- message_id --> text-client;
 
-    Text_Client == 4. GET ==> id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"];
-    id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"] -- assistant_message_id --> id3["SSEClient(response)"];
+    text-client == 4. GET ==> id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"];
+    id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"] -- events --> id3["SSEClient(response)"];
 
     linkStyle 0 stroke-width:2px,fill:none,stroke:green;
     linkStyle 1 stroke-width:2px,fill:none,stroke:green;
@@ -39,13 +39,13 @@ graph LR;
     linkStyle 7 stroke-width:2px,fill:none,stroke:grey;
 ```
 
-For development, a basic REPL client is used as a chat interface, built around [Typer](https://typer.tiangolo.com/). The bulk of the logic is in `inference.text-clinet.text_client_utils.DebugClient`. The basic steps are as follows:
+For development, a basic REPL client is used as a chat interface, built around [Typer](https://typer.tiangolo.com/). The bulk of the logic is in `inference.text-client.text_client_utils.DebugClient`. The basic steps are as follows:
 
-1. After authenticating with the backend open assistant server, the client creates a "chat" by posting to `/chats`, which returns a chat id for session.
+1. After authenticating with the backend open assistant server, the `DebugClient` creates a "chat" by posting to `/chats`, which returns a chat id for session.
 
-2. The client then collects the user prompt. 
+2. The script then collects the user prompt. 
 
-3. The client posts to the endpoint `/chats/{chat_id}/messages`. Included in this request is the message content and a parent_id (assistant's response to prior message, if there is one). In the response, the server will return an assistant_message id. 
+3. The `DebugClient` posts to the endpoint `/chats/{chat_id}/messages`. Included in this request is the message content, a `parent_id:str` (ID of assistant's response to prior message, if there is one), the `model_config_name:str`, and inference `sampling_parameters:dict`. In the response, the server will return a `message_id:str`. 
 
 4. The client will use this id to make a GET request to `{backend_url}/chats/{chat_id}/messages/{message_id}/events`.
 Critically, in this `get()` method of requests, the `stream=True` is passed, meaning that the response content will not be immediately downloaded but rather streamed. Additionally, the actual GET request must have `"Accept": "text/event-stream"` in the headers to let 
