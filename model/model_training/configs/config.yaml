@@ -81,6 +81,8 @@ defaults:
   per_digit_tokens: false
   is_reward_model: false
   deepspeed_config: configs/zero_config.json
+  peft_model: false
+  peft_type: "lora"
 
 webgpt_dataset_only:
   datasets:
@@ -353,6 +355,30 @@ llama-30b-pretrain:
   save_steps: 500
   num_train_epochs: 1
   save_total_limit: 2
+
+lora-llama-13b:
+  dtype: fp16
+  log_dir: "llama_log_7b"
+  learning_rate: 5e-5
+  model_name: "/admin/home-jordiclive/llama/7B"
+  output_dir: llama_model
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 300
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 24
+  per_device_eval_batch_size: 5
+  eval_steps: 5
+  num_train_epochs: 12
+  save_total_limit: 2
+  save_strategy: epoch
+  use_flash_attention: True
+  residual_dropout: 0.0
+  deepspeed_config: configs/zero_config.json
+  peft_model: true
+  peft_type: "lora"
+  use_custom_sampler: true
 
 pythia-70m-deduped:
   learning_rate: 8e-6
