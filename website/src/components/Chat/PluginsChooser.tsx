@@ -199,6 +199,10 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
           <MenuItem
             bg="gray.100"
             _hover={{ bg: "gray.200" }}
+            _dark={{
+              bg: "gray.800",
+              _hover: { bg: "gray.900" },
+            }}
             onClick={() => {
               setSelectedForEditPluginIndex(null);
               onOpen();
