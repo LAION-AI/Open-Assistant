@@ -358,9 +358,9 @@ llama-30b-pretrain:
 
 lora-llama-13b:
   dtype: fp16
-  log_dir: "llama_log_7b"
+  log_dir: "llama_lora_log_13b"
   learning_rate: 5e-5
-  model_name: "/admin/home-jordiclive/llama/7B"
+  model_name: "/admin/home-jordiclive/llama/13B"
   output_dir: llama_model
   weight_decay: 0.0
   max_length: 2048
@@ -382,7 +382,7 @@ lora-llama-13b:
 
 lora-llama-30b:
   dtype: fp16
-  log_dir: "llama_log_7b"
+  log_dir: "llama_lora_log_30b"
   learning_rate: 5e-5
   model_name: "/admin/home-jordiclive/llama/30B"
   output_dir: llama_model
@@ -406,7 +406,7 @@ lora-llama-30b:
 
 lora-llama-65b:
   dtype: fp16
-  log_dir: "llama_log_7b"
+  log_dir: "llama_lora_log_65b"
   learning_rate: 5e-5
   model_name: "/admin/home-jordiclive/llama/65B"
   output_dir: llama_model
