@@ -14,6 +14,7 @@ const ChatList = () => {
         <title>{t("chat")}</title>
       </Head>
       <ChatListBase
+        allowHiddenChats
         className="max-w-5xl mx-auto"
         pt="4"
         px="4"

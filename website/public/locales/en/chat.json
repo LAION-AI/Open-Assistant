@@ -29,6 +29,7 @@
   "remove_plugin": "Remove Plugin",
   "repetition_penalty": "Repetition penalty",
   "save": "Save",
+  "show_hidden": "Show hidden chats",
   "temperature": "Temperature",
   "top_k": "Top K",
   "top_p": "Top P",

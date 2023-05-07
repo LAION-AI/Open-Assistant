@@ -1,22 +1,24 @@
 import "simplebar-react/dist/simplebar.min.css";
 
-import { Box, CardProps } from "@chakra-ui/react";
+import { Box, CardProps, Flex } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { memo, useCallback } from "react";
 import SimpleBar from "simplebar-react";
-import { GetChatsResponse } from "src/types/Chat";
+import { useBoolean } from "usehooks-ts";
 
+import { ChatHiddenSwitch } from "./ChatHiddenSwitch";
 import { ChatListItem } from "./ChatListItem";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { useListChatPagination } from "./useListChatPagination";
 
 export const ChatListBase = memo(function ChatListBase({
-  initialChats, // TODO: can we remove this?
+  allowHiddenChats,
   ...props
-}: CardProps & { initialChats?: GetChatsResponse }) {
-  const { loadMoreRef, responses, mutateChatResponses } = useListChatPagination(initialChats);
+}: CardProps & { allowHiddenChats?: boolean }) {
+  const { value: includeHidden, setValue: setIncludeHidden } = useBoolean(false);
+  const { loadMoreRef, responses, mutateChatResponses } = useListChatPagination(includeHidden);
   const chats = responses?.flatMap((response) => response.chats) || [];
 
   const { t } = useTranslation(["common", "chat"]);
@@ -78,19 +80,22 @@ export const ChatListBase = memo(function ChatListBase({
       }}
       {...props}
     >
-      <CreateChatButton
-        py="5"
-        leftIcon={<Plus size="16px"></Plus>}
-        variant="outline"
-        justifyContent="start"
-        colorScheme="blue"
-        borderRadius="lg"
-        mx="3"
-        mb="2"
-        onUpdated={handleCreateChat}
-      >
-        {t("create_chat")}
-      </CreateChatButton>
+      <Flex>
+        <CreateChatButton
+          py="5"
+          leftIcon={<Plus size="16px" />}
+          variant="outline"
+          justifyContent="start"
+          colorScheme="blue"
+          borderRadius="lg"
+          mx="3"
+          onUpdated={handleCreateChat}
+          flexGrow="1"
+        >
+          {t("create_chat")}
+        </CreateChatButton>
+        {allowHiddenChats && <ChatHiddenSwitch onChange={setIncludeHidden} />}
+      </Flex>
       <SimpleBar
         style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{

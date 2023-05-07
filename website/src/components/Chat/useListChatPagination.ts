@@ -3,7 +3,7 @@ import { get } from "src/lib/api";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWRInfinite from "swr/infinite";
 
-export function useListChatPagination(initialChats?: GetChatsResponse) {
+export function useListChatPagination(includeHidden: boolean) {
   const {
     data: responses,
     mutate: mutateChatResponses,
@@ -19,7 +19,6 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
     {
       keepPreviousData: true,
       revalidateFirstPage: false,
-      fallbackData: initialChats ? [initialChats] : undefined,
     }
   );
   const loadMoreRef = useRef(null);
