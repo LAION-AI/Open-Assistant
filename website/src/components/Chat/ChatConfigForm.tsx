@@ -19,6 +19,7 @@ import {
 import { useTranslation } from "next-i18next";
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
+import SimpleBar from "simplebar-react";
 import { ChatConfigFormData, ModelParameterConfig, PluginEntry, SamplingParameters } from "src/types/Chat";
 import { getConfigCache } from "src/utils/chat";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
@@ -27,6 +28,7 @@ import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatInitialData } from "./ChatInitialDataContext";
 import { PluginsChooser } from "./PluginsChooser";
 import { areParametersEqual } from "./WorkParameters";
+
 const sliderItems: Readonly<
   Array<{
     key: keyof SamplingParameters;
@@ -124,7 +126,12 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   }, [presets, selectedPlugins, handlePresetChange, getValues]);
 
   return (
-    <>
+    <SimpleBar
+      style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
+      classNames={{
+        contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
+      }}
+    >
       <Stack gap="4" maxW="full">
         <PluginsChooser plugins={plugins} setPlugins={setPlugins} />
         <FormControl>
@@ -167,7 +174,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
         ))}
       </Stack>
       <ChatConfigSaver plugins={plugins} hyrated={hyrated} selectedPresetName={selectedPresetName} />
-    </>
+    </SimpleBar>
   );
 });
 
