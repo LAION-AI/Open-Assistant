@@ -57,6 +57,20 @@ STRINGS_TO_CHECK = [
     "my name is OpenAI",
     "trained by OpenAI",
     "as an OpenAI language model",
+    "As your dedicated AI language model",
+    "As a hypothetical AI",
+    "As a neutral AI",
+    "my knowledge cutoff",
+    "my knowledge cut off",
+    "As a machine",
+    "I cannot assist",
+    "I do not have personal preferences",
+    "I don't have personal preferences",
+    "Unfortunately, I cannot provide",
+    "I'm sorry, I cannot",
+    "I'm sorry, I cannot generate",
+    "AI cannot create or program",
+    "I'm afraid I cannot create",
 ]
 
 
@@ -141,6 +155,9 @@ if __name__ == "__main__":
         val_dct = {k: len(v) for k, v in matched_val.items()}
         unified_keys = list(set(train_dct.keys()).union(set(val_dct.keys())))
         unified_counts = {k: train_dct.get(k, 0) + val_dct.get(k, 0) for k in unified_keys}
+        import pdb
+
+        pdb.set_trace()
         if len(unified_counts):
             overview_dct[dataset_name] = unified_counts
             print(f"\nFOUND THE FOLLOWING APPEARANCES FOR DATASET {dataset_name}:")

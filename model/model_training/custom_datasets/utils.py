@@ -1,3 +1,6 @@
+# mostly taken from
+# https://huggingface.co/datasets/gozfarb/ShareGPT_Vicuna_unfiltered/blob/main/optional_clean.py,
+# https://huggingface.co/datasets/ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered/blob/main/wizardlm_clean.py
 FILTER_BY_WORDS = [
     "as a language model",
     "as an AI language model",
@@ -23,6 +26,20 @@ FILTER_BY_WORDS = [
     "my name is OpenAI",
     "trained by OpenAI",
     "as an OpenAI language model",
+    "As your dedicated AI language model",
+    "As a hypothetical AI",
+    "As a neutral AI",
+    "my knowledge cutoff",
+    "my knowledge cut off",
+    "As a machine",
+    "I cannot assist",
+    "I do not have personal preferences",
+    "I don't have personal preferences",
+    "Unfortunately, I cannot provide",
+    "I'm sorry, I cannot",
+    "I'm sorry, I cannot generate",
+    "AI cannot create or program",
+    "I'm afraid I cannot create",
 ]
 
 
