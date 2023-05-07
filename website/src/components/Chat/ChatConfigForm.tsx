@@ -275,7 +275,10 @@ const useHydrateChatConfig = ({
         resetParameters(setValue, custom_preset_config);
         setSelectedPresetName(selectedPresetName);
       } else if (isCustomPresetName(selectedPresetName)) {
-        const customPreset = customPresets.find((preset) => preset.name === selectedPresetName)?.config;
+        // we need to use `custom_presets` here instead of `customPresets`
+        // since customPresets only available on the next render
+        const customPreset = custom_presets?.find((preset) => preset.name === selectedPresetName)?.config;
+        console.log(`customPreset`, customPreset);
         if (customPreset) {
           resetParameters(setValue, customPreset);
           setSelectedPresetName(selectedPresetName);
