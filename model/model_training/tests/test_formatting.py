@@ -6,16 +6,15 @@ from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, Dataset
 
 def test_dataset_entry_rm_mode():
     ds_entry = DatasetEntry(
-        questions=[Utterance(content="Instruction A.")],
+        questions=[Utterance(text="Instruction A.")],
         answers=[
-            Utterance(content="Highest Scored Answer to A.", quality=10),
-            Utterance(content="Second Highest Scored Answer to A", quality=1),
+            Utterance(text="Highest Scored Answer to A.", quality=10),
+            Utterance(text="Second Highest Scored Answer to A", quality=1),
         ],
-        property_dropout=0.0,
     )
 
     eos = "<|endofline|>"
-    formatted_rm = ds_entry.get_formatted(mode=Mode.rm, eos_token=eos)
+    formatted_rm = ds_entry.get_formatted(mode=Mode.rm, use_system_tag=True, system_property_dropout=0.0, eos_token=eos)
     expected_rm = (
         ["<|prompter|>Instruction A.<|endofline|>"],
         [
@@ -47,10 +46,10 @@ def test_dataset_entry_sft_mode_compatible_with_rm():
 
 def test_dataset_entry_formatting_missing_lang():
     ds_entry = DatasetEntry(
-        questions=[Utterance(content="What is the capital of France?")],
+        questions=[Utterance(text="What is the capital of France?")],
         answers=[
             Utterance(
-                content="The capital of France is Paris.",
+                text="The capital of France is Paris.",
                 context="Some context",
                 length=100,
                 quality=1.0,
@@ -58,9 +57,13 @@ def test_dataset_entry_formatting_missing_lang():
                 creativity=0.0,
             )
         ],
-        property_dropout=0.0,
     )
-    formatted = ds_entry.get_formatted(Mode.sft, "<|endofline|>")
+    formatted = ds_entry.get_formatted(
+        Mode.sft,
+        "<|endofline|>",
+        use_system_tag=True,
+        system_property_dropout=0.0,
+    )
     assert len(formatted) == 2
     # this is just optional
     assert "length: 100" in formatted[0]
@@ -74,10 +77,10 @@ def test_dataset_entry_formatting_missing_lang():
 
 def test_dataset_entry():
     ds_entry = DatasetEntry(
-        questions=[Utterance(content="What is the capital of France?")],
+        questions=[Utterance(text="What is the capital of France?")],
         answers=[
             Utterance(
-                content="The capital of France is Paris.",
+                text="The capital of France is Paris.",
                 context="Some context",
                 lang="en",
                 length=100,
@@ -86,11 +89,9 @@ def test_dataset_entry():
                 creativity=0.0,
             )
         ],
-        property_dropout=0.0,
     )
-    formatted = ds_entry.get_formatted(Mode.sft, "<|endofline|>")
+    formatted = ds_entry.get_formatted(Mode.sft, "<|endofline|>", use_system_tag=True, system_property_dropout=0.0)
     assert len(formatted) == 2
-    # not all of these tags are present if we increase property_dropout
     assert "lang: en" in formatted[0]
     assert "length: 100" in formatted[0]
     assert "quality: 1.0" in formatted[0]

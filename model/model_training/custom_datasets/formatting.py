@@ -32,7 +32,7 @@ class PretrainDatasetEntry(BaseModel):
 
 
 class Utterance(BaseModel):
-    content: str
+    text: str
 
     length: int | None = None
     lang: str | None = None
@@ -60,7 +60,10 @@ class Utterance(BaseModel):
             raise ValueError(f"Field {field.name} must be between 0 and 10. Received {v}.")
         return round(v, 1)
 
-    def system_tag(self, eos_token: str, property_dropout: float = 0.0) -> str | None:
+    def system_tag(self, eos_token: str, enabled: bool = True, property_dropout: float = 0.0) -> str:
+        if not enabled:
+            return ""
+
         relevant_system_infos = [
             (k, v)
             for k, v in self.__dict__.items()
@@ -68,12 +71,16 @@ class Utterance(BaseModel):
         ]
 
         if len(relevant_system_infos) == 0:
-            return None
+            return ""
 
         shuffle(relevant_system_infos)
         system_tag_key_values = "\n".join([f"{k}: {v}" for k, v in relevant_system_infos])
         system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
         return system_tag
+
+    @staticmethod
+    def compute_length(s: str) -> int:
+        return len(re.findall(r"\w+", s)) // 5 + 1
 
 
 class DatasetEntry(BaseModel):
@@ -83,39 +90,45 @@ class DatasetEntry(BaseModel):
     # the list[list[Utterance]] case is used for reward model datasets (which have multiple answers per prompt)
     questions: list[Utterance]
     answers: list[Utterance] | list[list[Utterance]]
-    property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA
 
-    def _get_formatted_rm(self, eos_token: str, max_replies: int = 5):
-        if isinstance(self.answers[0], list):
-            answers = self.answers[0]
-        else:
-            answers = self.answers
-        assert len(answers) > 1 and max_replies > 1
-        answers = answers[:max_replies]
-        match len(self.questions):
-            case 0:
-                question = ""
-                # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
-                answers = [f"{a}{eos_token}" for a in answers]
-            case 1:
-                # todo: how to handle different system tags for the answers since the tag should be part of the question
-                # answer_system_tags = [a.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or "" for a in answers]
-                system_tag = self.questions[0].system_tag(eos_token=eos_token, property_dropout=self.property_dropout)
-                question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
-                answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
-            case _:
-                # todo: implement, especially oasst actually needs this
-                raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
-        return (question, answers)
+    # TODO: move into separate class
 
-    def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
-        if mode == Mode.rl:
-            q = self.questions[0]
-            system_tag = q.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or ""
-            return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}{system_tag}"
-        elif mode == Mode.rm:
-            return self._get_formatted_rm(eos_token=eos_token, max_replies=kwargs.get("max_replies", 5))
-        else:
+    # def _get_formatted_rm(self, eos_token: str, use_system: bool, property_dropout: float, max_replies: int = 5):
+    #     if isinstance(self.answers[0], list):
+    #         answers = self.answers[0]
+    #     else:
+    #         answers = self.answers
+    #     assert len(answers) > 1 and max_replies > 1
+    #     answers = answers[:max_replies]
+    #     match len(self.questions):
+    #         case 0:
+    #             question = ""
+    #             # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
+    #             answers = [f"{a}{eos_token}" for a in answers]
+    #         case 1:
+    #             # todo: how to handle different system tags for the answers since the tag should be part of the question
+    #             # answer_system_tags = [a.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or "" for a in answers]
+    #             system_tag = self.questions[0].system_tag(
+    #                 eos_token=eos_token,
+    #                 enabled=use_system,
+    #                 property_dropout=self.property_dropout,
+    #             )
+    #             question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
+    #             answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
+    #         case _:
+    #             # todo: implement, especially oasst actually needs this
+    #             raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
+    #     return (question, answers)
+
+    def get_formatted(
+        self,
+        mode: Mode,
+        eos_token: str,
+        use_system_tag: bool = True,
+        system_property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA,
+        **kwargs,
+    ) -> str | list[str] | tuple[str, list[str]]:
+        if mode == Mode.sft:
             qa_list: list[str] = []
 
             # check if this is a RM capable dataset (so it has multiple answers to the same question)
@@ -127,20 +140,33 @@ class DatasetEntry(BaseModel):
                 answers = self.answers
 
             for q, a in zip_longest(self.questions, answers):
-                if q is None or q.content is None:
+                if q is None or q.text is None:
                     raise ValueError("Received answer without corresponding question.")
-                if a is None or a.content is None:
+                if a is None or a.text is None:
                     raise ValueError("Received question without corresponding answer.")
 
-                system_tag = a.system_tag(eos_token=eos_token) or ""
+                system_tag = a.system_tag(
+                    eos_token=eos_token,
+                    enabled=use_system_tag,
+                    property_dropout=system_property_dropout,
+                )
                 qa_list.extend(
                     [
-                        f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}",
-                        f"{QA_SPECIAL_TOKENS['Answer']}{a.content}{eos_token}",
+                        f"{QA_SPECIAL_TOKENS['Question']}{q.text}{eos_token}{system_tag}",
+                        f"{QA_SPECIAL_TOKENS['Answer']}{a.text}{eos_token}",
                     ]
                 )
 
             return qa_list
+
+        # TODO: These modes are not implemented yet
+
+        # elif mode == Mode.rl:
+
+        # elif mode == Mode.rm:
+
+        else:
+            raise RuntimeError(f"Unsupported mode: {mode}")
 
     @classmethod
     def from_strings(
@@ -152,13 +178,12 @@ class DatasetEntry(BaseModel):
         add_length: bool = True,
         property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA,
     ):
-        def length_indicator(s: str) -> int:
-            return len(re.findall(r"\w+", s)) // 5 + 1
-
         if isinstance(answers[0], list):
             answers = [
                 [
-                    Utterance(content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context)
+                    Utterance(
+                        text=a, length=Utterance.compute_length(a) if add_length else None, lang=lang, context=context
+                    )
                     for a in l
                 ]
                 for l in answers
@@ -166,13 +191,13 @@ class DatasetEntry(BaseModel):
         else:
             # todo: this does not yet support RM case
             answers = [
-                Utterance(content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context)
+                Utterance(
+                    text=a, length=Utterance.compute_length(a) if add_length else None, lang=lang, context=context
+                )
                 for a in answers
             ]
 
-        return cls(
-            questions=[Utterance(content=q) for q in questions], answers=answers, property_dropout=property_dropout
-        )
+        return cls(questions=[Utterance(text=q) for q in questions], answers=answers, property_dropout=property_dropout)
 
     @classmethod
     def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):

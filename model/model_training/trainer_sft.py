@@ -7,7 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
-#from model_training.custom_datasets.formatting import DatasetEntry
+
+# from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.efficiency_utils import fuse_gelu
 from model_training.utils.utils import (
@@ -330,6 +331,8 @@ def main():
         pad_to_multiple_of=16,
         use_system_prefix=training_conf.use_system_prefix,
         system_prefix=training_conf.system_prefix,
+        use_system_tag=training_conf.use_system_tag,
+        system_property_dropout=training_conf.system_property_dropout,
     )
 
     if training_conf.val_max_length is None:
@@ -343,6 +346,8 @@ def main():
         samples_mixing=False,
         use_system_prefix=training_conf.use_system_prefix,
         system_prefix=training_conf.system_prefix,
+        use_system_tag=training_conf.use_system_tag,
+        system_property_dropout=training_conf.system_property_dropout,
     )
 
     train, evals = get_dataset(training_conf)

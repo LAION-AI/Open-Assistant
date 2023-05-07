@@ -33,6 +33,8 @@ class DialogueDataCollator:
     label_masking: bool = True
     use_system_prefix: bool = False
     system_prefix: str = None
+    use_system_tag: bool = False
+    system_property_dropout: float = 0.5
 
     def __post_init__(self):
         assert self.tokenizer.eos_token
@@ -57,7 +59,12 @@ class DialogueDataCollator:
 
         pretrain_dataset = False
         if isinstance(messages, DatasetEntry):
-            messages = messages.get_formatted(mode=Mode.sft, eos_token=self.tokenizer.eos_token)
+            messages = messages.get_formatted(
+                mode=Mode.sft,
+                eos_token=self.tokenizer.eos_token,
+                use_system_tag=self.use_system_tag,
+                system_property_dropout=self.system_property_dropout,
+            )
         elif isinstance(messages, PretrainDatasetEntry):
             messages = messages.text
             pretrain_dataset = True
