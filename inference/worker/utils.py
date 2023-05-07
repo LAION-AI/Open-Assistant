@@ -64,10 +64,10 @@ class TokenBuffer:
             yield from self.tokens
 
 
-def add_prefix_to_prompt(prompt: str):
+def add_prefix_if_not_present(prompt: str):
     if V2_PROMPTER_PREFIX not in prompt:
-        new_prompt = V2_PROMPTER_PREFIX + prompt
-    return new_prompt
+        return V2_PROMPTER_PREFIX + prompt
+    return prompt
 
 
 def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
@@ -93,9 +93,6 @@ def truncate_prompt(
     if len(ids) > max_input_length:
         logger.debug(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
-        with shared_tokenizer_lock:
-            prompt = tokenizer.decode(ids)
-            prompt = add_prefix_to_prompt(prompt)
 
     input_length = len(ids)
     spare = max_total_tokens - input_length - 1
@@ -104,6 +101,10 @@ def truncate_prompt(
     elif parameters.max_new_tokens > spare:
         logger.debug(f"Max new tokens too high, reducing to {spare}")
         parameters.max_new_tokens = spare
+
+    with shared_tokenizer_lock:
+        prompt = tokenizer.decode(ids)
+        prompt = add_prefix_if_not_present(prompt)
     return prompt
 
 
@@ -117,7 +118,7 @@ def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
             if time.time() > time_limit:
                 raise
             sleep_duration = random.uniform(0, 10)
-            logger.debug(f"Inference server not ready. Retrying in {sleep_duration:.2f} seconds")
+            logger.warning(f"Inference server not ready. Retrying in {sleep_duration:.2f} seconds")
             time.sleep(sleep_duration)
         else:
             logger.info("Inference server is ready")
