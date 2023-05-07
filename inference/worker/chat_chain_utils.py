@@ -292,7 +292,8 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
         tool = Tool(
-            name=endpoint.operation_id,  # Could be path, e.g /api/v1/endpoint
+            name=endpoint.operation_id,
+            # Could be path, e.g /api/v1/endpoint
             # but it can lead LLM to makeup some URLs
             # and problem with EP description is that
             # it can be too long for some plugins

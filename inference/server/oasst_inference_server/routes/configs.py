@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import aiohttp
 import fastapi
@@ -122,7 +123,7 @@ async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> infe
 
                     if response.status == 200:
                         if "application/json" in content_type or url.endswith(".json"):
-                            config = await response.json()
+                            config = json.loads(await response.text())
                         elif (
                             "application/yaml" in content_type
                             or "application/x-yaml" in content_type
