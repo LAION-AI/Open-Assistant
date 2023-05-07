@@ -3,7 +3,7 @@ import { SamplingParameters } from "src/types/Chat";
 
 const CHAT_CONFIG_KEY = "CHAT_CONFIG_V2";
 
-export type CustomPreset = { name: string; config: SamplingParameters }
+export type CustomPreset = { name: string; config: SamplingParameters };
 
 export type CachedChatConfig = {
   model_config_name: string;
