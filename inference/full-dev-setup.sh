@@ -13,7 +13,7 @@ else
     INFERENCE_TAG=latest
 fi
 
-POSTGRES_PORT=${POSTGRES_PORT:-5432}
+POSTGRES_PORT=${POSTGRES_PORT:-5732}
 
 # Creates a tmux window with splits for the individual services
 

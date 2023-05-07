@@ -14,14 +14,14 @@ const rootProps = {
 export const InferencePoweredBy = () => {
   return (
     <Flex direction="column" justifyContent="center" borderTopWidth="1px" p="2">
+      <Flex justifyContent="center" pb="2" fontSize="sm" color="gray.500">
+        Sponsored By
+      </Flex>
       {sponsors.map((id) => (
         <Fragment key={id}>
           <TeamMember {...data.people[id]} rootProps={rootProps}></TeamMember>
         </Fragment>
       ))}
-      <Flex justifyContent="center" pb="2" fontSize="sm" color="gray.500">
-        Sponsored By
-      </Flex>
     </Flex>
   );
 };

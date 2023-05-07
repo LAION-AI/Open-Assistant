@@ -4,19 +4,18 @@ import { useTranslation } from "next-i18next";
 import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useFallbackRef } from "src/hooks/ui/useFallbackRef";
-import { QueueInfo } from "src/lib/chat_stream";
+
 import { ChatConfigDrawer } from "./ChatConfigMobile";
 import { ChatInputIconButton } from "./ChatInputIconButton";
 
 type ChatFormProps = {
   isSending: boolean;
   onSubmit: () => void;
-  queueInfo: QueueInfo | null;
 };
 
 // eslint-disable-next-line react/display-name
 export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, forwardedRef) => {
-  const { isSending, onSubmit: onSubmit, queueInfo } = props;
+  const { isSending, onSubmit: onSubmit } = props;
   const { t } = useTranslation("chat");
   const handleSubmit = useCallback(
     (e: SyntheticEvent) => {

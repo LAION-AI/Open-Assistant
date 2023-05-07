@@ -25,5 +25,15 @@
   "you_are_logged_in": "Sie sind am Chatservice angemeldet",
   "your_chats": "Ihre Chats",
   "input_placeholder": "Frag den Assistenten irgendetwas",
-  "warning": "Dieser Assistent ist eine Demoversion ohne Internetzugang. Es können falsche oder irreführende Informationen generiert werden. Es ist nicht für wichtige Anwendungsfälle oder zur Beratung geeignet."
+  "warning": "Dieser Assistent ist eine Demoversion ohne Internetzugang. Es können falsche oder irreführende Informationen generiert werden. Es ist nicht für wichtige Anwendungsfälle oder zur Beratung geeignet.",
+  "plugins": "Plugins",
+  "edit_plugin": "Plugin bearbeiten",
+  "add_plugin": "Plugin hinzufügen",
+  "remove_plugin": "Plugin löschen",
+  "save": "Speichern",
+  "used": "Benutzt",
+  "unverified_plugin": "UNVERIFIZIERT",
+  "verified_plugin": "VERIFVERIFIZIERTIED",
+  "unverified_plugin_description": "Dieses Plugin wurde nicht vom Open Assistant-Team verifiziert. Benutzung auf eigene Gefahr.",
+  "verified_plugin_description": "Dieses Plugin wurde vom Open Assistant-Team verifiziert."
 }

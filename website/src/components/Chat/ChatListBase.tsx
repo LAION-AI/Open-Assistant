@@ -44,7 +44,7 @@ export const ChatListBase = memo(function ChatListBase({
     [mutateChatResponses]
   );
 
-  const handleHide = useCallback(
+  const removeItemFromList = useCallback(
     ({ chatId }: { chatId: string }) => {
       mutateChatResponses(
         (chatResponses) => [
@@ -98,7 +98,13 @@ export const ChatListBase = memo(function ChatListBase({
         }}
       >
         {chats.map((chat) => (
-          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle} onHide={handleHide} />
+          <ChatListItem
+            key={chat.id}
+            chat={chat}
+            onUpdateTitle={handleUpdateTitle}
+            onHide={removeItemFromList}
+            onDelete={removeItemFromList}
+          />
         ))}
         <div ref={loadMoreRef} />
       </SimpleBar>
