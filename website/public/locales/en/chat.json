@@ -45,5 +45,6 @@
   "your_chats": "Your Chats",
   "save_preset": "Save this preset",
   "preset_exists_error": "A preset with this name already exists",
-  "preset_name_placeholder": "Enter name"
+  "preset_name_placeholder": "Enter name",
+  "feedback_message": "Thoughts? Let us know!"
 }
