@@ -1,6 +1,5 @@
 import { CursorPaginationState } from "src/components/DataTable/useCursorPagination";
 import { TaskType } from "src/types/Task";
-import { PluginEntry } from "src/types/Chat";
 
 export type RouteQuery = Record<string, string | number | boolean | undefined>;
 
@@ -61,9 +60,7 @@ export const API_ROUTES = {
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",
-  UPDATE_CHAT: (id: string) => `/api/chat`,
-  UPDATE_CHAT_TITLE: (id: string) => `/api/chat/title`,
-  HIDE_CHAT: (id: string) => `/api/chat/hide`,
+  UPDATE_CHAT: () => `/api/chat`,
   GET_PLUGIN_CONFIG: `/api/chat/plugin_config`,
   DELETE_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
 };
