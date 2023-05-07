@@ -3,22 +3,18 @@ import "simplebar-react/dist/simplebar.min.css";
 import { Box, CardProps, Flex } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import SimpleBar from "simplebar-react";
-import { useBoolean } from "usehooks-ts";
 
-import { ChatHiddenSwitch } from "./ChatHiddenSwitch";
 import { ChatListItem } from "./ChatListItem";
+import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
-import { useListChatPagination } from "./useListChatPagination";
+import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
 
-export const ChatListBase = memo(function ChatListBase({
-  allowHiddenChats,
-  ...props
-}: CardProps & { allowHiddenChats?: boolean }) {
-  const { value: includeHidden, setValue: setIncludeHidden } = useBoolean(false);
-  const { loadMoreRef, responses, mutateChatResponses } = useListChatPagination(includeHidden);
+export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }: CardProps & { allowViews?: boolean }) {
+  const [view, setView] = useState<ChatListViewSelection>("visible");
+  const { loadMoreRef, responses, mutateChatResponses } = useListChatPagination(view);
   const chats = responses?.flatMap((response) => response.chats) || [];
 
   const { t } = useTranslation(["common", "chat"]);
@@ -80,9 +76,8 @@ export const ChatListBase = memo(function ChatListBase({
       }}
       {...props}
     >
-      <Flex>
+      <Flex flexDirection={["column", "row"]} alignItems="stretch" rowGap="1.5">
         <CreateChatButton
-          py="5"
           leftIcon={<Plus size="16px" />}
           variant="outline"
           justifyContent="start"
@@ -94,7 +89,13 @@ export const ChatListBase = memo(function ChatListBase({
         >
           {t("create_chat")}
         </CreateChatButton>
-        {allowHiddenChats && <ChatHiddenSwitch onChange={setIncludeHidden} value={includeHidden} />}
+        {allowViews && (
+          <ChatViewSelection
+            mx="3"
+            w="max-content"
+            onChange={(e) => setView(e.target.value as ChatListViewSelection)}
+          />
+        )}
       </Flex>
       <SimpleBar
         style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}

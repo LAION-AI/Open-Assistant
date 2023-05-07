@@ -4,7 +4,9 @@ import { API_ROUTES } from "src/lib/routes";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWRInfinite from "swr/infinite";
 
-export function useListChatPagination(includeHidden: boolean) {
+export type ChatListViewSelection = "visible" | "visible_hidden";
+
+export function useListChatPagination(view: ChatListViewSelection) {
   const {
     data: responses,
     mutate: mutateChatResponses,
@@ -12,7 +14,7 @@ export function useListChatPagination(includeHidden: boolean) {
     isLoading,
   } = useSWRInfinite<GetChatsResponse>(
     (pageIndex, previousPageData: GetChatsResponse) => {
-      const params = { include_hidden: includeHidden };
+      const params = { include_hidden: view === "visible_hidden" };
       if (!previousPageData && pageIndex === 0) return API_ROUTES.LIST_CHAT_WITH_PARMS(params); // initial call
       if (previousPageData && !previousPageData.next) return null; // reached the end
       return API_ROUTES.LIST_CHAT_WITH_PARMS({ ...params, after: previousPageData.next }); // paginated call
