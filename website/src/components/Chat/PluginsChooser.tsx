@@ -130,8 +130,8 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
             </Box>
           )}
         </MenuButton>
-        <Box position="fixed" zIndex="1">
-          <MenuList left="-150px" position="absolute" w="280px">
+        <Box position="fixed" zIndex="2">
+          <MenuList left="-150px" position="absolute" w="280px" h="400px" overflowY="auto">
             <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
               {plugins?.map((plugin, index) => (
                 <MenuItem key={index}>

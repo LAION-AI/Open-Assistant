@@ -164,7 +164,7 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
 def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
     for tool in tools:
         # This should become stricter and stricter as we get better models
-        if similarity(tool.name, tool_name) > 0.75 or tool.name in tool_name:
+        if tool.name in tool_name or similarity(tool.name, tool_name) > 0.75:
             # check if tool_input is valid json, and if not, try to fix it
             tool_input = prepare_json(tool_input)
             return tool.func(tool_input)

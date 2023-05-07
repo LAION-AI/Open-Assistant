@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urlparse, urlsplit
+from urllib.parse import urlsplit
 
 import requests
 import yaml
@@ -67,7 +67,7 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     # check if url has www or http and if not, add base url + url
     # but delete everything from plugin_url after last slash
     # if last char is slash, first delete it and then find last slash
-    parsed_link = urlparse(plugin_url)
+    parsed_link = urlsplit(plugin_url)
     base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
     api_url = api_url if api_url.startswith("http") else f"{base_of_url}/{api_url}"
     openapi_dict = fetch_openapi_spec(api_url)
