@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
-from oasst_backend.models import ApiClient, MessageTreeState
+from oasst_backend.models import ApiClient, Message, MessageTreeState
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.schemas.message_tree import MessageTreeStateResponse
 from oasst_backend.tree_manager import TreeManager
@@ -354,3 +354,21 @@ def post_message_emoji(
         return pr.handle_message_emoji(message_id, request.op, request.emoji)
 
     return utils.prepare_message(emoji_tx())
+
+
+@router.get("/search", response_model=list[protocol.Message])
+def search_messages(
+    *,
+    query: str,
+    lang: str,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_api_client),
+):
+    """Perform text search over messages in given language."""
+
+    @managed_tx_function(CommitMode.READONLY)
+    def search_tx(session: deps.Session) -> list[Message]:
+        pr = PromptRepository(session, api_client, frontend_user=frontend_user)
+        return pr.search_messages(query, lang)
+
+    return utils.prepare_message_list(search_tx())
