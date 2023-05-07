@@ -22,11 +22,11 @@ api.interceptors.response.use(
   (error) => {
     const err = error?.response?.data;
     throw new OasstError({
-      message: err?.message || "",
+      message: err?.message ?? error.response.data ?? "",
       errorCode: err?.errorCode,
-      httpStatusCode: error?.response?.httpStatusCode || -1,
-      method: err?.config?.method,
-      path: err?.config?.url,
+      httpStatusCode: error?.response?.httpStatusCode ?? error.response?.status ?? -1,
+      method: err?.config?.method ?? error.config?.method,
+      path: err?.config?.url ?? error.config?.url,
     });
   }
 );

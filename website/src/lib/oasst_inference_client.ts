@@ -57,8 +57,14 @@ export class OasstInferenceClient {
     }
   }
 
-  get_chat(chat_id: string): Promise<ChatItem> {
-    return this.request(`/chats/${chat_id}`);
+  async get_chat(chat_id: string): Promise<ChatItem | null> {
+    try {
+      return await this.request(`/chats/${chat_id}`);
+    } catch (err) {
+      if (err instanceof AxiosError && err.response.status === 404) {
+        return null;
+      }
+    }
   }
 
   get_message(chat_id: string, message_id: string): Promise<InferenceMessage> {

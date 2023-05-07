@@ -30,9 +30,8 @@ const handler = withoutRole("banned", async (req, res, token) => {
   } else if (req.method === "POST") {
     data = await client.create_chat();
   } else if (req.method === "DELETE") {
-    // TODO: re-activate later
-    // await client.delete_chat(req.query.chat_id as string);
-    data = {};
+    await client.delete_chat(req.query.chat_id as string);
+    return res.status(200).end();
   } else if (req.method === "PUT") {
     await client.update_chat(req.body);
     return res.status(200).end();
@@ -41,7 +40,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   if (data) {
     return res.status(200).json(data);
   }
-  res.status(400).end();
+  res.status(404).end();
 });
 
 export default handler;
