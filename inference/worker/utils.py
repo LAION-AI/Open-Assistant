@@ -64,12 +64,6 @@ class TokenBuffer:
             yield from self.tokens
 
 
-def add_prefix_if_not_present(prompt: str):
-    if V2_PROMPTER_PREFIX not in prompt:
-        return V2_PROMPTER_PREFIX + prompt
-    return prompt
-
-
 def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
     max_input_length = worker_config.model_config.max_input_length
     if plugin_used:
@@ -89,22 +83,27 @@ def truncate_prompt(
 
     max_input_length = get_max_input_length(worker_config, plugin_used)
 
-    max_total_tokens = worker_config.model_config.max_total_length
     if len(ids) > max_input_length:
         logger.debug(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
 
+        with shared_tokenizer_lock:
+            prompt = tokenizer.decode(ids)
+
+            if V2_PROMPTER_PREFIX not in prompt:
+                prompt = V2_PROMPTER_PREFIX + prompt
+                ids = tokenizer.encode(V2_PROMPTER_PREFIX) + ids
+
+    max_total_tokens = worker_config.model_config.max_total_length
     input_length = len(ids)
     spare = max_total_tokens - input_length - 1
+
     if not parameters.max_new_tokens:
         parameters.max_new_tokens = spare
     elif parameters.max_new_tokens > spare:
         logger.debug(f"Max new tokens too high, reducing to {spare}")
         parameters.max_new_tokens = spare
 
-    with shared_tokenizer_lock:
-        prompt = tokenizer.decode(ids)
-        prompt = add_prefix_if_not_present(prompt)
     return prompt
 
 
