@@ -4,6 +4,8 @@ import { useTranslation } from "next-i18next";
 import { KeyboardEvent, useCallback, useRef } from "react";
 import { CustomPreset } from "src/utils/chat";
 
+import { toCustomPresetName } from "./ChatConfigForm";
+
 export const SavePresetButton = ({
   customPresets,
   onSave,
@@ -21,7 +23,7 @@ export const SavePresetButton = ({
       return;
     }
 
-    const isExists = customPresets.findIndex((preset) => preset.name === name) !== -1;
+    const isExists = customPresets.findIndex((preset) => preset.name === toCustomPresetName(name)) !== -1;
 
     if (isExists) {
       toast({

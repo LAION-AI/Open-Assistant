@@ -73,6 +73,7 @@ const sliderItems: Readonly<
 const unKnownCustomPresetName = "__custom__";
 const customPresetNamePrefix = "$$";
 const isCustomPresetName = (name: string) => name.startsWith(customPresetNamePrefix);
+export const toCustomPresetName = (name: string) => `${customPresetNamePrefix}${name}`;
 
 const parameterLabel: Record<keyof SamplingParameters, string> = {
   max_new_tokens: "Max new tokens",
@@ -111,7 +112,6 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   });
 
   const { hyrated, plugins, setPlugins } = useHydrateChatConfig({
-    customPresets,
     setCustomPresets,
     setSelectedPresetName,
   });
@@ -216,11 +216,9 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 const useHydrateChatConfig = ({
   setSelectedPresetName,
   setCustomPresets,
-  customPresets,
 }: {
   setSelectedPresetName: (preset: string) => void;
   setCustomPresets: (presets: CustomPreset[]) => void;
-  customPresets: CustomPreset[];
 }) => {
   const { modelInfos, builtInPlugins } = useChatInitialData();
   const hyrated = useRef(false);
