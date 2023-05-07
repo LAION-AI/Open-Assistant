@@ -43,5 +43,6 @@
   "visible_hidden": "Visible & hidden",
   "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice.",
   "you_are_logged_in": "You are logged in to the chat service",
-  "your_chats": "Your Chats"
+  "your_chats": "Your Chats",
+  "feedback_message": "Thoughts? Let us know!"
 }
