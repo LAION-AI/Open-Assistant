@@ -1,13 +1,13 @@
-import { FormControl, FormLabel, Switch } from "@chakra-ui/react";
+import { FormControl, FormLabel, Switch, SwitchProps } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { ChangeEvent, useCallback } from "react";
 
-export const ChatHiddenSwitch = ({ onChange }) => {
+export const ChatHiddenSwitch = ({ onChange, value }: { onChange: (value: boolean) => void; value: boolean }) => {
   const { t } = useTranslation("chat");
 
   const onClick = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      onChange?.(event.target.checked);
+      onChange(event.target.checked);
     },
     [onChange]
   );
@@ -17,7 +17,7 @@ export const ChatHiddenSwitch = ({ onChange }) => {
       <FormLabel htmlFor="show-hidden-chats-switch" mb="0">
         {t("show_hidden")}
       </FormLabel>
-      <Switch id="show-hidden-chats-switch" onChange={onClick} />
+      <Switch id="show-hidden-chats-switch" isChecked={value} onChange={onClick} />
     </FormControl>
   );
 };

@@ -94,7 +94,7 @@ export const ChatListBase = memo(function ChatListBase({
         >
           {t("create_chat")}
         </CreateChatButton>
-        {allowHiddenChats && <ChatHiddenSwitch onChange={setIncludeHidden} />}
+        {allowHiddenChats && <ChatHiddenSwitch onChange={setIncludeHidden} value={includeHidden} />}
       </Flex>
       <SimpleBar
         style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
