@@ -167,7 +167,7 @@ def write_messages_to_file(
 async def fetch_eligible_chats(
     session_generator, filters: list[sqlalchemy.sql.elements.BinaryExpression]
 ) -> list[DbChat]:
-    """Fetch chats which are not opted out of data collection."""
+    """Fetch chats which are not opted out of data collection and match the given filters."""
     session: AsyncSession
     filters.append(DbChat.allow_data_use)
     async with session_generator() as session:
@@ -185,11 +185,12 @@ async def fetch_eligible_chats(
 def export_chats(
     session_generator,
     export_path: Path,
+    filters: list[sqlalchemy.sql.elements.BinaryExpression],
     use_compression: bool = True,
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
 ) -> None:
-    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator))
+    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator, filters))
     anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
@@ -270,10 +271,12 @@ def main():
     args = parse_args()
 
     export_path = Path(args.export_file) if args.export_file else None
+    filters = create_filters(args)
 
     export_chats(
         deps.manual_create_session,
         export_path,
+        filters,
         use_compression=not args.no_compression,
         write_trees=not args.write_flat,
         anonymizer_seed=args.anonymizer_seed,
