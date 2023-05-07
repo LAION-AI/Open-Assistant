@@ -51,10 +51,7 @@ export const ChatListItem = ({
 
   useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
 
-  const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
-    API_ROUTES.UPDATE_CHAT(),
-    put
-  );
+  const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
   const handleConfirmEdit = useCallback(async () => {
     const title = inputRef.current?.value.trim();
     if (!title) return;
