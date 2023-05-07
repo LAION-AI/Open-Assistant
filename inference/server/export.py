@@ -164,13 +164,16 @@ def write_messages_to_file(
                     f.write("\n")
 
 
-async def fetch_eligible_chats(session_generator) -> list[DbChat]:
+async def fetch_eligible_chats(
+    session_generator, filters: list[sqlalchemy.sql.elements.BinaryExpression]
+) -> list[DbChat]:
     """Fetch chats which are not opted out of data collection."""
     session: AsyncSession
+    filters.append(DbChat.allow_data_use)
     async with session_generator() as session:
         query = (
             sqlmodel.select(DbChat)
-            .filter(DbChat.allow_data_use)
+            .filter(*filters)
             .options(
                 sqlalchemy.orm.joinedload("*"),
             )
@@ -245,8 +248,22 @@ def parse_args() -> argparse.Namespace:
         help="Only export this chat.",
     )
 
-    # TODO: filters: reported, score, user ID, chat ID, etc
+    # TODO: filters: reported, score, etc
     return parser.parse_args()
+
+
+def create_filters(args: argparse.Namespace) -> list[sqlalchemy.sql.elements.BinaryExpression]:
+    filters = []
+
+    if args.from_date:
+        filters.append(DbChat.created_at >= args.from_date)
+    if args.to_date:
+        filters.append(DbChat.created_at <= args.to_date)
+    if args.user_id:
+        filters.append(DbChat.user_id == args.user_id)
+    if args.chat_id:
+        filters.append(DbChat.id == args.chat_id)
+    return filters
 
 
 def main():
