@@ -1,7 +1,11 @@
 import {
+  Box,
+  Button,
   Flex,
   FormControl,
   FormLabel,
+  IconButton,
+  Input,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -15,13 +19,16 @@ import {
   Stack,
   Switch,
   Tooltip,
+  useBoolean,
+  useToast,
 } from "@chakra-ui/react";
+import { Check, X } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, KeyboardEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { ChatConfigFormData, ModelParameterConfig, PluginEntry, SamplingParameters } from "src/types/Chat";
-import { getConfigCache } from "src/utils/chat";
+import { CustomPreset, getConfigCache } from "src/utils/chat";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 import { ChatConfigSaver } from "./ChatConfigSaver";
@@ -68,7 +75,8 @@ const sliderItems: Readonly<
   },
 ];
 
-const customPresetName = "__custom__";
+const unKnownCustomPresetName = "__custom__";
+const customPresetNamePrefix = "$$";
 
 const parameterLabel: Record<keyof SamplingParameters, string> = {
   max_new_tokens: "Max new tokens",
@@ -80,7 +88,9 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
 };
 
 const findPresetName = (presets: ModelParameterConfig[], config: SamplingParameters) => {
-  return presets.find((preset) => areParametersEqual(preset.sampling_parameters, config))?.name ?? customPresetName;
+  return (
+    presets.find((preset) => areParametersEqual(preset.sampling_parameters, config))?.name ?? unKnownCustomPresetName
+  );
 };
 
 const resetParameters = (setValue: UseFormSetValue<ChatConfigFormData>, params: SamplingParameters) => {
@@ -98,14 +108,16 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const selectedPlugins = getValues("plugins");
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
-  const { hyrated, plugins, setPlugins } = useHydrateChatConfig({ setSelectedPresetName });
+  const { hyrated, plugins, setPlugins, customPresets, setCustomPresets } = useHydrateChatConfig({
+    setSelectedPresetName,
+  });
 
   const [lockPresetSelection, setLockPresetSelection] = useState(false);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
-      if (newPresetName !== customPresetName) {
+      if (newPresetName !== unKnownCustomPresetName) {
         const config = presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
         resetParameters(setValue, config);
       }
@@ -125,56 +137,83 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
     }
   }, [presets, selectedPlugins, handlePresetChange, getValues]);
 
+  const handleSavePreset = useCallback(
+    (name: string) => {
+      const prefixedName = `${customPresetNamePrefix}${name}`;
+      setCustomPresets((prev) => [...prev, { name: prefixedName, config: getValues() }]);
+      setSelectedPresetName(prefixedName);
+    },
+    [getValues, setCustomPresets]
+  );
+
   return (
-    <SimpleBar
-      style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
-      classNames={{
-        contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
-      }}
-    >
-      <Stack gap="4" maxW="full">
-        <PluginsChooser plugins={plugins} setPlugins={setPlugins} />
-        <FormControl>
-          <FormLabel>{t("model")}</FormLabel>
-          <Select {...register("model_config_name")}>
-            {modelInfos.map(({ name }) => (
-              <option value={name} key={name}>
-                {name}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormLabel>{t("preset")}</FormLabel>
-          <Select value={selectedPresetName} onChange={handlePresetChange} isDisabled={lockPresetSelection}>
-            {presets.map(({ name }) => (
-              <option value={name} key={name}>
-                {name}
-              </option>
-            ))}
-            <option value={customPresetName}>{t("preset_custom")}</option>
-          </Select>
-        </FormControl>
-        {sliderItems.map((item) => (
-          <Controller
-            name={item.key}
-            key={item.key}
-            control={control}
-            render={({ field: { onChange, name } }) => (
-              <ChatParameterField
-                {...item}
-                value={getValues(name)} // need to call getValues here, react-hook-form not trigger rerender when call setValue manually
-                onChange={onChange}
-                name={name}
-                isDisabled={selectedPresetName !== customPresetName}
-                description={t(("parameter_description." + name) as any)}
-              />
-            )}
-          ></Controller>
-        ))}
-      </Stack>
-      <ChatConfigSaver plugins={plugins} hyrated={hyrated} selectedPresetName={selectedPresetName} />
-    </SimpleBar>
+    <>
+      <SimpleBar
+        style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
+        classNames={{
+          contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
+        }}
+      >
+        <Stack gap="4" maxW="full">
+          <PluginsChooser plugins={plugins} setPlugins={setPlugins} />
+          <FormControl>
+            <FormLabel>{t("model")}</FormLabel>
+            <Select {...register("model_config_name")}>
+              {modelInfos.map(({ name }) => (
+                <option value={name} key={name}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <FormLabel>{t("preset")}</FormLabel>
+            <Select value={selectedPresetName} onChange={handlePresetChange} isDisabled={lockPresetSelection}>
+              {presets.map(({ name }) => (
+                <option value={name} key={name}>
+                  {name}
+                </option>
+              ))}
+              {customPresets.map(({ name }) => (
+                <option value={name} key={name}>
+                  {name.slice(customPresetNamePrefix.length)}
+                </option>
+              ))}
+              <option value={unKnownCustomPresetName}>{t("preset_custom")}</option>
+            </Select>
+          </FormControl>
+          {sliderItems.map((item) => (
+            <Controller
+              name={item.key}
+              key={item.key}
+              control={control}
+              render={({ field: { onChange, name } }) => (
+                <ChatParameterField
+                  {...item}
+                  value={getValues(name)} // need to call getValues here, react-hook-form not trigger rerender when call setValue manually
+                  onChange={onChange}
+                  name={name}
+                  isDisabled={
+                    selectedPresetName !== unKnownCustomPresetName &&
+                    !selectedPresetName.startsWith(customPresetNamePrefix)
+                  }
+                  description={t(("parameter_description." + name) as any)}
+                />
+              )}
+            ></Controller>
+          ))}
+        </Stack>
+        <ChatConfigSaver
+          plugins={plugins}
+          hyrated={hyrated}
+          selectedPresetName={selectedPresetName}
+          customPresets={customPresets}
+        />
+      </SimpleBar>
+      {selectedPresetName === unKnownCustomPresetName && (
+        <SavePresetButton customPresets={customPresets} onSave={handleSavePreset} />
+      )}
+    </>
   );
 });
 
@@ -183,6 +222,7 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
   const hyrated = useRef(false);
   const { setValue } = useFormContext<ChatConfigFormData>();
   const [plugins, setPlugins] = useState<PluginEntry[]>(builtInPlugins);
+  const [customPresets, setCustomPresets] = useState<CustomPreset[]>([]);
 
   useIsomorphicLayoutEffect(() => {
     if (hyrated.current) return;
@@ -194,7 +234,8 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
       return;
     }
 
-    const { selectedPresetName, model_config_name, custom_preset_config, selectedPlugins, plugins } = cache;
+    const { selectedPresetName, model_config_name, custom_preset_config, selectedPlugins, plugins, custom_presets } =
+      cache;
     const model = modelInfos.find((model) => model.name === model_config_name);
 
     if (model) {
@@ -213,6 +254,10 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
       setPlugins([...builtInPlugins, ...dedupedCustomPlugins]);
     }
 
+    if (custom_presets) {
+      setCustomPresets(custom_presets);
+    }
+
     if (selectedPlugins && selectedPlugins.length > 0) {
       setValue("plugins", selectedPlugins);
       const preset = (model || modelInfos[0]).parameter_configs.find(
@@ -223,9 +268,15 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
       }
     } else {
       // only hydrate sampling params if there is no selected plugins
-      if (selectedPresetName === customPresetName) {
+      if (selectedPresetName === unKnownCustomPresetName) {
         resetParameters(setValue, custom_preset_config);
         setSelectedPresetName(selectedPresetName);
+      } else if (selectedPresetName.startsWith(customPresetNamePrefix)) {
+        const customPreset = customPresets.find((preset) => preset.name === selectedPresetName)?.config;
+        if (customPreset) {
+          resetParameters(setValue, customPreset);
+          setSelectedPresetName(selectedPresetName);
+        }
       } else {
         // built-in preset
         const preset = (model || modelInfos[0]).parameter_configs.find(
@@ -239,7 +290,7 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
     }
   }, [modelInfos]);
 
-  return { hyrated, plugins, setPlugins };
+  return { hyrated, plugins, setPlugins, customPresets, setCustomPresets };
 };
 
 type NumberInputSliderProps = {
@@ -323,3 +374,83 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
     </FormControl>
   );
 });
+
+const SavePresetButton = ({
+  customPresets,
+  onSave,
+}: {
+  customPresets: CustomPreset[];
+  onSave: (name: string) => void;
+}) => {
+  const [isSaving, setIsSaving] = useBoolean();
+  const { t } = useTranslation();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const handleSave = useCallback(() => {
+    const name = inputRef.current?.value.trim();
+    if (!name) {
+      return;
+    }
+
+    const isExists = customPresets.findIndex((preset) => preset.name === name) !== -1;
+
+    if (isExists) {
+      toast({
+        title: t("chat:preset_exists"),
+        status: "error",
+      });
+    } else {
+      onSave(name);
+      setIsSaving.off();
+    }
+  }, [customPresets, onSave, setIsSaving, t, toast]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsSaving.off();
+      }
+      if (e.key === "Enter") {
+        handleSave();
+      }
+    },
+    [handleSave, setIsSaving]
+  );
+
+  return (
+    <Box pe="4" position="relative">
+      {!isSaving ? (
+        <Button onClick={setIsSaving.on} py="3" variant="outline" colorScheme="blue" w="full">
+          {t("chat:save_preset")}
+        </Button>
+      ) : (
+        <>
+          <Input
+            py="3"
+            pe="56px"
+            ref={inputRef}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            placeholder={t("chat:preset_name_placeholder")}
+          ></Input>
+          <Flex position="absolute" top="2" className="ltr:right-6 rtl:left-6" gap="1" zIndex="10">
+            <IconButton
+              size="xs"
+              variant="ghost"
+              icon={<Check size="16px" />}
+              aria-label={t("save")}
+              onClick={handleSave}
+            ></IconButton>
+            <IconButton
+              size="xs"
+              variant="ghost"
+              icon={<X size="16px" />}
+              aria-label={t("cancel")}
+              onClick={setIsSaving.off}
+            ></IconButton>
+          </Flex>
+        </>
+      )}
+    </Box>
+  );
+};

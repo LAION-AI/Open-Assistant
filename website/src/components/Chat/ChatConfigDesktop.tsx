@@ -13,6 +13,7 @@ export const ChatConfigDesktop = memo(function ChatConfigDesktop({ children }: {
       minH="0"
       flexDirection="column"
       minW="270px"
+      maxW="270px"
       display={{ base: "none", xl: "flex" }}
       _dark={{
         bg: "blackAlpha.400",
