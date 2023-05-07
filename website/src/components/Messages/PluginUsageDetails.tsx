@@ -1,9 +1,7 @@
-import React, { useState, lazy, useRef } from "react";
-import { Box, Button, Tooltip, Collapse, VStack, HStack, Code, Text, useColorModeValue } from "@chakra-ui/react";
-import { ChevronDownIcon, ChevronUpIcon, AttachmentIcon, WarningIcon, CheckCircleIcon } from "@chakra-ui/icons";
+import { AttachmentIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, WarningIcon } from "@chakra-ui/icons";
+import { Box, Button, Collapse, HStack, Text, Tooltip, useColorModeValue, VStack } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-
-const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
+import React, { useRef, useState } from "react";
 
 // TODO: Delete me!
 const measureDivWidth = (div: HTMLDivElement | null) => {
@@ -19,6 +17,7 @@ const DropdownItem = ({ plugin }) => {
   const [finalPromptCollapser, setFinalPromptCollapser] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const { t } = useTranslation("chat");
+  const { t: tCommon } = useTranslation();
   const divRef = useRef<HTMLDivElement | null>(null);
 
   return (
@@ -27,7 +26,7 @@ const DropdownItem = ({ plugin }) => {
         <HStack spacing={2}>
           <Text>
             <Box as="b" fontWeight="normal">
-              {t("used")}
+              {tCommon("used")}
             </Box>
             <Box as="b" fontWeight="bold">
               {` ${plugin.name}`}
@@ -137,7 +136,7 @@ const DropdownItem = ({ plugin }) => {
 export const PluginUsageDetails = ({ usedPlugin }) => {
   if (
     !usedPlugin ||
-    (!usedPlugin?.execution_details?.final_generation_assisted && usedPlugin?.execution_details?.status == "success")
+    (!usedPlugin?.execution_details?.final_generation_assisted && usedPlugin?.execution_details?.status === "success")
   )
     return;
   return (
