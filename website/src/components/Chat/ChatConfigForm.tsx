@@ -308,7 +308,7 @@ const useCustomPresets = ({
 
   const handleSavePreset = useCallback(
     (name: string) => {
-      const prefixedName = `${customPresetNamePrefix}${name}`;
+      const prefixedName = toCustomPresetName(name);
       setCustomPresets((prev) => [...prev, { name: prefixedName, config: getValues() }]);
       setSelectedPresetName(prefixedName);
     },
