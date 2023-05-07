@@ -26,6 +26,7 @@ import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatInitialData } from "./ChatInitialDataContext";
+import { DeletePresetButton } from "./DeletePresetButton";
 import { PluginsChooser } from "./PluginsChooser";
 import { SavePresetButton } from "./SavePresetButton";
 import { areParametersEqual } from "./WorkParameters";
@@ -71,6 +72,7 @@ const sliderItems: Readonly<
 
 const unKnownCustomPresetName = "__custom__";
 const customPresetNamePrefix = "$$";
+const isCustomPresetName = (name: string) => name.startsWith(customPresetNamePrefix);
 
 const parameterLabel: Record<keyof SamplingParameters, string> = {
   max_new_tokens: "Max new tokens",
@@ -102,10 +104,8 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const selectedPlugins = getValues("plugins");
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
-  const isCustomPresetName = selectedPresetName.startsWith(customPresetNamePrefix);
-  
-  const { customPresets, handleSavePreset, setCustomPresets } = useCustomPresets({
-    isCustomPresetName,
+
+  const { customPresets, handleSavePreset, setCustomPresets, handleDeletePreset } = useCustomPresets({
     selectedPresetName,
     setSelectedPresetName,
   });
@@ -122,12 +122,15 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
       if (newPresetName !== unKnownCustomPresetName) {
-        const config = presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
+        const config = isCustomPresetName(newPresetName)
+          ? customPresets.find((preset) => preset.name === newPresetName)!.config
+          : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
+
         resetParameters(setValue, config);
       }
       setSelectedPresetName(newPresetName);
     },
-    [presets, setValue]
+    [customPresets, presets, setValue]
   );
 
   // Lock preset selection if any plugin is enabled
@@ -188,10 +191,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
                   value={getValues(name)} // need to call getValues here, react-hook-form not trigger rerender when call setValue manually
                   onChange={onChange}
                   name={name}
-                  isDisabled={
-                    selectedPresetName !== unKnownCustomPresetName &&
-                    !selectedPresetName.startsWith(customPresetNamePrefix)
-                  }
+                  isDisabled={selectedPresetName !== unKnownCustomPresetName && !isCustomPresetName(selectedPresetName)}
                   description={t(("parameter_description." + name) as any)}
                 />
               )}
@@ -208,6 +208,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       {selectedPresetName === unKnownCustomPresetName && (
         <SavePresetButton customPresets={customPresets} onSave={handleSavePreset} />
       )}
+      {isCustomPresetName(selectedPresetName) && <DeletePresetButton onClick={handleDeletePreset}></DeletePresetButton>}
     </>
   );
 });
@@ -273,7 +274,7 @@ const useHydrateChatConfig = ({
       if (selectedPresetName === unKnownCustomPresetName) {
         resetParameters(setValue, custom_preset_config);
         setSelectedPresetName(selectedPresetName);
-      } else if (selectedPresetName.startsWith(customPresetNamePrefix)) {
+      } else if (isCustomPresetName(selectedPresetName)) {
         const customPreset = customPresets.find((preset) => preset.name === selectedPresetName)?.config;
         if (customPreset) {
           resetParameters(setValue, customPreset);
@@ -296,11 +297,9 @@ const useHydrateChatConfig = ({
 };
 
 const useCustomPresets = ({
-  isCustomPresetName,
   selectedPresetName,
   setSelectedPresetName,
 }: {
-  isCustomPresetName: boolean;
   selectedPresetName: string;
   setSelectedPresetName: (preset: string) => void;
 }) => {
@@ -321,19 +320,25 @@ const useCustomPresets = ({
   // sync with local state
   useEffect(() => {
     const { model_config_name: _, plugins: __, ...preset_config } = config;
-    if (isCustomPresetName) {
+    if (isCustomPresetName(selectedPresetName)) {
       setCustomPresets((prev) =>
         prev.map((preset) =>
           preset.name === selectedPresetName ? { name: selectedPresetName, config: preset_config } : preset
         )
       );
     }
-  }, [config, customPresets, isCustomPresetName, selectedPresetName, setCustomPresets, setValue]);
+  }, [config, customPresets, selectedPresetName, setCustomPresets, setValue]);
+
+  const handleDeletePreset = useCallback(() => {
+    setCustomPresets((prev) => prev.filter((preset) => preset.name !== selectedPresetName));
+    setSelectedPresetName(unKnownCustomPresetName);
+  }, [selectedPresetName, setSelectedPresetName]);
 
   return {
     customPresets,
     setCustomPresets,
     handleSavePreset,
+    handleDeletePreset,
   };
 };
 
