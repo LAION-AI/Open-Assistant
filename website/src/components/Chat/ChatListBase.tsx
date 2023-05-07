@@ -76,31 +76,26 @@ export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }:
       }}
       {...props}
     >
-      <Flex flexDirection={["column", "row"]} alignItems="stretch" rowGap="1.5">
+      <Flex flexDirection={["column", "row"]} alignItems="stretch" p="2" gap="3">
         <CreateChatButton
           leftIcon={<Plus size="16px" />}
           variant="outline"
           justifyContent="start"
           colorScheme="blue"
           borderRadius="lg"
-          mx="3"
           onUpdated={handleCreateChat}
           flexGrow="1"
         >
           {t("create_chat")}
         </CreateChatButton>
         {allowViews && (
-          <ChatViewSelection
-            mx="3"
-            w="max-content"
-            onChange={(e) => setView(e.target.value as ChatListViewSelection)}
-          />
+          <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
         )}
       </Flex>
       <SimpleBar
-        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
+        style={{ padding: "8px", maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
-          contentEl: "space-y-2 mx-3 flex flex-col overflow-y-auto",
+          contentEl: "space-y-2 flex flex-col overflow-y-auto",
         }}
       >
         {chats.map((chat) => (
