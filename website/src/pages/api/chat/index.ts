@@ -25,6 +25,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
       if (req.query.after) {
         params["after"] = req.query.after as string;
       }
+      if (req.query.include_hidden) {
+        params.include_hidden = req.query.include_hidden as string;
+      }
       data = await client.get_my_chats(params);
     }
   } else if (req.method === "POST") {

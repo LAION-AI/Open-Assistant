@@ -13,6 +13,7 @@
   "max_new_tokens": "Max new tokens",
   "model": "Model",
   "more_actions": "More Actions",
+  "only_visible": "Only visible",
   "parameter_description": {
     "max_new_tokens": "Max new tokens: This parameter tells the model how many new tokens it should generate at most for the response.",
     "repetition_penalty": "Repetition Penalty: This parameter reduces the probability of repeating the same tokens again and again by making repeated tokens less likely than the model would ordinarily predict.",
@@ -21,6 +22,7 @@
     "top_p": "Top-p (also known as nucleus) sampling: This method reduces the probability distribution to only look at the top-p percent of tokens. By discarding low probability tokens, it helps to bound the generation and prevent the model from generating grammatically incorrect sentences.",
     "typical_p": "Typical p: Typical sampling is an information-theoretic technique that, in addition to the probability, also considers the sequence entropy (i.e., the information content according to the probability). This means that typical sampling \"overweights\" some of the tokens with lower probability because they are deemed \"interesting,\" and underweights high probability tokens because they are deemed \"boring.\""
   },
+  "plugin_url_placeholder": "Enter plugin URL",
   "plugins": "Plugins",
   "preset": "Preset",
   "preset_custom": "Custom",
@@ -37,6 +39,8 @@
   "used": "Used",
   "verified_plugin": "VERIFIED",
   "verified_plugin_description": "This plugin has been verified by the Open Assistant team.",
+  "view_plugin": "View Plugin",
+  "visible_hidden": "Visible & hidden",
   "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice.",
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your Chats"

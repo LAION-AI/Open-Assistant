@@ -13,7 +13,7 @@ from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.sessions import SessionMiddleware
 
-app = fastapi.FastAPI()
+app = fastapi.FastAPI(title=settings.PROJECT_NAME)
 
 
 # Allow CORS
