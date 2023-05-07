@@ -1,11 +1,7 @@
 import {
-  Box,
-  Button,
   Flex,
   FormControl,
   FormLabel,
-  IconButton,
-  Input,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -19,12 +15,9 @@ import {
   Stack,
   Switch,
   Tooltip,
-  useBoolean,
-  useToast,
 } from "@chakra-ui/react";
-import { Check, X } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, KeyboardEvent, memo, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { ChatConfigFormData, ModelParameterConfig, PluginEntry, SamplingParameters } from "src/types/Chat";
@@ -34,6 +27,7 @@ import { useIsomorphicLayoutEffect } from "usehooks-ts";
 import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatInitialData } from "./ChatInitialDataContext";
 import { PluginsChooser } from "./PluginsChooser";
+import { SavePresetButton } from "./SavePresetButton";
 import { areParametersEqual } from "./WorkParameters";
 
 const sliderItems: Readonly<
@@ -374,83 +368,3 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
     </FormControl>
   );
 });
-
-const SavePresetButton = ({
-  customPresets,
-  onSave,
-}: {
-  customPresets: CustomPreset[];
-  onSave: (name: string) => void;
-}) => {
-  const [isSaving, setIsSaving] = useBoolean();
-  const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const toast = useToast();
-  const handleSave = useCallback(() => {
-    const name = inputRef.current?.value.trim();
-    if (!name) {
-      return;
-    }
-
-    const isExists = customPresets.findIndex((preset) => preset.name === name) !== -1;
-
-    if (isExists) {
-      toast({
-        title: t("chat:preset_exists"),
-        status: "error",
-      });
-    } else {
-      onSave(name);
-      setIsSaving.off();
-    }
-  }, [customPresets, onSave, setIsSaving, t, toast]);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsSaving.off();
-      }
-      if (e.key === "Enter") {
-        handleSave();
-      }
-    },
-    [handleSave, setIsSaving]
-  );
-
-  return (
-    <Box pe="4" position="relative">
-      {!isSaving ? (
-        <Button onClick={setIsSaving.on} py="3" variant="outline" colorScheme="blue" w="full">
-          {t("chat:save_preset")}
-        </Button>
-      ) : (
-        <>
-          <Input
-            py="3"
-            pe="56px"
-            ref={inputRef}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            placeholder={t("chat:preset_name_placeholder")}
-          ></Input>
-          <Flex position="absolute" top="2" className="ltr:right-6 rtl:left-6" gap="1" zIndex="10">
-            <IconButton
-              size="xs"
-              variant="ghost"
-              icon={<Check size="16px" />}
-              aria-label={t("save")}
-              onClick={handleSave}
-            ></IconButton>
-            <IconButton
-              size="xs"
-              variant="ghost"
-              icon={<X size="16px" />}
-              aria-label={t("cancel")}
-              onClick={setIsSaving.off}
-            ></IconButton>
-          </Flex>
-        </>
-      )}
-    </Box>
-  );
-};
