@@ -22,10 +22,7 @@ export const ChatConfigSaver = ({
         model_config_name,
         plugins: plugins.filter((p) => !p.trusted), // only save non-trusted, custom plugins
         selectedPresetName,
-        custom_presets: customPresets.map((preset) =>
-          // update custom preset config
-          preset.name !== selectedPresetName ? preset : { name: preset.name, config: preset_config }
-        ),
+        custom_presets: customPresets,
         custom_preset_config: preset_config,
         selectedPlugins: selectedPlugins,
       };

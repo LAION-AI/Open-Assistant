@@ -102,7 +102,17 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const selectedPlugins = getValues("plugins");
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
-  const { hyrated, plugins, setPlugins, customPresets, setCustomPresets } = useHydrateChatConfig({
+  const isCustomPresetName = selectedPresetName.startsWith(customPresetNamePrefix);
+  
+  const { customPresets, handleSavePreset, setCustomPresets } = useCustomPresets({
+    isCustomPresetName,
+    selectedPresetName,
+    setSelectedPresetName,
+  });
+
+  const { hyrated, plugins, setPlugins } = useHydrateChatConfig({
+    customPresets,
+    setCustomPresets,
     setSelectedPresetName,
   });
 
@@ -130,15 +140,6 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       setLockPresetSelection(false);
     }
   }, [presets, selectedPlugins, handlePresetChange, getValues]);
-
-  const handleSavePreset = useCallback(
-    (name: string) => {
-      const prefixedName = `${customPresetNamePrefix}${name}`;
-      setCustomPresets((prev) => [...prev, { name: prefixedName, config: getValues() }]);
-      setSelectedPresetName(prefixedName);
-    },
-    [getValues, setCustomPresets]
-  );
 
   return (
     <>
@@ -211,12 +212,19 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   );
 });
 
-const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName: (preset: string) => void }) => {
+const useHydrateChatConfig = ({
+  setSelectedPresetName,
+  setCustomPresets,
+  customPresets,
+}: {
+  setSelectedPresetName: (preset: string) => void;
+  setCustomPresets: (presets: CustomPreset[]) => void;
+  customPresets: CustomPreset[];
+}) => {
   const { modelInfos, builtInPlugins } = useChatInitialData();
   const hyrated = useRef(false);
   const { setValue } = useFormContext<ChatConfigFormData>();
   const [plugins, setPlugins] = useState<PluginEntry[]>(builtInPlugins);
-  const [customPresets, setCustomPresets] = useState<CustomPreset[]>([]);
 
   useIsomorphicLayoutEffect(() => {
     if (hyrated.current) return;
@@ -284,7 +292,49 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
     }
   }, [modelInfos]);
 
-  return { hyrated, plugins, setPlugins, customPresets, setCustomPresets };
+  return { hyrated, plugins, setPlugins };
+};
+
+const useCustomPresets = ({
+  isCustomPresetName,
+  selectedPresetName,
+  setSelectedPresetName,
+}: {
+  isCustomPresetName: boolean;
+  selectedPresetName: string;
+  setSelectedPresetName: (preset: string) => void;
+}) => {
+  const { getValues, setValue } = useFormContext<ChatConfigFormData>();
+  const [customPresets, setCustomPresets] = useState<CustomPreset[]>([]);
+
+  const handleSavePreset = useCallback(
+    (name: string) => {
+      const prefixedName = `${customPresetNamePrefix}${name}`;
+      setCustomPresets((prev) => [...prev, { name: prefixedName, config: getValues() }]);
+      setSelectedPresetName(prefixedName);
+    },
+    [getValues, setSelectedPresetName]
+  );
+
+  const config = getValues();
+
+  // sync with local state
+  useEffect(() => {
+    const { model_config_name: _, plugins: __, ...preset_config } = config;
+    if (isCustomPresetName) {
+      setCustomPresets((prev) =>
+        prev.map((preset) =>
+          preset.name === selectedPresetName ? { name: selectedPresetName, config: preset_config } : preset
+        )
+      );
+    }
+  }, [config, customPresets, isCustomPresetName, selectedPresetName, setCustomPresets, setValue]);
+
+  return {
+    customPresets,
+    setCustomPresets,
+    handleSavePreset,
+  };
 };
 
 type NumberInputSliderProps = {
