@@ -22,3 +22,6 @@ backend/openapi.json
 .pytest_cache/
 
 /docker-compose.override.yml
+
+# JetBrains PyCharm:
+.idea/

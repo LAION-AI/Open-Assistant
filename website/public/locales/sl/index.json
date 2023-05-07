@@ -1,0 +1,26 @@
+{
+  "blurb": "Verjamemo, da lahko ustvarimo revolucijo.",
+  "blurb1": "Na isti način kot je Stable Diffusion pomagal svetu ustvarjati umetnost in slike na nove načine, si želimo izboljšati svet z izjemnim pogovornim AI.",
+  "description": "Pogovorni AI za vsakogar. Odprto kodni projekt za pogovore omogoča GPT LLM podprt s strani LAION in sodelavcev s celega sveta.",
+  "faq_items": {
+    "q0": "Kako daleč je ta projekt?",
+    "a0": "Smo v zgodnjih fazah razvoja, delamo z uporabo uveljavljenih raziskav RLHF in velikih jezikovnih modelov.",
+    "q1": "Kdo stoji za Open Assistant?",
+    "a1": "Open Assistant je preojekt organiziran s strani LAION in pozameznikov s celega sveta, ki so zainteresirani pri omogočanju te tehnologije za vsakogar.",
+    "q2": "Kakšno licenco uporablja Open Assistant?",
+    "a2": "Programska koda in modeli so licencirani z Apache 2.0 licenco.",
+    "q3": "Ali bodo trenirani podatki tudi izdani?",
+    "a3": "Da, z licenco CC BY 4.0.",
+    "q4": "Ali bo Open Assistant prost?",
+    "a4": "Da, Open Assistant bo prost za uporabo in spreminjanje.",
+    "q5": "Kakšna strojna oprema bo potrebna za uporabo modelov?",
+    "a5": "Na voljo bodo tudi verzije modelov, ki bodo uporabni na potrošniški strojni opremi."
+  },
+  "faq_title": "Pogosta vprašanja",
+  "help_us_improve": "Pomagajte nam pri izboljšavah",
+  "join_us_description": "Vsi odprto kodni projekti se začnejo z ljudmi kot ste vi. Odprta koda je prepričanje, da lahko vsi skupaj s sodelovanjem podarimo znanje in tehnologijo svetu za dobrobit človeštva. Ste pripravljeni sodelovati? Poiščite nas tu:",
+  "join_us_title": "Pridružite se nam",
+  "subtitle": "Pogovorni AI za vsakogar.",
+  "try_our_assistant": "Preizkusite našega asistenta",
+  "hugging_face_link": "Obiščite našo HuggingFace organizacijo"
+}

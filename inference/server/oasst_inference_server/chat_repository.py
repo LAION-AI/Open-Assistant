@@ -26,6 +26,15 @@ class ChatRepository(pydantic.BaseModel):
         message = (await self.session.exec(query)).one()
         return message
 
+    async def get_prompter_message_by_id(self, message_id: str) -> models.DbMessage:
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.reports))
+            .where(models.DbMessage.id == message_id, models.DbMessage.role == "prompter")
+        )
+        message = (await self.session.exec(query)).one()
+        return message
+
     async def start_work(
         self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig
     ) -> models.DbMessage:
@@ -79,12 +88,13 @@ class ChatRepository(pydantic.BaseModel):
         await self.session.refresh(message)
         return message
 
-    async def complete_work(self, message_id: str, content: str) -> models.DbMessage:
+    async def complete_work(self, message_id: str, content: str, used_plugin: inference.PluginUsed) -> models.DbMessage:
         logger.debug(f"Completing work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.complete
         message.work_end_at = datetime.datetime.utcnow()
         message.content = content
+        message.used_plugin = used_plugin
         await self.session.commit()
         logger.debug(f"Completed work on message {message_id}")
         await self.session.refresh(message)

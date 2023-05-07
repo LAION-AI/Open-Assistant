@@ -4,7 +4,7 @@
 
 Here are some minimal commands to tun to whole pipeline on the collected data.
 
-**make sure python >= 3.10, othersie, you would meet the
+**make sure python >= 3.10, otherwise, you would meet the
 [[issue]](https://github.com/tiangolo/typer/issues/371#issuecomment-1288987924)**
 
 1. First create the data path location.

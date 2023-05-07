@@ -4,6 +4,43 @@ from model_training.custom_datasets.entities import Mode
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
 
 
+def test_dataset_entry_rm_mode():
+    ds_entry = DatasetEntry(
+        questions=["Instruction A."],
+        answers=[["Highest Scored Answer to A.", "Second Highest Scored Answer to A"]],
+    )
+
+    eos = "<|endofline|>"
+    formatted_rm = ds_entry.get_formatted(mode=Mode.rm, eos_token=eos)
+    expected_rm = (
+        ["<|prompter|>Instruction A.<|endofline|>"],
+        [
+            "<|assistant|>Highest Scored Answer to A.<|endofline|>",
+            "<|assistant|>Second Highest Scored Answer to A<|endofline|>",
+        ],
+    )
+    assert formatted_rm == expected_rm
+
+
+def test_dataset_entry_sft_mode_compatible_with_rm():
+    ds_entry = DatasetEntry(
+        questions=["Instruction A.", "Followup Instruction B."],
+        answers=[
+            ["Highest Scored Answer to A.", "Second Highest Scored Answer to A"],
+            ["Highest Scored Answer to B.", "Second Highest Scored Answer to B"],
+        ],
+    )
+    eos = "<|endofline|>"
+    formatted_sft = ds_entry.get_formatted(mode=Mode.sft, eos_token=eos)
+    expected_sft = [
+        f"{QA_SPECIAL_TOKENS['Question']}{ds_entry.questions[0]}{eos}",
+        f"{QA_SPECIAL_TOKENS['Answer']}{ds_entry.answers[0][0]}{eos}",
+        f"{QA_SPECIAL_TOKENS['Question']}{ds_entry.questions[1]}{eos}",
+        f"{QA_SPECIAL_TOKENS['Answer']}{ds_entry.answers[1][0]}{eos}",
+    ]
+    assert formatted_sft == expected_sft
+
+
 def test_dataset_entry_formatting_missing_lang():
     ds_entry = DatasetEntry(
         questions=["What is the capital of France?"],

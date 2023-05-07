@@ -51,7 +51,9 @@ class UserChatRepository(pydantic.BaseModel):
                 sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
             )
 
-        chat = (await self.session.exec(query)).one()
+        chat = (await self.session.exec(query)).one_or_none()
+        if chat is None:
+            raise fastapi.HTTPException(status_code=404, detail="Chat not found")
         return chat
 
     async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
@@ -89,6 +91,9 @@ class UserChatRepository(pydantic.BaseModel):
         if chat is None:
             raise fastapi.HTTPException(status_code=403)
         logger.debug(f"Deleting {chat_id=}")
+        message_ids = [message.id for message in chat.messages]
+        # delete reports associated with messages
+        await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
         # delete messages
         await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
@@ -123,7 +128,8 @@ class UserChatRepository(pydantic.BaseModel):
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
-            chat.title = content
+            if chat.title is None:
+                chat.title = content
         else:
             msg_dict = chat.get_msg_dict()
             if parent_id not in msg_dict:
@@ -275,6 +281,7 @@ class UserChatRepository(pydantic.BaseModel):
         chat_id: str,
         title: str | None = None,
         hidden: bool | None = None,
+        allow_data_use: bool | None = None,
     ) -> None:
         logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
@@ -286,5 +293,9 @@ class UserChatRepository(pydantic.BaseModel):
         if hidden is not None:
             logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
             chat.hidden = hidden
+
+        if allow_data_use is not None:
+            logger.info(f"Updating allow_data_use of chat {chat_id=}: {allow_data_use=}")
+            chat.allow_data_use = allow_data_use
 
         await self.session.commit()

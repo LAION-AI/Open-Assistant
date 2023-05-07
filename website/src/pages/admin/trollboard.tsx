@@ -16,9 +16,9 @@ import {
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import React from "react";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { AdminArea } from "src/components/AdminArea";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { TrollboardTable } from "src/components/LeaderboardTable/TrollboardTable";
 import { TrollboardTimeFrame } from "src/types/Trollboard";
 
@@ -99,6 +99,6 @@ const Leaderboard = () => {
   );
 };
 
-Leaderboard.getLayout = getAdminLayout;
+Leaderboard.getLayout = AdminLayout;
 
 export default Leaderboard;

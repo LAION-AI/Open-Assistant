@@ -1,4 +1,4 @@
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { Box, Card, CardBody, Grid, Heading, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";

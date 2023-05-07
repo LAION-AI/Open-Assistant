@@ -7,10 +7,11 @@ import {
   Text,
   Textarea,
   useBoolean,
+  useClipboard,
   useColorModeValue,
   useOutsideClick,
 } from "@chakra-ui/react";
-import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
+import { Check, Copy, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -47,7 +48,16 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
-  const { chat_id: chatId, parent_id: parentId, id: messageId, content, score, state, work_parameters } = message;
+  const {
+    chat_id: chatId,
+    parent_id: parentId,
+    id: messageId,
+    content,
+    score,
+    state,
+    work_parameters,
+    used_plugin,
+  } = message;
   const handleVote = useCallback(
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
@@ -69,6 +79,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
       onRetry({ parentId, chatId });
     }
   }, [chatId, onRetry, parentId]);
+
   const isAssistant = message.role === "assistant";
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -99,8 +110,16 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     [handleEditSubmit, setIsEditing]
   );
 
+  const { onCopy, hasCopied } = useClipboard(message.content);
+
   return (
-    <PendingMessageEntry ref={ref} {...props} isAssistant={isAssistant} content={isEditing ? "" : content!}>
+    <PendingMessageEntry
+      ref={ref}
+      {...props}
+      isAssistant={isAssistant}
+      usedPlugin={used_plugin}
+      content={isEditing ? "" : content!}
+    >
       {!isAssistant && parentId !== null && (
         <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
           {isEditing ? (
@@ -145,7 +164,12 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
               )}
               {state === "complete" && (
                 <>
-                  {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} />}
+                  {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} label={t("retry")} />}
+                  {!hasCopied ? (
+                    <BaseMessageEmojiButton emoji={Copy} onClick={onCopy} label={t("copy")} />
+                  ) : (
+                    <BaseMessageEmojiButton emoji={Check} />
+                  )}
                   <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
                   <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
                 </>
@@ -165,6 +189,7 @@ type PendingMessageEntryProps = {
   children?: ReactNode;
   id?: string;
   "data-id"?: string;
+  usedPlugin?: object;
 };
 
 const messageEntryContainerProps = {
@@ -173,7 +198,7 @@ const messageEntryContainerProps = {
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
-  { content, isAssistant, children, ...props },
+  { content, isAssistant, children, usedPlugin, ...props },
   ref
 ) {
   const bgUser = "transparent";
@@ -193,6 +218,8 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       bg={isAssistant ? bgAssistant : bgUser}
       content={content || ""}
       width="full"
+      usedPlugin={usedPlugin}
+      isAssistant={isAssistant}
       maxWidth={messageEntryContainerProps.maxWidth}
       containerProps={messageEntryContainerProps}
       {...props}

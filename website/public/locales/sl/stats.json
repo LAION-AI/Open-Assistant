@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Prekinjena nizka stopnja",
+  "assistant": "Asistent",
+  "backlog_ranking": "Backlog uvrstitev",
+  "choose_a_language": "Izberi jezik",
+  "count": "Štetje",
+  "growing": "Rast",
+  "halted_by_moderator": "Zaustavil moderator",
+  "human_messages_by_lang": "Človeška sporočila po jeziku",
+  "human_messages_by_role": "Človeška sporočila po vlogi",
+  "initial_prompt_review": "Pregled začetnega ukaza",
+  "language_stats": "Jezik",
+  "message_trees_by_state": "Sporočilna drevesa po državi",
+  "message_trees_states_by_lang": "Sporočilna drevesa po jeziku",
+  "prompt_lottery_waiting": "Čakanje na ukaz srečolova",
+  "prompter": "Ukazovalec",
+  "ranking": "Razvrstitev",
+  "ready_for_export": "Pripravljen za izvoz",
+  "stats": "Statistike",
+  "users_accepted_tos": "Sprejeti pogoji uporabnika"
+}

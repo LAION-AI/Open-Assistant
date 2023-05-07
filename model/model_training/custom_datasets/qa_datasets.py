@@ -194,8 +194,7 @@ class WebGPT(Dataset):
 
         dataset = load_dataset("openai/webgpt_comparisons")
 
-        self.questions = []
-        self.answers = []
+        self.rows = []
 
         question_answer_dict = defaultdict(dict)
 
@@ -208,31 +207,24 @@ class WebGPT(Dataset):
                 question_answer_dict[question][answer_1] = row["score_1"]
 
         for question, answers in question_answer_dict.items():
-            self.questions.append(question)
             # Sort answer dict with the highest score first (hence the prefactor -1).
             # Then take only the first `max_answers` elements (usually there are just
             # 2, but there are examples where we have more)
             answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-            self.answers.append(answers_sorted[:max_answers])
+            self.rows.append(DatasetEntry(questions=[question], answers=[answers_sorted[:max_answers]], lang="en"))
 
     def __len__(self) -> int:
-        return len(self.questions)
+        return len(self.rows)
 
-    def __getitem__(self, index) -> list[str] | tuple[list[str], list[str]]:
-        question = self.questions[index]
-        answers = self.answers[index]
-        if self.mode == "sft":
-            return [question, answers[0]]
-        elif self.mode == "rm":
-            return ([question], answers)
-        elif self.mode == "rl":
-            return (question,)
+    def __getitem__(self, index) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
 
 
 class SODA(Dataset):
     name = "soda"
 
-    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
+    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> DatasetEntry | None:
         play_as = data["speakers"][1]
         dialogue_bg = "{}{}".format(
             # QA_SPECIAL_TOKENS["StartPrefix"],
@@ -256,7 +248,9 @@ class SODA(Dataset):
             data["dialogue"][0] = f"{dialogue_bg} {data['dialogue'][0]}"
             # Use only input_max_length characters
             truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
-            return truncated_dialogue
+            questions = [q for idx, q in enumerate(truncated_dialogue) if idx % 2 == 0]
+            answers = [a for idx, a in enumerate(truncated_dialogue) if idx % 2 == 1]
+            return DatasetEntry(questions=questions, answers=answers)
 
     def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
         super().__init__()
@@ -275,13 +269,10 @@ class SODA(Dataset):
     def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index) -> list[str] | tuple[str]:
+    def __getitem__(self, index) -> DatasetEntry:
         # special token added during preprocess
-        if self.mode == "sft":
-            return self.pairs[index]
-        elif self.mode == "rl":
-            # add prefix + first human question
-            return (self.pairs[index][0] + " " + self.pairs[index][1],)
+        dialogue = self.pairs[index]
+        return dialogue
 
 
 class SODADialogue(Dataset):
@@ -333,8 +324,6 @@ class JokeExplaination(Dataset):
             with open(joke_explain_filename, "w") as fout:
                 fout.write(content)
 
-        question = ""
-        answer = ""
         self.pairs = []
         with open(joke_explain_filename, "r") as f:
             for line in f:
@@ -343,16 +332,12 @@ class JokeExplaination(Dataset):
                 # DO NOT change this
                 # its the data that had syntax error
                 explanation = data["explaination"]
-                self.pairs.append((joke, explanation))
+                self.pairs.append(DatasetEntry(questions=[joke], answers=[explanation]))
 
-        if len(question) > 0 and len(answer) > 0:
-            self.pairs.append((question, answer))
-        self.length = len(self.pairs)
-
-    def __len__(self):
+    def __len__(self) -> int:
         return self.length
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> DatasetEntry:
         return self.pairs[index]
 
 
@@ -443,7 +428,7 @@ def load_alpaca_dataset(
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(dataset: Subset) -> list[tuple[str, str]]:
+    def process_split(dataset: Subset, set_lang_as_eng: bool = False) -> list[tuple[str, str]]:
         data = []
 
         for row in dataset:
@@ -455,7 +440,11 @@ def load_alpaca_dataset(
             if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
                 continue
 
-            data.append(DatasetEntry(questions=[input_], answers=[row["output"]]))
+            if set_lang_as_eng is True:
+                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]], lang="en")
+            else:
+                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]])
+            data.append(ds_entry)
         return data
 
     if dataset_name == "alpaca":
@@ -534,7 +523,7 @@ class Vicuna(Dataset):
         )["train"]
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
-                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1]))
+                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1], lang="en"))
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -610,6 +599,6 @@ class AlpacaGpt4(Dataset):
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+    def __getitem__(self, index: int) -> DatasetEntry:
         dialogue = self.rows[index]
         return dialogue

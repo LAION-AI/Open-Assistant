@@ -2,13 +2,14 @@ import { Box, Button, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import { getEnv } from "src/lib/browserEnv";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 import { AnimatedCircles } from "./AnimatedCircles";
 import { Container } from "./Container";
 
 export function Hero() {
   const { t } = useTranslation(["index", "common"]);
+  const { ENABLE_CHAT } = useBrowserConfig();
   const { colorMode } = useColorMode();
   const pTextColor = colorMode === "light" ? "text-gray-600" : "text-white";
   const fancyTextGradientClasses =
@@ -30,7 +31,7 @@ export function Hero() {
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb")}</Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb1")}</Text>
             <Box className={`mt-6 flex gap-6 ${pTextColor} flex-wrap`}>
-              {getEnv().ENABLE_CHAT && (
+              {ENABLE_CHAT && (
                 <Link href="/chat" aria-label="Chat">
                   <Button variant="solid" colorScheme="blue" px={5} py={6}>
                     {t("index:try_our_assistant")}

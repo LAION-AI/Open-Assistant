@@ -23,6 +23,13 @@ class DbMessage(SQLModel, table=True):
     content: str | None = Field(None)
     error: str | None = Field(None)
 
+    safe_content: str | None = Field(None)
+    safety_level: int | None = Field(None)
+    safety_label: str | None = Field(None)
+    safety_rots: str | None = Field(None)
+
+    used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
     work_begin_at: datetime.datetime | None = Field(None)
@@ -59,6 +66,11 @@ class DbMessage(SQLModel, table=True):
             score=self.score,
             work_parameters=self.work_parameters,
             reports=[r.to_read() for r in self.reports],
+            safe_content=self.safe_content,
+            safety_level=self.safety_level,
+            safety_label=self.safety_label,
+            safety_rots=self.safety_rots,
+            used_plugin=self.used_plugin,
         )
 
 
@@ -75,6 +87,8 @@ class DbChat(SQLModel, table=True):
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
     hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+
+    allow_data_use: bool = Field(True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(
