@@ -7,12 +7,14 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from oasst_backend.celery_worker import app
-from oasst_backend.models import ApiClient
+from oasst_backend.models import ApiClient, Message
+from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import User
-from oasst_backend.utils.database_utils import default_session_factory
+from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import utcnow
+from sqlalchemy import func
 from sqlmodel import select
 
 startup_time: datetime = utcnow()
@@ -67,6 +69,23 @@ def hf_feature_extraction(text, message_id, api_client):
         logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
+@shared_task(name="update_search_vectors")
+def update_search_vectors(batch_size: int) -> None:
+    logger.info("update_search_vectors start...")
+    try:
+        with default_session_factory() as session:
+            to_update: list[Message] = session.query(Message).filter(Message.search_vector.is_(None)).all()
+            for idx, message in enumerate(to_update):
+                message_payload: MessagePayload = message.payload.payload
+                message_lang: str = db_lang_to_postgres_ts_lang(message_payload.lang)
+                message.search_vector = func.to_tsvector(message_lang, message_payload.text)
+                if (idx + 1) % batch_size == 0:
+                    session.commit()
+            session.commit()
+    except Exception as e:
+        logger.error(str(e))
+
+
 @shared_task(name="update_user_streak")
 def update_user_streak() -> None:
     logger.info("update_user_streak start...")
@@ -110,4 +129,3 @@ def update_user_streak() -> None:
         logger.info("User streak end...")
     except Exception as e:
         logger.error(str(e))
-    return
