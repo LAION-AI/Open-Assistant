@@ -34,5 +34,6 @@
   "unverified_plugin": "UNVERIFIED",
   "verified_plugin": "VERIFIED",
   "unverified_plugin_description": "This plugin has not been verified by the Open Assistant team. Use at your own risk.",
-  "verified_plugin_description": "This plugin has been verified by the Open Assistant team."
+  "verified_plugin_description": "This plugin has been verified by the Open Assistant team.",
+  "plugin_url_placeholder": "Enter plugin URL"
 }

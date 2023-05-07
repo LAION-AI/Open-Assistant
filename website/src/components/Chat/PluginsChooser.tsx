@@ -160,17 +160,15 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
       <Menu placement="bottom" isLazy lazyBehavior="keepMounted">
         <MenuButton
           as={Button}
-          width="100%"
           size="lg"
           rightIcon={selectedPlugin ? <X onClick={handleUnSelect} /> : undefined}
+          maxW="full"
         >
           {selectedPlugin ? (
-            <Box display="flex" gap={2}>
+            <Text mt="4px" fontSize="sm" isTruncated display="flex" gap={2} overflow="hidden">
               <PluginImage plugin={selectedPlugin}></PluginImage>
-              <Text mt="4px" fontSize="sm" isTruncated>
-                {selectedPlugin.plugin_config?.name_for_human}
-              </Text>
-            </Box>
+              {selectedPlugin.plugin_config?.name_for_human}
+            </Text>
           ) : (
             <Box display="flex" justifyContent="center" gap={2}>
               <Paperclip />
@@ -222,18 +220,24 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
           </MenuItem>
         </MenuList>
       </Menu>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" initialFocusRef={textareaRef}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{isCreatePlugin ? t("add_plugin") : t("edit_plugin")}</ModalHeader>
+          <ModalHeader>{t(isCreatePlugin ? "add_plugin" : "edit_plugin")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Input type="url" defaultValue={plugins[selectedForEditPluginIndex!]?.url} ref={textareaRef} mb={4} />
+            <Input
+              type="url"
+              defaultValue={plugins[selectedForEditPluginIndex!]?.url}
+              ref={textareaRef}
+              mb={4}
+              placeholder={t("plugin_url_placeholder")}
+            />
             {selectedForEditPluginIndex !== null && <JsonCard>{plugins[selectedForEditPluginIndex]}</JsonCard>}
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={handlePluginSave} isLoading={loading}>
-              {tCommon("save")}
+              {tCommon(isCreatePlugin ? "add" : "save")}
             </Button>
           </ModalFooter>
         </ModalContent>

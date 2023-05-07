@@ -125,7 +125,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 
   return (
     <>
-      <Stack gap="4">
+      <Stack gap="4" maxW="full">
         <PluginsChooser plugins={plugins} setPlugins={setPlugins} />
         <FormControl>
           <FormLabel>{t("model")}</FormLabel>
