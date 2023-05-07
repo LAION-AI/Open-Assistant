@@ -64,16 +64,18 @@ ARG APP_USER
 
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared ${SHARED_LIBS_BASE}/oasst-shared
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-data ${SHARED_LIBS_BASE}/oasst-data
 
 USER root
 RUN --mount=type=cache,target=/var/cache/pip,from=build \
     pip install                  \
       --cache-dir=/var/cache/pip \
-      -e "${SHARED_LIBS_BASE}/oasst-shared"
+      -e "${SHARED_LIBS_BASE}/oasst-shared" "${SHARED_LIBS_BASE}/oasst-data"
 USER ${APP_USER}
 
 
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
+VOLUME [ "${APP_BASE}/lib/oasst-data" ]
 
 
 CMD uvicorn main:app --reload --host 0.0.0.0 --port "${PORT}"
@@ -85,11 +87,12 @@ ARG APP_USER
 
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-data /tmp/lib/oasst-data
 RUN --mount=type=cache,target=/var/cache/pip,from=dev \
     pip install                  \
       --cache-dir=/var/cache/pip \
       --target="${APP_LIBS}"     \
-      /tmp/lib/oasst-shared
+      /tmp/lib/oasst-shared /tmp/lib/oasst-data
 
 COPY --chown="${APP_USER}:${APP_USER}" ./inference/server/server_main.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

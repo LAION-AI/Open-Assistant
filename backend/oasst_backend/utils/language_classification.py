@@ -60,7 +60,7 @@ def main(foldername, modelname, num_words):
     save_model(clf, langmap, num_words, modelname)
     model = load(modelname)
     print(
-        "running infernence on long tests",
+        "running inference on long tests",
         inference_voter(
             model,
             """

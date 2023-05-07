@@ -2,6 +2,7 @@ import datetime
 
 import interface
 import transformers
+import utils
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
@@ -65,6 +66,7 @@ def handle_plugin_usage(
     plugin: inference.PluginEntry | None,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
+    parameters: interface.GenerateStreamParameters,
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -115,6 +117,8 @@ def handle_plugin_usage(
     # NOTE: Do not strip() any of the outputs ever, as it will degrade the
     # instruction following performance, at least with
     # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
+
+    init_prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, init_prompt, True)
     chain_response = (
         llm.generate(prompts=[init_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
         .generations[0][0]
@@ -159,6 +163,7 @@ def handle_plugin_usage(
         # NOTE: Do not strip() any of the outputs ever, as it will degrade the
         # instruction following performance, at least with
         # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
+        new_prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, new_prompt, True)
         chain_response = (
             llm.generate(prompts=[new_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
             .generations[0][0]
@@ -311,7 +316,7 @@ def handle_conversation(
         # using sampling settings derived from frontend UI
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, tools, memory, plugin, worker_config, tokenizer
+                original_prompt, prompt_template, language, tools, memory, plugin, worker_config, tokenizer, parameters
             )
 
         # Just regular prompt template without plugin chain.

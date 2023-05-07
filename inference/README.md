@@ -72,3 +72,14 @@ locust
 ```
 
 Navigate to http://0.0.0.0:8089/ to view the locust UI.
+
+## API Docs
+
+To update the api docs, once the inference server is running run below command
+to download the inference openapi json into the relevant folder under `/docs`:
+
+```bash
+wget localhost:8000/openapi.json -O docs/docs/api/inference-openapi.json
+```
+
+Then make a PR to have the updated docs merged.

@@ -62,4 +62,5 @@ export const API_ROUTES = {
   GET_CHAT_MODELS: "/api/chat/models",
   UPDATE_CHAT: () => `/api/chat`,
   GET_PLUGIN_CONFIG: `/api/chat/plugin_config`,
+  DELETE_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
 };
