@@ -248,8 +248,16 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="Only export this chat.",
     )
-
-    # TODO: filters: reported, score, etc
+    parser.add_argument(
+        "--nonzero-assistant-score",
+        action=argparse.BooleanOptionalAction,
+        help="Only export chats with at least one assistant message with score != 0.",
+    ),
+    parser.add_argument(
+        "--reported",
+        action=argparse.BooleanOptionalAction,
+        help="Only export chats with at least one reported message.",
+    )
     return parser.parse_args()
 
 
@@ -264,6 +272,11 @@ def create_filters(args: argparse.Namespace) -> list[sqlalchemy.sql.elements.Bin
         filters.append(DbChat.user_id == args.user_id)
     if args.chat_id:
         filters.append(DbChat.id == args.chat_id)
+    if args.nonzero_assistant_score:
+        filters.append(DbChat.messages.any((DbMessage.role == "assistant") & (DbMessage.score != 0)))
+    if args.reported:
+        filters.append(DbChat.messages.any(DbMessage.reports.any()))
+
     return filters
 
 
