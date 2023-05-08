@@ -22,6 +22,7 @@ import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { WorkParametersDisplay } from "./WorkParameters";
+import { EncourageMessage } from "./EncourageMessage";
 
 export type EditPromptParams = { parentId: string; chatId: string; content: string };
 
@@ -164,6 +165,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
               )}
               {state === "complete" && (
                 <>
+                  <EncourageMessage />
                   {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} label={t("retry")} />}
                   {!hasCopied ? (
                     <BaseMessageEmojiButton emoji={Copy} onClick={onCopy} label={t("copy")} />

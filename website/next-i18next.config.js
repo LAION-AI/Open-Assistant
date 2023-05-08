@@ -32,6 +32,7 @@ module.exports = {
       "ro",
       "ru",
       "sk",
+      "sr",
       "sl",
       "sv",
       "th",
