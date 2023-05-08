@@ -129,6 +129,11 @@ MODEL_CONFIGS = {
         max_input_length=1024,
         max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
     ),
+    "OA_RLHF_Llama_30B_2_7k": ModelConfig(
+        model_id="OpenAssistant/oasst-rlhf-2-llama-30b-7k-steps",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+    ),
     "Carper_RLHF_13B_1": ModelConfig(
         model_id="CarperAI/vicuna-13b-fine-tuned-rlhf",
         max_input_length=1024,

@@ -309,7 +309,7 @@ There are ansible playbooks in the
 directory.
 
 In addition to the production deployment, available at the project website,
-<https://open-assistant.io/es>, there's also a staging deployment at
+<https://open-assistant.io/>, there's also a staging deployment at
 <https://web.staging.open-assistant.io/>.
 
 ## The teams

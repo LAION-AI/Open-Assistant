@@ -1,6 +1,5 @@
 import json
 import re
-import threading
 
 import requests
 import transformers
@@ -11,10 +10,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from loguru import logger
 from oasst_shared.schemas import inference
-from opeanapi_parser import prepare_plugin_for_llm
+from openapi_parser import prepare_plugin_for_llm
 from settings import settings
-
-tokenizer_lock = threading.Lock()
+from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
 
@@ -166,7 +164,7 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
 def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
     for tool in tools:
         # This should become stricter and stricter as we get better models
-        if similarity(tool.name, tool_name) > 0.75 or tool.name in tool_name:
+        if tool.name in tool_name or similarity(tool.name, tool_name) > 0.75:
             # check if tool_input is valid json, and if not, try to fix it
             tool_input = prepare_json(tool_input)
             return tool.func(tool_input)
@@ -293,8 +291,13 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
         )
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
+
+        # some plugins do not have operation_id, so we use path as fallback
+        path = endpoint.path[1:] if endpoint.path and len(endpoint.path) > 0 else endpoint.path
+
         tool = Tool(
-            name=endpoint.operation_id,  # Could be path, e.g /api/v1/endpoint
+            name=endpoint.operation_id if endpoint.operation_id != "" else path,
+            # Could be path, e.g /api/v1/endpoint
             # but it can lead LLM to makeup some URLs
             # and problem with EP description is that
             # it can be too long for some plugins
@@ -343,7 +346,7 @@ def prepare_prompt(
 
     out_prompt = prompt_template.format(**args)
 
-    with tokenizer_lock:
+    with shared_tokenizer_lock:
         ids = tokenizer.encode(out_prompt)
 
     # soft truncation
@@ -362,7 +365,7 @@ def prepare_prompt(
 
         out_prompt = prompt_template.format(**args)
 
-        with tokenizer_lock:
+        with shared_tokenizer_lock:
             ids = tokenizer.encode(out_prompt)
         logger.warning(f"Prompt too long, deleting chat history. New length: {len(ids)}")
 
