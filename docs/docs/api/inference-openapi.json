@@ -897,7 +897,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/PluginEntry" }
           },
-          "used_plugin": { "$ref": "#/components/schemas/PluginUsed" }
+          "used_plugins": { "$ref": "#/components/schemas/PluginsUsed" }
         }
       },
       "CreateChatRequest": {
@@ -1085,6 +1085,19 @@
           "name": { "title": "Name", "type": "string" },
           "url": { "title": "Url", "type": "string" },
           "trusted": { "title": "Trusted", "type": "boolean" },
+          "execution_details": {
+            "$ref": "#/components/schemas/PluginExecutionDetails"
+          }
+        }
+      },
+      "PluginsUsed": {
+        "title": "PluginsUsed",
+        "required": ["execution_details"],
+        "type": "object",
+        "properties": {
+          "names": { "title": "Names", "type": "list[string]" },
+          "urls": { "title": "Urls", "type": "list[string]" },
+          "trusted": { "title": "Trusted", "type": "list[boolean]" },
           "execution_details": {
             "$ref": "#/components/schemas/PluginExecutionDetails"
           }

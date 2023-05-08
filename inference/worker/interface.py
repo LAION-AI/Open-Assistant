@@ -61,10 +61,10 @@ class StreamDetails(pydantic.BaseModel):
 
 
 class GenerateStreamResponse(pydantic.BaseModel):
-    token: Token | None
-    generated_text: str | None
-    details: StreamDetails | None
-    error: str | None
+    token: Token | None = None
+    generated_text: str | None = None
+    details: StreamDetails | None = None
+    error: str | None = None
 
     @property
     def is_end(self) -> bool:

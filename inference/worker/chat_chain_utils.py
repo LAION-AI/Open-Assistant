@@ -1,9 +1,17 @@
 import json
 import re
+from typing import Tuple
 
 import requests
 import transformers
-from chat_chain_prompts import INSTRUCTIONS, OBSERVATION_SEQ, TOOLS_PREFIX, V2_ASST_PREFIX, V2_PROMPTER_PREFIX
+from chat_chain_prompts import (
+    INSTRUCTIONS,
+    OBSERVATION_SEQ,
+    PLUGIN_DELIM,
+    TOOLS_PREFIX,
+    V2_ASST_PREFIX,
+    V2_PROMPTER_PREFIX,
+)
 from hf_langchain_inference import HFInference
 from langchain.agents import Tool
 from langchain.memory import ConversationBufferMemory
@@ -53,7 +61,7 @@ def similarity(ts1: str, ts2: str) -> float:
     if match == 0:
         return 0
 
-    t = 0
+    t: float = 0
     point = 0
 
     for i in range(len1):
@@ -71,7 +79,7 @@ def similarity(ts1: str, ts2: str) -> float:
 # TODO: Can be improved, like... try to use another pass trough LLM
 # with custom tuned prompt for fixing the formatting.
 # e.g. "This is malformed text, please fix it: {malformed text} -> FIX magic :)"
-def extract_tool_and_input(llm_output: str, ai_prefix: str) -> tuple[str, str]:
+def extract_tool_and_input(llm_output: str, ai_prefix: str) -> Tuple[str, str]:
     llm_output = llm_output.strip().replace("```", "")
     if f"{ai_prefix}:" in llm_output:
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
@@ -161,27 +169,33 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
     return fixed_json
 
 
-def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
+def use_tool(tool_name: str, tool_input: str, tools: list) -> Tuple[str, str]:
     for tool in tools:
+        plugin, real_tool_name = tool.name.split(PLUGIN_DELIM)
         # This should become stricter and stricter as we get better models
-        if similarity(tool.name, tool_name) > 0.75 or tool.name in tool_name:
+        if similarity(real_tool_name, tool_name) > 0.75 or real_tool_name in tool_name:
             # check if tool_input is valid json, and if not, try to fix it
             tool_input = prepare_json(tool_input)
-            return tool.func(tool_input)
-    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
+            # Returns the name of the plugin that owns the tool and the tool output
+            return tool.func(tool_input), plugin
+    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!", ""
 
 
 # Needs more work for errors, error-prompt tweaks are currently based on
 # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
 # TODO: Add other missing methods and Content-Types etc...
 class RequestsForLLM:
-    def run(self, params: str, url: str, param_location: str, type: str, payload: str | None = None) -> str:
+    def run(
+        self, params: str | dict[str, str], url: str, param_location: str, type: str, payload: str | None = None
+    ) -> str:
         return self.run_request(params, url, param_location, type, payload)
 
-    def run_request(self, params: str, url: str, param_location: str, type: str, payload: str = None) -> str:
+    def run_request(
+        self, params: str | dict[str, str], url: str, param_location: str, type: str, payload: str | None = None
+    ) -> str:
         try:
             query_params = params
-            if param_location == "path":
+            if param_location == "path" and isinstance(query_params, dict):
                 for key, value in query_params.items():
                     url = url.replace(f"{{{key}}}", value)
                 query_params = {}
@@ -220,6 +234,16 @@ class RequestsForLLM:
             return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
 
         return truncate_str(res.text, RESPONSE_MAX_LENGTH)
+
+
+def compose_tools_from_plugins(plugins: list[inference.PluginEntry]) -> tuple[str, list[Tool]]:
+    descriptions = ""
+    tools = []
+    for plugin in plugins:
+        desc, tool = compose_tools_from_plugin(plugin)
+        descriptions += f"{desc}\n"
+        tools += tool
+    return descriptions, tools
 
 
 def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str, list[Tool]]:
@@ -291,8 +315,9 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
         )
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
+        plugin_name = getattr(plugin.plugin_config, "name_for_human", None)
         tool = Tool(
-            name=endpoint.operation_id,  # Could be path, e.g /api/v1/endpoint
+            name=f"{plugin_name}{PLUGIN_DELIM}{endpoint.operation_id}",  # Could be path, e.g /api/v1/endpoint
             # but it can lead LLM to makeup some URLs
             # and problem with EP description is that
             # it can be too long for some plugins

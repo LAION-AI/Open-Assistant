@@ -1,8 +1,11 @@
 {
-  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"],
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/oasst-shared"],
   "prettier.singleQuote": false,
   "eslint.workingDirectories": ["./website", "./docs"],
   "python.testing.pytestArgs": ["backend/tests", "oasst-shared/tests"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.pylintArgs": ["--ignore-imports y"],
+  "python.linting.mypyEnabled": true
 }

@@ -23,8 +23,8 @@ class TokenBuffer:
     def __init__(self, stop_sequences: list[str]) -> None:
         self.stop_sequences = stop_sequences
         self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=1)
-        self.tokens = collections.deque()
-        self.token_lens = collections.deque()
+        self.tokens: collections.deque[interface.Token] = collections.deque()
+        self.token_lens: collections.deque[int] = collections.deque()
         self.total_len = 0
 
     def add(self, token: interface.Token):

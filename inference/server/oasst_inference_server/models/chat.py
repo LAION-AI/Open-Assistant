@@ -29,6 +29,7 @@ class DbMessage(SQLModel, table=True):
     safety_rots: str | None = Field(None)
 
     used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+    used_plugins: inference.PluginsUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
@@ -70,7 +71,7 @@ class DbMessage(SQLModel, table=True):
             safety_level=self.safety_level,
             safety_label=self.safety_label,
             safety_rots=self.safety_rots,
-            used_plugin=self.used_plugin,
+            used_plugins=self.used_plugins,
         )
 
 

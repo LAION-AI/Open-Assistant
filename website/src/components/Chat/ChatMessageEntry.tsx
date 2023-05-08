@@ -57,7 +57,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     score,
     state,
     work_parameters,
-    used_plugin,
+    used_plugins,
   } = message;
   const handleVote = useCallback(
     (emoji: "+1" | "-1") => {
@@ -118,7 +118,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
       ref={ref}
       {...props}
       isAssistant={isAssistant}
-      usedPlugin={used_plugin}
+      usedPlugins={used_plugins}
       content={isEditing ? "" : content!}
     >
       {!isAssistant && parentId !== null && (
@@ -200,7 +200,7 @@ const messageEntryContainerProps = {
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
-  { content, isAssistant, children, usedPlugin, ...props },
+  { content, isAssistant, children, usedPlugins, ...props },
   ref
 ) {
   const bgUser = "transparent";
@@ -220,7 +220,7 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       bg={isAssistant ? bgAssistant : bgUser}
       content={content || ""}
       width="full"
-      usedPlugin={usedPlugin}
+      usedPlugins={usedPlugins}
       isAssistant={isAssistant}
       maxWidth={messageEntryContainerProps.maxWidth}
       containerProps={messageEntryContainerProps}
