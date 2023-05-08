@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
-from oasst_backend.celery_worker import app
+from oasst_backend.celery_worker import app as celery_app
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import User
@@ -14,6 +14,9 @@ from oasst_backend.utils.database_utils import default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import utcnow
 from sqlmodel import select
+
+
+# TODO: move each task to a separate file in the future to avoid cluttering this file
 
 startup_time: datetime = utcnow()
 
@@ -24,8 +27,8 @@ async def useHFApi(text, url, model_name):
     return result
 
 
-@app.task(name="toxicity")
-def toxicity(text, message_id, api_client):
+@celery_app.task(name="toxicity")
+def check_toxicity(text, message_id, api_client):
     try:
         logger.info(f"checking toxicity : {api_client}")
 
@@ -47,7 +50,7 @@ def toxicity(text, message_id, api_client):
         logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
-@app.task(name="hf_feature_extraction")
+@celery_app.task(name="hf_feature_extraction")
 def hf_feature_extraction(text, message_id, api_client):
     try:
         with default_session_factory() as session:

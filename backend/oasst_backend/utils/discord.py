@@ -4,10 +4,11 @@ import requests
 from loguru import logger
 from oasst_backend.config import settings
 from oasst_backend.models.message import Message
+from oasst_backend.celery_worker import app as celery_app
 
 ROOT_ENDPOINT = "https://discord.com/api/v10"
 
-
+@celery_app.task(name="send_new_report_message")
 def send_new_report_message(message: Message, label_text: str, user_id: UUID) -> None:
     if settings.DISCORD_API_KEY is None or settings.DISCORD_CHANNEL_ID is None:
         return
@@ -44,5 +45,5 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID) ->
             },
         )
         res.raise_for_status()
-    except Exception as e:
-        logger.exception(f"Failed to send flagged message. error: {e}")
+    except Exception as exception:
+        logger.exception(f"Failed to send flagged message. error: {exception}")
