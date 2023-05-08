@@ -191,7 +191,7 @@ type PendingMessageEntryProps = {
   children?: ReactNode;
   id?: string;
   "data-id"?: string;
-  usedPlugin?: object;
+  usedPlugins?: object;
 };
 
 const messageEntryContainerProps = {

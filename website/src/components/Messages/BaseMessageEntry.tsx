@@ -10,13 +10,13 @@ export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor
   avatarProps: Pick<AvatarProps, "name" | "src">;
   bg?: string;
   highlight?: boolean;
-  usedPlugin?: object;
+  usedPlugins?: object;
   isAssistant?: boolean;
   containerProps?: BoxProps;
 };
 
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(function BaseMessageEntry(
-  { content, avatarProps, children, highlight, usedPlugin, isAssistant, containerProps, ...props },
+  { content, avatarProps, children, highlight, usedPlugins, isAssistant, containerProps, ...props },
   ref
 ) {
   const bg = useColorModeValue("#DFE8F1", "#42536B");
@@ -62,7 +62,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
         _dark={{ outlineColor: { md: colors.dark.active }, ...props._dark }}
       >
         <Suspense fallback={content}>
-          {isAssistant ? <PluginUsageDetails usedPlugin={usedPlugin} /> : null}
+          {isAssistant ? <PluginUsageDetails usedPlugins={usedPlugins} /> : null}
           <RenderedMarkdown markdown={content} disallowedElements={[]}></RenderedMarkdown>
         </Suspense>
         {children}

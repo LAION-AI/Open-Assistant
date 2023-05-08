@@ -10,7 +10,7 @@ const measureDivWidth = (div: HTMLDivElement | null) => {
   return width;
 };
 
-const DropdownItem = ({ plugin }) => {
+const DropdownItem = ({ plugins }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [innerMonologueCollapser, setInnerMonologueCollapser] = useState(false);
   const [finalPluginOutputCollapser, setFinalPluginOutputCollapser] = useState(true);
@@ -29,15 +29,19 @@ const DropdownItem = ({ plugin }) => {
               {tCommon("used")}
             </Box>
             <Box as="b" fontWeight="bold">
-              {` ${plugin.name}`}
+              {plugins.names.map((name, index) => (
+                <Box key={index}>
+                  <Text>{`${name}, `}</Text>
+                </Box>
+              ))}
             </Box>
           </Text>
           <AttachmentIcon
-            color={plugin.execution_details?.final_generation_assisted ? "green.500" : "red.500"}
+            color={plugins.execution_details?.final_generation_assisted ? "green.500" : "red.500"}
             boxSize={5}
           />
-          {JSON.stringify(plugin)}
-          {!plugin?.trusted ? (
+          {JSON.stringify(plugins)}
+          {!plugins?.trusted.reduce((a, b) => a && b) ? (
             <Tooltip label={t("unverified_plugin_description")}>
               <Box display="flex" alignItems="center" marginLeft="2" bg="red.200" borderRadius="md" p={1}>
                 <WarningIcon boxSize="4" color="red.600" />
@@ -72,7 +76,7 @@ const DropdownItem = ({ plugin }) => {
               </Text>
             </Button>
             <Collapse in={innerMonologueCollapser}>
-              {plugin.execution_details?.inner_monologue.map((monologue, index) => (
+              {plugins.execution_details?.inner_monologue.map((monologue, index) => (
                 <Box as="pre" key={index} border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
                   {monologue}
                 </Box>
@@ -90,7 +94,7 @@ const DropdownItem = ({ plugin }) => {
             </Button>
             <Collapse in={finalPluginOutputCollapser}>
               <Box as="pre" border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
-                {plugin.execution_details?.final_tool_output}
+                {plugins.execution_details?.final_tool_output}
               </Box>
             </Collapse>
             <Button
@@ -105,26 +109,26 @@ const DropdownItem = ({ plugin }) => {
             </Button>
             <Collapse in={finalPromptCollapser}>
               <Box as="pre" border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
-                {plugin.execution_details?.final_prompt}
+                {plugins.execution_details?.final_prompt}
               </Box>
             </Collapse>
             <Text fontWeight="bold" mt={2} mb={1} color={"grey.300"}>
               {"achieved_depth"}
             </Text>
             <Box as="pre" border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
-              {plugin.execution_details?.achieved_depth}
+              {plugins.execution_details?.achieved_depth}
             </Box>
             <Text fontWeight="bold" mt={2} mb={1} color={"red.300"}>
               {"error_message"}
             </Text>
             <Box as="pre" border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
-              {plugin.execution_details?.error_message}
+              {plugins.execution_details?.error_message}
             </Box>
             <Text fontWeight="bold" mt={2} mb={1} color={"yellow.300"}>
               {"status"}
             </Text>
             <Box as="pre" border="1px solid" whiteSpace="pre-wrap" overflowWrap="break-word" p={2}>
-              {plugin.execution_details?.status}
+              {plugins.execution_details?.status}
             </Box>
           </Box>
         </Box>
@@ -133,15 +137,15 @@ const DropdownItem = ({ plugin }) => {
   );
 };
 
-export const PluginUsageDetails = ({ usedPlugin }) => {
+export const PluginUsageDetails = ({ usedPlugins }) => {
   if (
-    !usedPlugin ||
-    (!usedPlugin?.execution_details?.final_generation_assisted && usedPlugin?.execution_details?.status === "success")
+    !usedPlugins ||
+    (!usedPlugins?.execution_details?.final_generation_assisted && usedPlugins?.execution_details?.status === "success")
   )
     return;
   return (
     <VStack align="start" spacing={4} mb="15px">
-      <DropdownItem key={usedPlugin.name} plugin={usedPlugin} />
+      <DropdownItem key={usedPlugins.names} plugins={usedPlugins} />
     </VStack>
   );
 };
