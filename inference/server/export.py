@@ -7,7 +7,7 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 import sqlalchemy
 import sqlmodel
@@ -164,9 +164,7 @@ def write_messages_to_file(
                     f.write("\n")
 
 
-async def fetch_eligible_chats(
-    session_generator, filters: list[sqlalchemy.sql.elements.BinaryExpression]
-) -> list[DbChat]:
+async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[DbChat]:
     """Fetch chats which are not opted out of data collection and match the given filters."""
     session: AsyncSession
     filters.append(DbChat.allow_data_use)
@@ -185,7 +183,7 @@ async def fetch_eligible_chats(
 def export_chats(
     session_generator,
     export_path: Path,
-    filters: list[sqlalchemy.sql.elements.BinaryExpression],
+    filters: list[Any],
     use_compression: bool = True,
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
@@ -261,7 +259,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def create_filters(args: argparse.Namespace) -> list[sqlalchemy.sql.elements.BinaryExpression]:
+def create_filters(args: argparse.Namespace) -> list[Any]:
     filters = []
 
     if args.from_date:
