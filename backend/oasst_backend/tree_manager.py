@@ -24,7 +24,7 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.scheduled_tasks import hf_feature_extraction, check_toxicity
+from oasst_backend.scheduled_tasks import check_toxicity, hf_feature_extraction
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,

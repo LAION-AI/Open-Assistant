@@ -2,9 +2,9 @@ from uuid import UUID
 
 import requests
 from loguru import logger
+from oasst_backend.celery_worker import app as celery_app
 from oasst_backend.config import settings
 from oasst_backend.models.message import Message
-from oasst_backend.celery_worker import app as celery_app
 
 ROOT_ENDPOINT = "https://discord.com/api/v10"
 

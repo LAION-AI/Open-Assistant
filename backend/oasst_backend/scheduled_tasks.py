@@ -15,7 +15,6 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_shared.utils import utcnow
 from sqlmodel import select
 
-
 # TODO: move each task to a separate file in the future to avoid cluttering this file
 
 startup_time: datetime = utcnow()

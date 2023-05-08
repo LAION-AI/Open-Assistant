@@ -31,12 +31,13 @@ Next, to install all requirements, You can run
 
 ## REST Server Configuration
 
-- Generate a new environment variable file `.env` by coping the content of the [.env.example](.env.example) file.
+- Generate a new environment variable file `.env` by coping the content of the
+  [.env.example](.env.example) file.
 
-- Update the values of the environment variables in the `.env` file by setting the DATABASE_URI to you local database URI.
+- Update the values of the environment variables in the `.env` file by setting
+  the DATABASE_URI to you local database URI.
 
 - Update the rest of the environment variables according to your needs.
-
 
 ## Running the REST Server locally for development
 

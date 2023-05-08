@@ -2,7 +2,7 @@ import time
 
 from loguru import logger
 from oasst_backend.models import ApiClient, Message
-from oasst_backend.scheduled_tasks import hf_feature_extraction, check_toxicity
+from oasst_backend.scheduled_tasks import check_toxicity, hf_feature_extraction
 from oasst_backend.utils.database_utils import default_session_factory
 from sqlmodel import text
 
