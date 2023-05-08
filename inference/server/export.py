@@ -168,6 +168,7 @@ async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[Db
     """Fetch chats which are not opted out of data collection and match the given filters."""
     session: AsyncSession
     filters.append(DbChat.allow_data_use)
+    filters.append(~DbChat.deleted)
     async with session_generator() as session:
         query = (
             sqlmodel.select(DbChat)
@@ -247,13 +248,13 @@ def parse_args() -> argparse.Namespace:
         help="Only export this chat.",
     )
     parser.add_argument(
-        "--nonzero-assistant-score",
-        action=argparse.BooleanOptionalAction,
+        "--scored",
+        action="store_true",
         help="Only export chats with at least one assistant message with score != 0.",
     ),
     parser.add_argument(
         "--reported",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         help="Only export chats with at least one reported message.",
     )
     return parser.parse_args()
@@ -270,7 +271,7 @@ def create_filters(args: argparse.Namespace) -> list[Any]:
         filters.append(DbChat.user_id == args.user_id)
     if args.chat_id:
         filters.append(DbChat.id == args.chat_id)
-    if args.nonzero_assistant_score:
+    if args.scored:
         filters.append(DbChat.messages.any((DbMessage.role == "assistant") & (DbMessage.score != 0)))
     if args.reported:
         filters.append(DbChat.messages.any(DbMessage.reports.any()))
