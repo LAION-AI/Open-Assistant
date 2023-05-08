@@ -168,7 +168,6 @@ async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[Db
     """Fetch chats which are not opted out of data collection and match the given filters."""
     session: AsyncSession
     filters.append(DbChat.allow_data_use)
-    filters.append(~DbChat.deleted)
     async with session_generator() as session:
         query = (
             sqlmodel.select(DbChat)
