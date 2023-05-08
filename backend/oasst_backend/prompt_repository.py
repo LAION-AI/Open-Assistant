@@ -39,8 +39,6 @@ from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
 
-# TODO: Add doc string to all methods and classes.
-
 # TODO: Rename text field from sqlmodel to text_content to avoid confusion with text as parameter.
 _task_type_and_reaction = (
     (
