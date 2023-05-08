@@ -24,7 +24,7 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
+from oasst_backend.scheduled_tasks import hf_feature_extraction, check_toxicity
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,
@@ -754,7 +754,7 @@ class TreeManager:
                         )
                 if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
                     try:
-                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                        check_toxicity.delay(interaction.text, message.id, pr.api_client.dict())
                         logger.debug("Sent Toxicity")
                     except OasstError:
                         logger.error(
