@@ -29,7 +29,6 @@
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "remove_plugin": "Remove Plugin",
   "repetition_penalty": "Repetition penalty",
-  "save": "Save",
   "temperature": "Temperature",
   "top_k": "Top K",
   "top_p": "Top P",
@@ -44,5 +43,8 @@
   "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice.",
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your Chats",
+  "save_preset": "Save this preset",
+  "preset_exists_error": "A preset with this name already exists",
+  "preset_name_placeholder": "Enter name",
   "feedback_message": "Thoughts? Let us know!"
 }

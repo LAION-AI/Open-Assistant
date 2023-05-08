@@ -3,11 +3,13 @@ import { SamplingParameters } from "src/types/Chat";
 
 const CHAT_CONFIG_KEY = "CHAT_CONFIG_V2";
 
+export type CustomPreset = { name: string; config: SamplingParameters };
+
 export type CachedChatConfig = {
   model_config_name: string;
   selectedPresetName: string;
   custom_preset_config: SamplingParameters;
-  custom_presets: Array<{ name: string; config: SamplingParameters }>;
+  custom_presets: CustomPreset[];
   selectedPlugins: PluginEntry[];
   plugins: PluginEntry[]; // all plugins user added
 };
