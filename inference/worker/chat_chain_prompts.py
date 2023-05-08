@@ -34,6 +34,8 @@ Open Assistant has access to the following tools:
 """
 
 INSTRUCTIONS = f"""
+ATTENTION: Do not use tools for questions about yourself, like "what is your name?", "how old are you?", etc...
+
 To use a tool, please use the following format:
 
 ```
