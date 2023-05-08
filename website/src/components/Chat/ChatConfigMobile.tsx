@@ -2,7 +2,6 @@ import { Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, Dra
 import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { memo, ReactNode } from "react";
-import SimpleBar from "simplebar-react";
 
 import { useChatActions, useChatState } from "./ChatContext";
 import { ChatInputIconButton } from "./ChatInputIconButton";
@@ -19,16 +18,7 @@ export const ChatConfigMobile = memo(function ChatConfigDrawer({ children }: { c
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader borderBottomWidth="1px">{t("config_title")}</DrawerHeader>
-          <DrawerBody pr="0">
-            <SimpleBar
-              style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
-              classNames={{
-                contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
-              }}
-            >
-              {children}
-            </SimpleBar>
-          </DrawerBody>
+          <DrawerBody pr="0">{children}</DrawerBody>
         </DrawerContent>
       </Drawer>
     </>
