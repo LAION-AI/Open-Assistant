@@ -8,7 +8,8 @@ title: Overview of Text Client Workflow
 ---
 graph LR;
     subgraph OA Server
-    /auth/login
+    /auth/callback/debug
+    id0["/chats"]
     id1["/chats/{chat_id}/messages"]
     id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"]
     end
@@ -17,16 +18,19 @@ graph LR;
     id3["SSEClient(response)"]
     end
 
-    text-client == 1. GET ==> /auth/login;
-    /auth/login -- bearer_token, chat_id--> text-client;
+    text-client == 1. GET ==> /auth/callback/debug;
+    /auth/callback/debug -- bearer_token --> text-client;
 
-    text-client == 2. requests prompt ==> user;
+    text-client == 2. POST ==> id0["/chats"]
+    id0["/chats"] -- chat_id --> text-client;
+
+    text-client == 3. requests prompt ==> user;
     user == submits prompt ==> text-client;
 
-    text-client == 3. POST ==> id1["/chats/{chat_id}/messages"];
+    text-client == 4. POST ==> id1["/chats/{chat_id}/messages"];
     id1["/chats/{chat_id}/messages"] -- message_id --> text-client;
 
-    text-client == 4. GET ==> id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"];
+    text-client == 5. GET ==> id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"];
     id2["{backend_url}/chats/{chat_id}/messages/{message_id}/events"] -- events --> id3["SSEClient(response)"];
 
     linkStyle 0 stroke-width:2px,fill:none,stroke:green;
@@ -41,44 +45,53 @@ graph LR;
 
 For development, a basic REPL client is used as a chat interface, built around [Typer](https://typer.tiangolo.com/). The bulk of the logic is in `inference.text-client.text_client_utils.DebugClient`. The basic steps are as follows:
 
-1. After authenticating with the backend open assistant server, the `DebugClient` creates a "chat" by posting to `/chats`, which returns a chat id for session.
+1. The debug client first authenticates with a GET request to `/auth/callback/debug`
+which returns a bearer token, which is then set in future request headers.
 
-2. The script then collects the user prompt. 
+2. After authenticating, the `DebugClient` creates a "chat" by posting to `/chats`, which returns a `chat_id` for session.
 
-3. The `DebugClient` posts to the endpoint `/chats/{chat_id}/messages`. Included in this request is the message content, a `parent_id:str` (ID of assistant's response to prior message, if there is one), the `model_config_name:str`, and inference `sampling_parameters:dict`. In the response, the server will return a `message_id:str`. 
+3. The script then collects the user prompt. 
 
-4. The client will use this id to make a GET request to `{backend_url}/chats/{chat_id}/messages/{message_id}/events`.
+4. The `DebugClient` posts to the endpoint `/chats/{chat_id}/messages`. Included in this request is the message content, a `parent_id:str` (ID of assistant's response to prior message, if there is one), the `model_config_name:str`, and inference `sampling_parameters:dict`. In the response, the server will return a `message_id:str`. 
+
+5. The client will use this id to make a GET request to `{backend_url}/chats/{chat_id}/messages/{message_id}/events`.
 Critically, in this `get()` method of requests, the `stream=True` is passed, meaning that the response content will not be immediately downloaded but rather streamed. Additionally, the actual GET request must have `"Accept": "text/event-stream"` in the headers to let 
 the server know we are awaiting an event stream.
 
-5. The response is then used to instantiate an SSEClient, which - via its events() method,
+6. The response is then used to instantiate an SSEClient, which - via its events() method,
 returns an iterable that can be used to print out inference results, one token at a time.
 
-6. After exhausting the events iterable (ie inference is complete), the user is prompted for a new message.
+7. After exhausting the events iterable (ie inference is complete), the user is prompted for a new message.
 
 
 ### From the perspective of the OA Inference Server
 
 The inference server is built around [FastAPI](https://fastapi.tiangolo.com/).
 
-1. When the client posts to `/chats`, the UserChatRepository - an interface between application logic and chats message
-tables - creates a chat in the chat table, which assigns the needed chat id and is returned in the response to the client.
+1. When the client posts to `/chats`, the UserChatRepository - an interface between application logic and chats message tables - creates a chat in the chat table, which assigns the needed chat id and is returned in the response to the client.
 
-2. Next, the client posts to `/chats/{chat_id}/messages`, which uses the UserChatRepository to:
-    1. If chat table contains no title for chat of that id, updates the chat table with the initial user prompt as title.
-    2. Creates a message in the message table for the user.
-    3. Create a message in the message table with `state=inference.MessageState.pending` for the assistant's response.
+2. Next, the client POSTs to `/chats/{chat_id}/prompter_message`, which uses the `UserChatRepository` to:
+    1. Check to see if the message content included in the POST request is longer than the configured settings.
+    2. Using the database session and `user_id` which was configured when this instance of `UserChatRepository` was instantiated, we lookup in the `chat` table the 
+    corresponding entry for this `chat_id` and `user_id`. 
+    3. Check to see if the total number of assistant + prompter messages in the `chat`
+    is greater than the configured settings.
+    4. If this is a new chat (i.e. no `parent_id` is set in the `chat`), and the chat table contains no title for chat of that id, updates the chat table with the initial user prompt as title.
+    5. Creates a message in the message table for the user prompt.
+
+3. The client then POSTs to `/chats/{chat_id}/assistant_message`.
+    1. 
+    <!-- 3. Create a message in the message table with `state=inference.MessageState.pending` for the assistant's response.
     4. Add the id of the pending assistant's message to a redis queue.
-    5. Return a `CreateMessageResponse` object (a Pydantic model), with the prompter message field and (pending) assistant message field. The client will get an assistant message id from this.
+    5. Return a `CreateMessageResponse` object (a Pydantic model), with the prompter message field and (pending) assistant message field. The client will get an assistant message id from this. -->
 
 3. Once the client has the assistant message id, it will make a GET request to `/chats/{chat_id}/messages/{message_id}/events`. Upon receiving this request, the server retrieves the message from the message table and verifies that the message isn't finished and that the message role is assistant. 
 
 After this, we create a Redis queue for this specific message id. From here, we poll the queue, using the `dequeue()` method. By default this method will block for up to 1 second, however if a message is added to the queue in that interval, it will automatically be returned. Otherwise, `dequeue()` will return `None`.
 
-If `None` is returned and this is the first time we have pulled the queue since its creation, we will yield a `chat_schema.PendingResponseEvent`. The loop will continue, with 1 second blocking (by default), until a message item is returned. A message item is a tuple where the first element is a string of the message id, and the second element is a response.
+If `None` is returned and this is the first time we have polled the queue since its creation, we will yield a `chat_schema.PendingResponseEvent`. The loop will continue, with 1 second blocking (by default), until a message item is returned. A message item is a tuple where the first element is a string of the message id, and the second element is a response.
 
-The EventSourceResponse is Server Sent Events (SSE) plugin for Starlette/FastAPI, which takes content
-and returns it as part of a HTTP event stream. You can check out the EventSourceResposethe library's [source code](https://github.com/sysid/sse-starlette/tree/master) for more details about how this works.
+The EventSourceResponse is Server Sent Events (SSE) plugin for Starlette/FastAPI, which takes content and returns it as part of a HTTP event stream. You can check out the EventSourceResposethe library's [source code](https://github.com/sysid/sse-starlette/tree/master) for more details about how this works.
 
 ### From the perspective of the OA Worker
 
