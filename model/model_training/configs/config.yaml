@@ -360,8 +360,8 @@ lora-llama-13b:
   dtype: fp16
   log_dir: "llama_lora_log_13b"
   learning_rate: 5e-5
-  model_name: "/admin/home-jordiclive/llama/13B"
-  output_dir: llama_model
+  model_name: /home/ubuntu/llama_hf/13B
+  output_dir: llama_model_13b_lora
   weight_decay: 0.0
   max_length: 2048
   warmup_steps: 300
@@ -384,8 +384,8 @@ lora-llama-30b:
   dtype: fp16
   log_dir: "llama_lora_log_30b"
   learning_rate: 5e-5
-  model_name: "/admin/home-jordiclive/llama/30B"
-  output_dir: llama_model
+  model_name: /home/ubuntu/llama_hf/30B
+  output_dir: llama_model_30b_lora
   weight_decay: 0.0
   max_length: 2048
   warmup_steps: 300
@@ -408,8 +408,8 @@ lora-llama-65b:
   dtype: fp16
   log_dir: "llama_lora_log_65b"
   learning_rate: 5e-5
-  model_name: "/admin/home-jordiclive/llama/65B"
-  output_dir: llama_model
+  model_name: /home/ubuntu/llama_hf/65B
+  output_dir: llama_model_65b_lora
   weight_decay: 0.0
   max_length: 2048
   warmup_steps: 300
@@ -423,7 +423,7 @@ lora-llama-65b:
   save_strategy: epoch
   use_flash_attention: True
   residual_dropout: 0.0
-  deepspeed_config: "zero_config_sft_65b.json"
+  deepspeed_config: configs/zero_config_sft_65b.json
   peft_model: true
   peft_type: "lora"
   use_custom_sampler: true
