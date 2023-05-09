@@ -53,7 +53,11 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   return (
     <Stack direction={"column"}>
       <div style={{ position: "relative" }}>
-        <MarkDownEditor value={props.text} onChange={props.onTextChange} />
+        <MarkDownEditor
+          value={props.text}
+          onChange={props.onTextChange}
+          placeholder={props.textareaProps?.placeholder}
+        />
         <div
           style={{
             fontSize: "0.7em",

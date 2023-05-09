@@ -55,11 +55,11 @@ const sx: BoxProps["sx"] = {
   },
 };
 
-export const MarkDownEditor = (props: { value: string; onChange: (value: string) => void }) => {
+export const MarkDownEditor = (props: { value: string; onChange: (value: string) => void; placeholder?: string }) => {
   const { t } = useTranslation("tasks");
   return (
     <Box sx={sx}>
-      <Editor mode="split" editorConfig={editorConfig} plugins={plugins} {...props} />
+      <Editor mode="split" editorConfig={editorConfig} plugins={plugins} {...props} data-cy="reply" />
       <Link
         href="https://www.markdownguide.org/basic-syntax"
         rel="noopener noreferrer nofollow"
