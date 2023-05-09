@@ -137,7 +137,9 @@ const authOptions: AuthOptions = {
      * Update the user's role after they have successfully signed in
      */
     async signIn({ user, account, isNewUser }) {
-      if (isNewUser && account.provider === "email") {
+      if (isNewUser && account.provider === "email" && !user.name) {
+        // only generate a username if the user is new and they signed up with email and they don't have a name
+        // although the name already assigned in the jwt callback, this is to ensure notthing breaks, and we should never reach here.
         await prisma.user.update({
           data: {
             name: generateUsername(),
@@ -200,6 +202,25 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           select: { name: true, role: true, isNew: true, accounts: true, id: true },
         });
 
+        if (!frontendUser) {
+          // should never reach here
+          throw new Error("User not found");
+        }
+
+        // TODO avoid duplicate logic with the signIn event
+        if (frontendUser.isNew && !frontendUser.name) {
+          // jwt callback is called before signIn event, so we need to assign the name here otherwise the backend will refuse the request
+          frontendUser.name = generateUsername();
+          await prisma.user.update({
+            data: {
+              name: frontendUser.name,
+            },
+            where: {
+              id: frontendUser.id,
+            },
+          });
+        }
+
         const backendUser = convertToBackendUserCore(frontendUser);
         if (backendUser.auth_method === "discord") {
           const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
@@ -214,22 +235,9 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
         if (!token.tosAcceptanceDate || !token.backendUserId) {
           const oasstApiClient = createApiClientFromUser(backendUser);
 
-          try {
-            /**
-             * when first creating a new user, the python backend is not informed about it
-             * so this call will return a 404
-             *
-             * in the frontend, when the user accepts the tos, we do a full refresh
-             * which means this function will be called again.
-             */
-            const { user_id, tos_acceptance_date } = await oasstApiClient.fetch_frontend_user(backendUser);
-            token.backendUserId = user_id;
-            token.tosAcceptanceDate = tos_acceptance_date;
-          } catch (err) {
-            if (err.httpStatusCode !== 404) {
-              throw err;
-            }
-          }
+          const frontendUser = await oasstApiClient.upsert_frontend_user(backendUser);
+          token.backendUserId = frontendUser.user_id;
+          token.tosAcceptanceDate = frontendUser.tos_acceptance_date;
         }
         return token;
       },

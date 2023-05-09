@@ -11,7 +11,6 @@ import {
 import { useColorMode } from "@chakra-ui/react";
 import { Discord, Google } from "@icons-pack/react-simple-icons";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
-import { boolean } from "boolean";
 import { Bug, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -25,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
 import { Role, RoleSelect } from "src/components/RoleSelect";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 export type SignInErrorTypes =
   | "Signin"
@@ -55,15 +55,16 @@ const errorMessages: Record<SignInErrorTypes, string> = {
   default: "Unable to sign in.",
 };
 
+const REDIRECT_AFTER_LOGIN = "/chat";
+
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
-  enableEmailSignin: boolean;
-  enableEmailSigninCaptcha: boolean;
-  cloudflareCaptchaSiteKey: string;
 }
 
-function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudflareCaptchaSiteKey }: SigninProps) {
+function Signin({ providers }: SigninProps) {
   const router = useRouter();
+  const { ENABLE_EMAIL_SIGNIN: enableEmailSignin, ENABLE_EMAIL_SIGNIN_CAPTCHA: enableEmailSigninCaptcha } =
+    useBrowserConfig();
   const { discord, email, google, credentials } = providers;
   const [error, setError] = useState("");
 
@@ -91,11 +92,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
         <Stack spacing="2">
           {credentials && <DebugSigninForm providerId={credentials.id} />}
           {email && enableEmailSignin && (
-            <EmailSignInForm
-              providerId={email.id}
-              enableEmailSigninCaptcha={enableEmailSigninCaptcha}
-              cloudflareCaptchaSiteKey={cloudflareCaptchaSiteKey}
-            />
+            <EmailSignInForm providerId={email.id} enableEmailSigninCaptcha={enableEmailSigninCaptcha} />
           )}
           {discord && (
             <Button
@@ -105,7 +102,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               size="lg"
               color="white"
               leftIcon={<Discord />}
-              onClick={() => signIn(discord.id, { callbackUrl: "/" })}
+              onClick={() => signIn(discord.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Discord
             </Button>
@@ -118,7 +115,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               size="lg"
               color="white"
               leftIcon={<Google />}
-              onClick={() => signIn(google.id, { callbackUrl: "/" })}
+              onClick={() => signIn(google.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Google
             </Button>
@@ -151,11 +148,9 @@ export default Signin;
 const EmailSignInForm = ({
   providerId,
   enableEmailSigninCaptcha,
-  cloudflareCaptchaSiteKey,
 }: {
   providerId: string;
   enableEmailSigninCaptcha: boolean;
-  cloudflareCaptchaSiteKey: string;
 }) => {
   const {
     register,
@@ -166,7 +161,7 @@ const EmailSignInForm = ({
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
   const signinWithEmail = (data: { email: string }) => {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       email: data.email,
       captcha: captcha.current?.getResponse(),
     });
@@ -191,7 +186,6 @@ const EmailSignInForm = ({
         </FormControl>
         {enableEmailSigninCaptcha && (
           <CloudFlareCaptcha
-            siteKey={cloudflareCaptchaSiteKey}
             options={{ size: "invisible" }}
             ref={captcha}
             onSuccess={() => setCaptchaSuccess(true)}
@@ -240,7 +234,7 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       ...data,
     });
   }
@@ -271,16 +265,10 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
 export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale = "en" }) => {
   const providers = (await getProviders())!;
-  const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
-  const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
-  const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;
   return {
     props: {
       providers,
-      enableEmailSignin,
-      enableEmailSigninCaptcha,
-      cloudflareCaptchaSiteKey,
-      ...(await serverSideTranslations(locale, ["common"])),
+      ...(await serverSideTranslations(locale)),
     },
   };
 };

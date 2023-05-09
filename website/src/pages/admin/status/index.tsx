@@ -16,10 +16,10 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { AdminArea } from "src/components/AdminArea";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 /**
  * Provides the admin status page that shows result of calls to several backend API endpoints,
@@ -147,6 +147,6 @@ const StatusIndex = () => {
   );
 };
 
-StatusIndex.getLayout = getAdminLayout;
+StatusIndex.getLayout = AdminLayout;
 
 export default StatusIndex;

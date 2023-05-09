@@ -1,17 +1,15 @@
 import { withoutRole } from "src/lib/auth";
-import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
+import { PluginEntry } from "src/types/Chat";
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  if (!isChatEnable()) {
-    return res.status(404).end();
-  }
   const client = createInferenceClient(token);
-  const { chat_id } = req.body as { chat_id: string };
 
-  await client.hide_chat({ chat_id });
-
-  res.status(200).end();
+  const data = await client.get_plugins();
+  if (data) {
+    return res.status(200).json(data);
+  }
+  res.status(400).end();
 });
 
 export default handler;

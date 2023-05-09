@@ -29,6 +29,6 @@ declare module "next-auth/jwt" {
     /** id of user in the data backend */
     backendUserId?: string;
     /** Iso timestamp of the user's acceptance of the terms of service */
-    tosAcceptanceDate?: string;
+    tosAcceptanceDate: string | null;
   }
 }

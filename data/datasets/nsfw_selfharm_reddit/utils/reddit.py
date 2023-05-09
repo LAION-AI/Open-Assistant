@@ -28,7 +28,7 @@ def init_praw_reddit(client_id: str | None = None, client_secret: str | None = N
 def scrap_subreddit(subreddit: str, reddit) -> pd.DataFrame | None:
     """
     Scrap "hot", "top", "rising" given a subreddit and return
-    dedupped DataFrame.
+    deduped DataFrame.
     """
     items = []
     dfs = []

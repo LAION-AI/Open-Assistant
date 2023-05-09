@@ -1,10 +1,10 @@
 import { Card, CardBody, CircularProgress } from "@chakra-ui/react";
 import Head from "next/head";
 import { AdminArea } from "src/components/AdminArea";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 export default function Parameters() {
   const { data, isLoading, error } = useSWRImmutable("/api/admin/parameters", get);
@@ -33,4 +33,4 @@ export default function Parameters() {
   );
 }
 
-Parameters.getLayout = getAdminLayout;
+Parameters.getLayout = AdminLayout;

@@ -1,0 +1,16 @@
+{
+  "default": "Nešto nije u redu!",
+  "err_1000": "Nevažeći tip zadatka",
+  "err_1001": "Potvrda zadatka nije uspela",
+  "err_1002": "Nepotvrda zadatka nije uspela",
+  "err_1003": "Nevažeći tip odgovora",
+  "err_1004": "Zahtev za interakciju nije uspeo",
+  "err_1005": "Generisanje zadatka nije uspelo",
+  "err_1006": "Nema zadataka tipa {{task_type}} koji su trenutno dostupni.",
+  "err_1007": "Upit o dostupnosti zadatka nije uspeo",
+  "err_1008": "Veličina poruke je predugačka",
+  "err_1009": "Vaše nedavne poruke imaju duplikate",
+  "err_1010": "Tekst poruke je prazan",
+  "err_1011": "Ne možete dvaput odgovoriti na istu poruku",
+  "err_1012": "Imate previše zadataka na čekanju. Pokušajte ponovo za nekoliko minuta."
+}

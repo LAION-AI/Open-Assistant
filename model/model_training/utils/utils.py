@@ -9,10 +9,10 @@ from typing import List, NamedTuple
 import evaluate
 import torch
 import transformers
+import tritonclient.grpc as client_util
 import yaml
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
@@ -20,6 +20,9 @@ from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
+from tritonclient.utils import np_to_triton_dtype
+
+from .losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 
 
 def _strtobool(x):
@@ -31,6 +34,12 @@ def init_rng(conf: argparse.Namespace) -> None:
     if seed is not None:
         print(f"RNG seed: {seed}")
         transformers.set_seed(seed)
+
+
+def prepare_tensor(name: str, input):
+    t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
+    t.set_data_from_numpy(input)
+    return t
 
 
 class PerDatasetSampler(DistributedSampler):
@@ -290,7 +299,7 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, check_freeze_layer=True):
     dtype = torch.float32
     if conf.dtype in ["fp16", "float16"]:
         dtype = torch.float16
@@ -300,6 +309,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
             model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
+
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
@@ -318,12 +328,13 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
         )
 
         n_embs = model.get_input_embeddings().num_embeddings
-        if len(tokenizer) != n_embs:
+        if len(tokenizer) != n_embs and check_freeze_layer:
             assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-        if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+        if len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of:
             p = pad_vocab_size_to_multiple_of
             target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+            print("Resizing embeddings to", target_size)
             model.resize_token_embeddings(target_size)
 
         if conf.freeze_layer:
@@ -333,11 +344,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
 
-    patch_model(
-        model,
-        resid_pdrop=conf.residual_dropout,
-        flash_attention=conf.use_flash_attention,
-    )
+    patch_model(model, resid_pdrop=conf.residual_dropout, flash_attention=conf.use_flash_attention)
 
     return model
 

@@ -13,7 +13,7 @@ export default function ChatConfigSummary() {
       <Text>{t("model")}</Text>
       <Text>{config["model_config_name"]}</Text>
       {Object.entries(config)
-        .filter(([key, value]) => key !== "model_config_name" && value !== null)
+        .filter(([key, value]) => key !== "model_config_name" && key !== "plugins" && value !== null)
         .map(([key, value]) => (
           <React.Fragment key={key}>
             <Text>{t(key as any)}</Text>

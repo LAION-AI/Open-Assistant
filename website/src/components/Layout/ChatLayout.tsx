@@ -1,33 +1,39 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
+import { PropsWithChildren } from "react";
+import { useSidebarItems } from "src/hooks/layout/sidebarItems";
 
 import { ChatListDesktop } from "../Chat/ChatListDesktop";
 import { ChatListMobile } from "../Chat/ChatListMobile";
-import { SlimFooter } from "../Dashboard/SlimFooter";
-import { HeaderLayout } from "../Header/Header";
-import { getDashBoardLayoutSidebarItem } from "../Layout";
-import { SideMenuLayout } from "../SideMenuLayout";
+import { Header } from "../Header/Header";
+import { SideMenuItem } from "../SideMenu";
 import { ToSWrapper } from "../ToSWrapper";
 
-export const getChatLayout = (page: React.ReactElement) => (
-  <HeaderLayout preLogoSlot={<ChatListMobile />}>
+export const ChatLayout = ({ children }: PropsWithChildren) => (
+  <div className="min-h-screen h-screen max-h-screen flex flex-col overflow-hidden">
+    <Header fixed={false} preLogoSlot={<ChatListMobile />}></Header>
     <ToSWrapper>
-      <SideMenuLayout
-        collapsed
-        items={getDashBoardLayoutSidebarItem()}
-        innerBoxProps={{
-          ms: { base: 0, lg: 6 },
-        }}
-      >
-        <Flex gap={{ md: 4, lg: 6 }}>
-          <ChatListDesktop></ChatListDesktop>
-          <Box flexGrow="1">
-            <Box>{page}</Box>
-            <Box mt="10">
-              <SlimFooter />
-            </Box>
-          </Box>
+      <div className="flex min-h-0 h-full">
+        <Flex
+          direction="column"
+          gap="2"
+          px="2"
+          display={{ base: "none", sm: "flex" }}
+          _light={{
+            bg: "gray.50",
+          }}
+          _dark={{
+            bg: "blackAlpha.200",
+          }}
+          height="full"
+          pt="4"
+        >
+          {useSidebarItems().map((item) => (
+            <SideMenuItem key={item.labelID} item={item} variant="chat" active={item.labelID === "chat"}></SideMenuItem>
+          ))}
         </Flex>
-      </SideMenuLayout>
+        <ChatListDesktop />
+        {children}
+      </div>
     </ToSWrapper>
-  </HeaderLayout>
+  </div>
 );

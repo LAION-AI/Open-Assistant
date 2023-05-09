@@ -10,12 +10,16 @@ def split_keys_string(keys: str | None):
 
 
 class Settings(pydantic.BaseSettings):
+    PROJECT_NAME: str = "open-assistant inference server"
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
 
     message_queue_expire: int = 60
     work_queue_max_size: int | None = None
+
+    chat_max_messages: int | None = None
+    message_max_length: int | None = None
 
     allowed_worker_compat_hashes: str = "*"
 

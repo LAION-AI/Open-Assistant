@@ -8,7 +8,7 @@ import { useTranslation } from "next-i18next";
 import React from "react";
 import { ReactNode } from "react";
 import { LanguageSelector } from "src/components/LanguageSelector";
-import { getEnv } from "src/lib/browserEnv";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
@@ -33,16 +33,16 @@ function AccountButton() {
 
 export const HEADER_HEIGHT = "82px";
 
-export type HeaderProps = { preLogoSlot?: ReactNode };
+export type HeaderProps = { preLogoSlot?: ReactNode; fixed?: boolean };
 
 const ANNOUNCEMENT_CACHE_KEY = "announcement";
 
-export function Header({ preLogoSlot }: HeaderProps) {
+export function Header({ preLogoSlot, fixed = true }: HeaderProps) {
   const { t } = useTranslation();
   const { data: session } = useSession();
+  const { CURRENT_ANNOUNCEMENT: announcement } = useBrowserConfig();
   const homeURL = session ? "/dashboard" : "/";
 
-  const announcement = getEnv().CURRENT_ANNOUNCEMENT;
   let announcementInCache = "";
   if (typeof localStorage !== "undefined") {
     announcementInCache = localStorage.getItem(ANNOUNCEMENT_CACHE_KEY);
@@ -66,7 +66,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
       {initialShowAnnouncement && showAnnouncement && (
         <Box
           zIndex={30}
-          position="fixed"
+          position={fixed ? "fixed" : "relative"}
           backgroundColor="yellow.400"
           display="flex"
           justifyContent="center"
@@ -87,7 +87,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
         display="flex"
         justifyContent="space-between"
         p="4"
-        position="fixed"
+        position={fixed ? "fixed" : "relative"}
         zIndex={20}
         w="full"
         height={HEADER_HEIGHT}
@@ -103,7 +103,6 @@ export function Header({ preLogoSlot }: HeaderProps) {
             </Text>
           </Flex>
         </Flex>
-
         <Flex alignItems="center" gap={["2", "4"]}>
           <LanguageSelector />
           <AccountButton />

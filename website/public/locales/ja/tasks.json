@@ -4,7 +4,8 @@
   "default": {
     "unchanged_title": "変更なし",
     "unchanged_message": "継続しますか？",
-    "continue_anyway": "続ける"
+    "continue_anyway": "続ける",
+    "markdownguide": "Markdownでのスタイリングがサポートされています"
   },
   "no_more_tasks": "タスクが無かったようです。",
   "random": {
@@ -16,20 +17,23 @@
     "desc": "Open Assistantに様々なメッセージへの返答を学ばせるため、最初のプロンプトを作成します。（抽選に参加）",
     "overview": "アシスタントに送る最初のメッセージを作成します。",
     "instruction": "最初のメッセージをどうぞ",
-    "response_placeholder": "プロンプトはこちらへ..."
+    "response_placeholder": "プロンプトはこちらへ...",
+    "shotcut_tip": "ヒント：キーボードショートカットを使って、回答を確認して提出できます："
   },
   "reply_as_user": {
     "label": "ユーザとして返信",
     "desc": "チャットを通して、Open Assistantの応答力を鍛えます。",
     "overview": "会話の流れを見て、適切に返信してください。",
     "instruction": "ユーザの返信をどうぞ",
-    "response_placeholder": "返信はこちらへ..."
+    "response_placeholder": "返信はこちらへ...",
+    "shotcut_tip": "ヒント：キーボードショートカットを使って、回答を確認して提出できます："
   },
   "reply_as_assistant": {
     "label": "アシスタントとして返信",
     "desc": "他のユーザとの会話で、Open Assistantの応答力を鍛えます。",
     "overview": "次の会話に、適切な返信をしてください。",
-    "response_placeholder": "返信はこちらへ..."
+    "response_placeholder": "返信はこちらへ...",
+    "shotcut_tip": "ヒント：キーボードショートカットを使って、回答を確認して提出できます："
   },
   "rank_user_replies": {
     "label": "ユーザの返答を順位付け",
@@ -37,7 +41,7 @@
     "overview": "ユーザの返信を、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
     "unchanged_title": "順番が変わっていません",
     "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
-    "continue_anyway": "大丈夫"
+    "continue_anyway": "続ける"
   },
   "rank_assistant_replies": {
     "label": "アシスタントの返信を順位付け",
@@ -45,7 +49,7 @@
     "overview": "アシスタントの返答を、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
     "unchanged_title": "順番が変わっていません",
     "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
-    "continue_anyway": "大丈夫"
+    "continue_anyway": "続ける"
   },
   "rank_initial_prompts": {
     "label": "始点プロンプトを順位付け",
@@ -53,7 +57,7 @@
     "overview": "始点プロンプトを、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
     "unchanged_title": "順番が変わっていません",
     "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
-    "continue_anyway": "大丈夫"
+    "continue_anyway": "続ける"
   },
   "label_initial_prompt": {
     "label": "始点プロンプトをラベル付け",
@@ -88,5 +92,6 @@
   "submitted_as": "{{submit_lang}}で登録されます。",
   "tab_write": "書き込み",
   "tab_preview": "プレビュー",
-  "writing_wrong_langauge_a_b": "{{detected_lang}}でお書きのようですが、{{submit_lang}}として登録されます。"
+  "writing_wrong_langauge_a_b": "{{detected_lang}}でお書きのようですが、{{submit_lang}}として登録されます。",
+  "not_rankable": "すべての回答が事実に基づいておらず、ランク付けできません"
 }

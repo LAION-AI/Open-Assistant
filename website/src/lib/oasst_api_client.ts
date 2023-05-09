@@ -319,10 +319,11 @@ export class OasstApiClient {
     user_id: string,
     is_enabled: boolean,
     notes: string,
-    show_on_leaderboard: boolean
+    show_on_leaderboard: boolean,
+    display_name: string
   ): Promise<void> {
     await this.put(
-      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}`
+      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}&display_name=${display_name}`
     );
   }
 
@@ -400,7 +401,7 @@ export class OasstApiClient {
 
   async set_tos_acceptance(user: BackendUserCore) {
     // NOTE: we do a post here to force create the user if it does not exist
-    const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);
+    const backendUser = await this.upsert_frontend_user(user);
     await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
   }
 
@@ -417,6 +418,12 @@ export class OasstApiClient {
 
   fetch_frontend_user(user: BackendUserCore) {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+  }
+
+  // TODO: add update-able fields eg: enbaled, notes, show_on_leaderboard, etc..
+  upsert_frontend_user(user: BackendUserCore) {
+    // the backend does a upsert operation with this call
+    return this.post<BackendUser>(`/api/v1/frontend_users/`, user);
   }
 
   fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled }: { limit?: number; enabled?: boolean }) {

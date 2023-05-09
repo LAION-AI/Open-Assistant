@@ -163,7 +163,7 @@ It has another Postgres database, the "backend database", called just `db` in
 the Dockerfile.
 
 There's also a Redis database, called `redis` in the Dockerfile, for caching API
-requets.
+requests.
 
 In the Dockerfile, there are also two containers with development support tools
 for the databases: `adminer`, which can be used to inspect the Postgres
@@ -243,12 +243,15 @@ website directory.
 
 - `inference`. It includes these containers:
 
-  - `inference-db`, `inference-server`, `inference-worker`, `inference-redis`,
-    `inference-safety`
+  - `inference-db`, `inference-server`, `inference-worker`, `inference-redis`
 
 - `inference-dev`. It includes these containers:
 
   - `db`, `web-db`, `backend`
+
+- `inference-safety`. It includes these containers:
+
+  - `inference-safety`
 
 - `observability`. It includes tools to monitor the application. It includes
   these containers:
@@ -306,7 +309,7 @@ There are ansible playbooks in the
 directory.
 
 In addition to the production deployment, available at the project website,
-<https://open-assistant.io/es>, there's also a staging deployment at
+<https://open-assistant.io/>, there's also a staging deployment at
 <https://web.staging.open-assistant.io/>.
 
 ## The teams
