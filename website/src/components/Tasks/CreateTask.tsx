@@ -41,8 +41,7 @@ export const CreateTask = ({
   const [inputText, setInputText] = useState("");
   const [isDesktop] = useMediaQuery("(min-width: 800px)");
 
-  const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = event.target.value;
+  const textChangeHandler = (text: string) => {
     onReplyChanged({ text });
     const isTextBlank = !text || /^\s*$/.test(text);
     if (!isTextBlank) {
