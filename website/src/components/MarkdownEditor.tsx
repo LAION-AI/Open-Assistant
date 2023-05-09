@@ -59,6 +59,7 @@ const sx: BoxProps["sx"] = {
 export const MarkDownEditor = (props: { value: string; onChange: (value: string) => void; placeholder?: string }) => {
   const { t } = useTranslation("tasks");
   useEffect(() => {
+    // hack to support cypress testing
     document?.querySelector(".bytemd-editor").setAttribute("data-cy", "reply");
   }, []);
   return (
