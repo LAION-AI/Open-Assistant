@@ -44,7 +44,8 @@ class Utterance(BaseModel):
     @validator("quality", "humor", "creativity")
     def between_0_1(cls, v, field: ModelField) -> float:
         if v is not None and not (0 <= v <= 1):
-            raise ValueError(f"Field {field.name} must be between 0 and 1. Received {v}.")
+            raise ValueError(f"Field {field.name} must be between 0 and 1. Received: {v}")
+        return v
 
     def system_tag(
         self,
@@ -57,18 +58,18 @@ class Utterance(BaseModel):
             return ""
 
         properties: list[tuple[float | str]] = []
-        for k, v in self.__dict__.items():
+        for k, v in self.dict().items():
             if v is not None and k in ["lang", "quality", "humor", "creativity"]:
-                properties.add((k, v))
+                properties.append((k, v))
 
         if add_length:
-            properties.add("length", compute_length(self.text))
+            properties.append(("length", compute_length(self.text)))
 
         shuffle(properties)
 
-        # ensure that conext comes last since it can be multi-line
+        # ensure that potentially multi-line conext field comes last
         if self.context:
-            properties.add(("context", self.context))
+            properties.append(("context", self.context))
 
         fragments: list[str] = []
         for k, v in properties:
@@ -78,7 +79,7 @@ class Utterance(BaseModel):
             if isinstance(v, float):
                 fragments.append(f"{k}: {v:0.1f}")
             elif isinstance(v, str):
-                if not v.isspace():
+                if not v.isspace():  # ignore whitespace-only values
                     fragments.append(f"{k}: {v}")
             else:
                 fragments.append(f"{k}: {v}")
@@ -147,12 +148,15 @@ class DatasetEntry(BaseModel):
                 if a is None or a.text is None:
                     raise ValueError("Received question without corresponding answer.")
 
-                system_tag = a.system_tag(
-                    eos_token=eos_token,
-                    enabled=use_system_tag,
-                    property_dropout=system_property_dropout,
-                    add_length=system_add_length,
-                )
+                if use_system_tag:
+                    system_tag = a.system_tag(
+                        eos_token=eos_token,
+                        property_dropout=system_property_dropout,
+                        add_length=system_add_length,
+                    )
+                else:
+                    system_tag = ""
+
                 qa_list.extend(
                     [
                         f"{QA_SPECIAL_TOKENS['Question']}{q.text}{eos_token}{system_tag}",

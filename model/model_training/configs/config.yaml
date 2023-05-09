@@ -85,6 +85,11 @@ defaults:
   is_reward_model: false
   deepspeed_config: configs/zero_config.json
 
+no_system_tag:
+  use_system_tag: false
+  system_property_dropout: 0
+  system_add_length: false
+
 webgpt_dataset_only:
   datasets:
     - webgpt
@@ -338,6 +343,58 @@ llama-30b-sft-6:
     - code_alpaca:
         val_split: 0.05
         max_val_set: 250
+
+llama-30b-sft-8:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  model_name: .saved/llama-30b-super-pretrain2
+  #model_name: OpenAssistant/llama-30b-pre-v8-13k-steps
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_sft.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 20
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 251
+  save_steps: 500
+  num_train_epochs: 8
+  save_total_limit: 3
+  use_custom_sampler: true
+  sort_by_length: false
+  save_strategy: steps
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+    - vicuna:
+        val_split: 0.05
+        max_val_set: 800
+        fraction: 0.4
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+    - red_pajama:
+        fraction: 0.05
+        max_val_set: 1000
+    - wizardlm_70k:
+        val_split: 0.05
+        max_val_set: 500
+        fraction: 0.4
+    - poem_instructions:
+        fraction: 0.5
+        val_split: 0.025
 
 llama-30b-pretrain:
   dtype: fp16
