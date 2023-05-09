@@ -97,6 +97,7 @@ class DbChat(SQLModel, table=True):
             modified_at=self.modified_at,
             title=self.title,
             hidden=self.hidden,
+            allow_data_use=self.allow_data_use,
         )
 
     def to_read(self) -> chat_schema.ChatRead:
@@ -107,6 +108,7 @@ class DbChat(SQLModel, table=True):
             title=self.title,
             messages=[m.to_read() for m in self.messages],
             hidden=self.hidden,
+            allow_data_use=self.allow_data_use,
         )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
