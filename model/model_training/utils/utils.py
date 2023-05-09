@@ -9,8 +9,6 @@ from typing import List, NamedTuple
 import evaluate
 import torch
 import transformers
-
-# import tritonclient.grpc as client_util
 import yaml
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
@@ -24,8 +22,6 @@ from torch.utils.data.distributed import DistributedSampler
 
 from .losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 
-# from tritonclient.utils import np_to_triton_dtype
-
 
 def _strtobool(x):
     return bool(strtobool(x))
@@ -36,12 +32,6 @@ def init_rng(conf: argparse.Namespace) -> None:
     if seed is not None:
         print(f"RNG seed: {seed}")
         transformers.set_seed(seed)
-
-
-# def prepare_tensor(name: str, input):
-#     t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
-#     t.set_data_from_numpy(input)
-#     return t
 
 
 class PerDatasetSampler(DistributedSampler):
