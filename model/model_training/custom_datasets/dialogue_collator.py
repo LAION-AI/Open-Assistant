@@ -35,6 +35,7 @@ class DialogueDataCollator:
     system_prefix: str = None
     use_system_tag: bool = False
     system_property_dropout: float = 0.5
+    system_add_length: bool = True
 
     def __post_init__(self):
         assert self.tokenizer.eos_token
@@ -64,6 +65,7 @@ class DialogueDataCollator:
                 eos_token=self.tokenizer.eos_token,
                 use_system_tag=self.use_system_tag,
                 system_property_dropout=self.system_property_dropout,
+                system_add_length=self.system_add_length,
             )
         elif isinstance(messages, PretrainDatasetEntry):
             messages = messages.text

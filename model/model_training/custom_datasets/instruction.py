@@ -71,5 +71,7 @@ class InstructionDataset(Dataset):
         if self.name in ["grade_school_math_instructions"]:
             lang = "en"
         return DatasetEntry.from_strings(
-            questions=[data[self.instruction_column]], answers=[data[self.response_column]], lang=lang
+            questions=[data[self.instruction_column]],
+            answers=[data[self.response_column]],
+            lang=lang,
         )

@@ -80,6 +80,7 @@ defaults:
     2023-03-12"
   use_system_tag: true
   system_property_dropout: 0.5
+  system_add_length: true
   per_digit_tokens: false
   is_reward_model: false
   deepspeed_config: configs/zero_config.json

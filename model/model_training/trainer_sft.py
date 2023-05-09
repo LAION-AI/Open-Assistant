@@ -333,6 +333,7 @@ def main():
         system_prefix=training_conf.system_prefix,
         use_system_tag=training_conf.use_system_tag,
         system_property_dropout=training_conf.system_property_dropout,
+        system_add_length=training_conf.system_add_length,
     )
 
     if training_conf.val_max_length is None:
@@ -348,6 +349,7 @@ def main():
         system_prefix=training_conf.system_prefix,
         use_system_tag=training_conf.use_system_tag,
         system_property_dropout=training_conf.system_property_dropout,
+        system_add_length=training_conf.system_add_length,
     )
 
     train, evals = get_dataset(training_conf)

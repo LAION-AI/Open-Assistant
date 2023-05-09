@@ -8,7 +8,7 @@ import random
 import re
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 from urllib.request import urlopen
 
 import numpy as np
@@ -213,7 +213,11 @@ class WebGPT(Dataset):
             # 2, but there are examples where we have more)
             answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
             self.rows.append(
-                DatasetEntry.from_strings(questions=[question], answers=[answers_sorted[:max_answers]], lang="en")
+                DatasetEntry.from_strings(
+                    questions=[question],
+                    answers=[answers_sorted[:max_answers]],
+                    lang="en",
+                )
             )
 
     def __len__(self) -> int:
@@ -429,7 +433,7 @@ def load_alpaca_dataset(
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(dataset: Subset, set_lang_as_eng: bool = False) -> list[tuple[str, str]]:
+    def process_split(dataset: Subset, lang: Optional[str] = None) -> list[DatasetEntry]:
         data = []
 
         for row in dataset:
@@ -441,10 +445,7 @@ def load_alpaca_dataset(
             if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
                 continue
 
-            if set_lang_as_eng is True:
-                ds_entry = DatasetEntry.from_strings(questions=[input_], answers=[row["output"]], lang="en")
-            else:
-                ds_entry = DatasetEntry.from_strings(questions=[input_], answers=[row["output"]])
+            ds_entry = DatasetEntry.from_strings(questions=[input_], answers=[row["output"]], lang=lang)
             data.append(ds_entry)
         return data
 

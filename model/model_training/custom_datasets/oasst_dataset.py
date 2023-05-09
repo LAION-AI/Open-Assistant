@@ -109,7 +109,7 @@ def load_oasst_export(
         threads_per_tree.append(threads)
 
     def process_thread(thread: list[ExportMessageNode]):
-        if mode == "sft" or mode == "rl":
+        if mode == "sft":
             # verify that roles strictly alternate
             assert all(m.role == "prompter" for m in thread[0::2]) and all(m.role == "assistant" for m in thread[1::2])
             conversation: list[Utterance] = [
@@ -130,6 +130,8 @@ def load_oasst_export(
             replies = sorted(replies, key=lambda r: r.rank)
             replies = [r.text for r in replies]
             return (prefix, replies)
+        elif mode == "rl":
+            return ([m.text for m in thread],)
 
         raise RuntimeError()
 
