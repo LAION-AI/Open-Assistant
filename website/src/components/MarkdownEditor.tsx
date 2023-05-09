@@ -5,6 +5,7 @@ import math from "@bytemd/plugin-math";
 import { Editor } from "@bytemd/react";
 import { Box, BoxProps, Flex, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
+import { useEffect } from "react";
 
 const editorConfig = {
   autofocus: true,
@@ -57,6 +58,9 @@ const sx: BoxProps["sx"] = {
 
 export const MarkDownEditor = (props: { value: string; onChange: (value: string) => void; placeholder?: string }) => {
   const { t } = useTranslation("tasks");
+  useEffect(() => {
+    document?.querySelector(".bytemd-editor").setAttribute("data-cy", "reply");
+  }, []);
   return (
     <Box sx={sx}>
       <Editor mode="split" editorConfig={editorConfig} plugins={plugins} {...props} data-cy="reply" />
