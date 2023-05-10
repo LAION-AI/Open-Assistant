@@ -152,16 +152,13 @@ def handle_plugin_usage(
 
     # Tool name/assistant prefix, Tool input/assistant response
     prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
-
-    # whether model decided to use Plugin or not
     assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
-    # Check if there is need to go deeper
     while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
         tool_response = use_tool(prefix, response, tools)
 
-        # Save previous chain response, that we will use for the final prompt
+        # Save previous chain response for use in final prompt
         prev_chain_response = chain_response
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
 
