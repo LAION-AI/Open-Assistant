@@ -36,6 +36,7 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID) ->
         res = requests.post(
             f"{ROOT_ENDPOINT}/channels/{settings.DISCORD_CHANNEL_ID}/messages",
             headers={
+                "user-agent": "DiscordBot (http://open-assistant.io, 1)",
                 "authorization": f"Bot {settings.DISCORD_API_KEY}",
             },
             json={
