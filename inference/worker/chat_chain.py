@@ -191,16 +191,16 @@ def handle_plugin_usage(
             chain_response = prev_chain_response
             assisted = True
 
-        the_plugin: inference.PluginEntry | None = None
-        for plugin_ in plugins:
-            if getattr(plugin_.plugin_config, "name_for_human", None) == used_plugin_name:
-                the_plugin = plugin_
+        single_used_plugin: inference.PluginEntry | None = None
+        for possible_plugin in plugins:
+            if getattr(possible_plugin.plugin_config, "name_for_human", None) == used_plugin_name:
+                single_used_plugin = possible_plugin
                 break
 
-        if isinstance(the_plugin, inference.PluginEntry) and used_plugin_name not in plugins_used.name:
-            plugins_used.names.append(getattr(the_plugin.plugin_config, "name_for_human", None))
-            plugins_used.trusted.append(getattr(the_plugin, "trusted", None))
-            plugins_used.urls.append(getattr(the_plugin, "url", None))
+        if isinstance(single_used_plugin, inference.PluginEntry) and used_plugin_name not in plugins_used.name:
+            plugins_used.names.append(getattr(single_used_plugin.plugin_config, "name_for_human", None))
+            plugins_used.trusted.append(getattr(single_used_plugin, "trusted", None))
+            plugins_used.urls.append(getattr(single_used_plugin, "url", None))
 
         # Now LLM is done with using the plugin,
         # so we need to generate the final prompt
@@ -240,22 +240,22 @@ def handle_plugin_usage(
         achieved_depth += 1
 
     if not plugins_used[used_plugin_name]:
-        for plugin_ in plugins:
-            if getattr(plugin_.plugin_config, "name_for_human", None) == used_plugin_name:
-                the_plugin = plugin_
+        for possible_plugin in plugins:
+            if getattr(possible_plugin.plugin_config, "name_for_human", None) == used_plugin_name:
+                single_used_plugin = possible_plugin
         plugins_used[used_plugin_name] = (
             inference.PluginUsed(
                 name=used_plugin_name,
-                url=getattr(the_plugin, "url", None),
+                url=getattr(single_used_plugin, "url", None),
                 execution_details=execution_details,
             ),
-            the_plugin,
+            single_used_plugin,
         )
-    plugin_used, the_plugin = plugins_used[used_plugin_name]
+    plugin_used, single_used_plugin = plugins_used[used_plugin_name]
 
-    plugin_used.name = getattr(the_plugin.plugin_config, "name_for_human", None)
-    plugin_used.trusted = getattr(the_plugin, "trusted", None)
-    plugin_used.url = getattr(the_plugin, "url", None)
+    plugin_used.name = getattr(single_used_plugin.plugin_config, "name_for_human", None)
+    plugin_used.trusted = getattr(single_used_plugin, "trusted", None)
+    plugin_used.url = getattr(single_used_plugin, "url", None)
     plugin_used.execution_details.inner_monologue += inner_monologue
 
     # bring back ASSISTANT_PREFIX to chain_response,
