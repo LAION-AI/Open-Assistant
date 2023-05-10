@@ -26,7 +26,9 @@ plugin, and the second part is OpenAPI specification of the plugin API-s.
 
 Here is OpenAI plugins
 [specification](https://platform.openai.com/docs/plugins/getting-started) that
-is currently partially supported with this system.
+is currently partially supported with this system. Instructions for creating and
+hosting a plugin as well as a template for basic plugins can be found
+[here](https://github.com/someone13574/oasst-plugin-template).
 
 For now, only non-authentication-based and only (**GET** request) plugins are
 supported. Some of them are:

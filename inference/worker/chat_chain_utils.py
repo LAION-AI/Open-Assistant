@@ -169,15 +169,14 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
 
 
 def use_tool(tool_name: str, tool_input: str, tools: list) -> tuple[str, str]:
-    for tool in tools:
-        plugin, real_tool_name = tool.name.split(PLUGIN_DELIM)
-        # This should become stricter and stricter as we get better models
-        if similarity(real_tool_name, tool_name) > 0.75 or real_tool_name in tool_name:
-            # check if tool_input is valid json, and if not, try to fix it
-            tool_input = prepare_json(tool_input)
-            # Returns the name of the plugin that owns the tool and the tool output
-            return tool.func(tool_input), plugin
-    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!", ""
+    best_match, best_similarity, best_plugin = max(
+        ((tool, similarity(tool.name.split(PLUGIN_DELIM)[1], tool_name), tool.name.split(PLUGIN_DELIM)[0]) for tool in tools), key=lambda x: x[1], default=(None, 0)
+    )
+    # This should become stricter and stricter as we get better models
+    if best_match is not None and best_similarity > 0.75:
+        tool_input = prepare_json(tool_input)
+        return best_match.func(tool_input), best_plugin
+    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
 
 
 # Needs more work for errors, error-prompt tweaks are currently based on

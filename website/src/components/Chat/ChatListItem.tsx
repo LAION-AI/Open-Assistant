@@ -203,7 +203,10 @@ const DeleteChatButton = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const { t } = useTranslation(["chat", "common"]);
-  const { trigger: triggerDelete } = useSWRMutation(API_ROUTES.DELETE_CHAT(chatId), del);
+  const { trigger: triggerDelete } = useSWRMutation<any, any, any, { chat_id: string }>(
+    API_ROUTES.DELETE_CHAT(chatId),
+    del
+  );
   const onDeleteCallback = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
     onDelete?.({ chatId });
