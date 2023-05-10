@@ -172,8 +172,7 @@ class PluginEntry(pydantic.BaseModel):
     url: str
     enabled: bool = True
     plugin_config: PluginConfig | None = None
-    # NOTE: Idea, is to have OA internal plugins as trusted,
-    # and all other plugins as untrusted by default(until proven otherwise)
+    # Idea is for OA internal plugins to be trusted, others untrusted by default
     trusted: bool | None = False
 
 
