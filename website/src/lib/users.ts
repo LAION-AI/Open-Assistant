@@ -3,6 +3,8 @@ import prisma from "src/lib/prismadb";
 import { AuthMethod } from "src/types/Providers";
 import type { BackendUserCore } from "src/types/Users";
 
+import { logger } from "./logger";
+
 /**
  * Returns a `BackendUserCore` that can be used for interacting with the Backend service.
  *
@@ -95,9 +97,15 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
     const account = externalAccounts.find(
       (a) => a.provider === users[userIdx].auth_method && a.providerAccountId === users[userIdx].username
     );
-    // TODO check why the account is undefined
+
     if (account) {
       outputIds[userIdx] = account.userId;
+    } else {
+      logger.warn(`[getBatchFrontendUserIdFromBackendUser] account is undefined`, {
+        users_length: users.length,
+        userIdx,
+        user: users[userIdx],
+      });
     }
   });
 

@@ -7,6 +7,7 @@ import numpy as np
 from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
+from model_training.custom_datasets.pretrain_datasets import RedPajama
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
@@ -166,6 +167,8 @@ def get_one_dataset(
         dataset = DatabricksDolly15k(cache_dir=data_path, mode=mode, **kwargs)
     elif dataset_name == "alpaca_gpt4":
         dataset = AlpacaGpt4(cache_dir=data_path, mode=mode, **kwargs)
+    elif dataset_name == "red_pajama":
+        dataset = RedPajama(cache_dir=data_path, mode=mode, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 

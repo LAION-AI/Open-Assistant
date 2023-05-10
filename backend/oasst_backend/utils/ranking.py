@@ -22,7 +22,7 @@ def head_to_head_votes(ranks: List[List[int]]):
 
 
 def cycle_detect(pairs):
-    """Recursively detect cylces by removing condorcet losers until either only one pair is left or condorcet loosers no longer exist
+    """Recursively detect cycles by removing condorcet losers until either only one pair is left or condorcet losers no longer exist
     This method upholds the invariant that in a ranking for all a,b either a>b or b>a for all a,b.
 
 

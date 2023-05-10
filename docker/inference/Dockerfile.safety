@@ -6,7 +6,6 @@ ARG SERVICE="safety"
 ARG APP_USER="${MODULE}-${SERVICE}"
 ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
 
-
 FROM python:3.10-slim as build
 ARG APP_RELATIVE_PATH
 
@@ -24,9 +23,7 @@ RUN --mount=type=cache,target=/var/cache/pip \
       --target=lib               \
       -r requirements.txt
 
-
-
-FROM python:3.10-slim as base-env
+FROM python:3.10-slim as prod
 ARG APP_USER
 ARG APP_RELATIVE_PATH
 ARG MODULE
@@ -41,32 +38,28 @@ ENV PATH="${PATH}:${APP_LIBS}/bin"
 ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
 ENV PORT="8002"
 
-
 RUN adduser               \
       --disabled-password \
-      "${APP_USER}"
+      "${APP_USER}" && \
+    mkdir -p ${APP_ROOT} ${APP_LIBS} && \
+    chown -R "${APP_USER}:${APP_USER}" "${APP_BASE}"
 
 USER ${APP_USER}
-
 WORKDIR ${APP_ROOT}
 
-
-COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                         ${APP_LIBS}
+COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib   ${APP_LIBS}
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/*.py .
 
-
-CMD python3 __main__.py
-
-FROM base-env as prod
-ARG APP_USER
-
-
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
-RUN --mount=type=cache,target=/var/cache/pip,from=base-env \
+
+USER root
+RUN --mount=type=cache,target=/var/cache/pip \
     pip install                  \
       --cache-dir=/var/cache/pip \
       --target="${APP_LIBS}"     \
-      /tmp/lib/oasst-shared
+      /tmp/lib/oasst-shared && \
+    rm -rf /tmp/lib/oasst-shared
+USER ${APP_USER}
 
 COPY --chown="${APP_USER}:${APP_USER}" ./inference/safety/safety_main.sh /entrypoint.sh
 

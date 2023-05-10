@@ -38,7 +38,7 @@ https://transcripts.foreverdreaming.org/ (the crawler notebooks are not included
 with the dataset).
 
 The dataset contains **only a small portion of Forever Dreaming's data**, as
-only transscripts with a clear dialogue format are included, such as:
+only transcripts with a clear dialogue format are included, such as:
 
 ```
 PERSON 1: Hello

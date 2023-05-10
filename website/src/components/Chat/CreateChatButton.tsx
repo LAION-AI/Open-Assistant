@@ -16,10 +16,20 @@ export const useCreateChat = () => {
   return createChat;
 };
 
-export const CreateChatButton = ({ children, ...props }: ButtonProps) => {
+interface CreateChatButtonProps extends ButtonProps {
+  onUpdated: () => void;
+}
+
+export const CreateChatButton = ({ children, onUpdated, ...props }: CreateChatButtonProps) => {
   const createChat = useCreateChat();
   return (
-    <Button onClick={createChat} {...props}>
+    <Button
+      onClick={async () => {
+        await createChat();
+        onUpdated();
+      }}
+      {...props}
+    >
       {children}
     </Button>
   );

@@ -1,17 +1,33 @@
-import { createContext, PropsWithChildren, useContext, useMemo } from "react";
-import { InferenceMessage, ModelInfo } from "src/types/Chat";
+import { useDisclosure } from "@chakra-ui/react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
-export type ChatContext = {
-  modelInfos: ModelInfo[];
-  messages: InferenceMessage[];
+export type ChatStateContext = {
+  isConfigDrawerOpen: boolean;
 };
 
-const chatContext = createContext<ChatContext>({} as ChatContext);
+export type ChatActionContext = {
+  openConfigDrawer: () => void;
+  closeConfigDrawer: () => void;
+};
 
-export const useChatContext = () => useContext(chatContext);
+const chatStateContext = createContext<ChatStateContext>({} as ChatStateContext);
+const chatActionContext = createContext<ChatActionContext>({} as ChatActionContext);
 
-export const ChatContextProvider = ({ children, modelInfos, messages }: PropsWithChildren<ChatContext>) => {
-  const value = useMemo(() => ({ modelInfos, messages }), [messages, modelInfos]);
+export const useChatState = () => useContext(chatStateContext);
 
-  return <chatContext.Provider value={value}>{children}</chatContext.Provider>;
+export const useChatActions = () => useContext(chatActionContext);
+
+export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const state: ChatStateContext = useMemo(() => ({ isConfigDrawerOpen: isOpen }), [isOpen]);
+  const action: ChatActionContext = useMemo(
+    () => ({ openConfigDrawer: onOpen, closeConfigDrawer: onClose }),
+    [onClose, onOpen]
+  );
+
+  return (
+    <chatStateContext.Provider value={state}>
+      <chatActionContext.Provider value={action}>{children}</chatActionContext.Provider>
+    </chatStateContext.Provider>
+  );
 };

@@ -126,7 +126,7 @@ Cypress is used for end-to-end (e2e) and component testing and is configured in 
 folder is used for supporting configuration files etc.
 
 - Store e2e tests in the `./cypress/e2e` folder.
-- Store component tests adjacent to the component being tested. If you want to wriite a test for
+- Store component tests adjacent to the component being tested. If you want to write a test for
   `./src/components/Layout.tsx` then store the test file at `./src/components/Layout.cy.tsx`.
 
 A few npm scripts are available for convenience:
