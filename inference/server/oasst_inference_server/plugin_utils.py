@@ -13,31 +13,31 @@ async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout
     async with session.get(url, timeout=timeout) as response:
         content_type = response.headers.get("Content-Type")
 
-        if response.status == 200:
-            if "application/json" in content_type or "text/json" in content_type or url.endswith(".json"):
-                if "text/json" in content_type:
-                    logger.warning(f"Plugin {url} is using text/json as its content type. This is not recommended.")
-                    config = json.loads(await response.text())
-                else:
-                    config = await response.json()
-            elif (
-                "application/yaml" in content_type
-                or "application/x-yaml" in content_type
-                or url.endswith(".yaml")
-                or url.endswith(".yml")
-            ):
-                config = yaml.safe_load(await response.text())
-            else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Unsupported content type: {content_type}. Only JSON and YAML are supported.",
-                )
-
-            return inference.PluginConfig(**config)
-        elif response.status == 404:
+        if response.status == 404:
             raise HTTPException(status_code=404, detail="Plugin not found")
+        if response.status != 200:
+            raise HTTPException(status_code=500, detail="Failed to fetch plugin")
+
+        if "application/json" in content_type or "text/json" in content_type or url.endswith(".json"):
+            if "text/json" in content_type:
+                logger.warning(f"Plugin {url} is using text/json as its content type. This is not recommended.")
+                config = json.loads(await response.text())
+            else:
+                config = await response.json()
+        elif (
+            "application/yaml" in content_type
+            or "application/x-yaml" in content_type
+            or url.endswith(".yaml")
+            or url.endswith(".yml")
+        ):
+            config = yaml.safe_load(await response.text())
         else:
-            raise HTTPException(status_code=response.status, detail="Unexpected status code")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported content type: {content_type}. Only JSON and YAML are supported.",
+            )
+
+    return inference.PluginConfig(**config)
 
 
 async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> inference.PluginConfig:
