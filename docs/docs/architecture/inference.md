@@ -80,82 +80,18 @@ The inference server is built around [FastAPI](https://fastapi.tiangolo.com/).
     5. Creates a message in the message table for the user prompt.
 
 3. The client then POSTs to `/chats/{chat_id}/assistant_message`.
-    1. 
-    <!-- 3. Create a message in the message table with `state=inference.MessageState.pending` for the assistant's response.
-    4. Add the id of the pending assistant's message to a redis queue.
-    5. Return a `CreateMessageResponse` object (a Pydantic model), with the prompter message field and (pending) assistant message field. The client will get an assistant message id from this. -->
+    1. First we load the model config for the `model_config_name` specified by the client's request.
+    2. Then, we use the `UserChatRepository` to post to create a message in the `message` table, with a pending state. Note, we also will update the state for any other currently pending messages in the chat to `inference.MessageState.cancelled`. 
+    3. After updating the `message` table, we create a RedisQueue for this specific message and enque the message.
+    4. Finally, we return an `inference.MessageRead` (a Pydantic model) to the client. This is the object contains the needed `message_id`.
 
-3. Once the client has the assistant message id, it will make a GET request to `/chats/{chat_id}/messages/{message_id}/events`. Upon receiving this request, the server retrieves the message from the message table and verifies that the message isn't finished and that the message role is assistant. 
+4. Once the client has the `message_id`, it will make a GET request to `/chats/{chat_id}/messages/{message_id}/events`. Upon receiving this request, the server retrieves the message from the message table and verifies that the message isn't finished and that the message role is assistant. 
 
-After this, we create a Redis queue for this specific message id. From here, we poll the queue, using the `dequeue()` method. By default this method will block for up to 1 second, however if a message is added to the queue in that interval, it will automatically be returned. Otherwise, `dequeue()` will return `None`.
+After this, we get the Redis queue for this specific message id. From here, we poll the queue, using the `dequeue()` method. By default this method will block for up to 1 second, however if a message is added to the queue in that interval, it will automatically be returned. Otherwise, `dequeue()` will return `None`.
 
-If `None` is returned and this is the first time we have polled the queue since its creation, we will yield a `chat_schema.PendingResponseEvent`. The loop will continue, with 1 second blocking (by default), until a message item is returned. A message item is a tuple where the first element is a string of the message id, and the second element is a response.
+If `None` is returned and this is the first time we have polled the queue since its creation, we will yield a `chat_schema.PendingResponseEvent`. The loop will continue, with 1 second blocking (by default), until a message item is returned. A message item is a tuple where the first element is a string of the message id, and the second element is a response. After some checks on the message response type (for example if there is a safety intervention or an internal error from the worker), we yield a `chat_schema.MessageResponseEvent`. The message polling and yielding is bundled in an `EventSourceResponse` object.
 
 The EventSourceResponse is Server Sent Events (SSE) plugin for Starlette/FastAPI, which takes content and returns it as part of a HTTP event stream. You can check out the EventSourceResposethe library's [source code](https://github.com/sysid/sse-starlette/tree/master) for more details about how this works.
 
 ### From the perspective of the OA Worker
-
-After loading the tokenizer, a worker establishes a websocket connection with the server and sends its worker config to the server (at `/workers/work`).
-
-1. we get a work request, which is parsed by oasst_shared.inference.WorkParameters
-2. we then recreate these as stream parameters, using `inference.worker.interface.GenerateStreamParameters.from_work_parameters()`. ANSWER -> WHY DO WE NEED TO RECREATE PARAMS AS THIS SECOND CLASS?
-3. what is work_request.thread.messages
-
-A few key metadata structures come into play at this point.
-
-A message is parsed into a `WorkRequest`.
-```
-class WorkRequest(pydantic.BaseModel):
-    thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
-    parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
-```
-
-Within a `WorkRequest`, a `Thread`-type attribute contains the conversation history.
-```
-class Thread(pydantic.BaseModel):
-    messages: list[MessageRead]
-```
-Within `Thread`, the `messages` attribute is a list of `MessageRead` objects (better to call them dictionaries? alternate phrases?).
-```
-class MessageRead(pydantic.BaseModel):
-    id: str
-    content: str | None
-    role: Literal["prompter", "assistant"]
-    state: MessageState
-    score: int
-    reports: list[Report] = []
-
-    @property
-    def is_assistant(self) -> bool:
-        return self.role == "assistant"
-```
-After the work request, its thread attribute, and all of the `MessageRead` objects,
-All messages are concatenated together. The concatenation starts with a global message prefix,
-the main prompt, which is defined in `inference/worker/settings.py` as the `Settings` class.
-
-The design of setting prompts should probably come from a separate application configuration so it can be updated without deploying new code. It might make sense to think through a new design for these workers.
-
-What do we need from a better prompts system? what stakeholders should this system serve? What interface 
-does each of these stakeholders need?
-
-- safety team
-- product team
-- api user?
-
-Does each component need a way to version control itself, along with the collective prompt itself?
-
-Do we need the capability to have different promopts for different users simultaneously? Does everyone see
-same prompt?
-
-
-
-
-
-note: both `inference/worker/interface.py` and `oasst-shared/oasst_shared/schemas/inference.py` have pydantic classes.
-
-
-why are we using websockets instead of a regular message queue? Do we need to-way communication?
-
-in inference.worker.interface.GenerateStreamParameters.from_work_parameters(), why is this not a class method?
-
+(finishing this section)
