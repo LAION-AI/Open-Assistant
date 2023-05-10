@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Literal, Optional
 
-from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
+from datasets import load_dataset
+from oasst_data import ExportMessageNode, read_message_trees, read_oasst_hugging_face, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
-from datasets import load_dataset
 
 
 class ListDataset(Dataset):
@@ -17,6 +17,10 @@ class ListDataset(Dataset):
 
     def __getitem__(self, index):
         return self.data[index]
+
+
+def read_trees_call_func(data, function):
+    return function(data)
 
 
 def load_oasst_export(
@@ -39,18 +43,19 @@ def load_oasst_export(
     generator.manual_seed(manual_seed)
 
     if use_hf_dataset and hf_dataset_name:
-        hf_dataset = load_dataset(hf_dataset_name)
-        return hf_dataset['train'], hf_dataset['validation']
-
-    if not isinstance(input_file_path, Path):
-        input_file_path = Path(input_file_path)
-    if not input_file_path.is_absolute() and data_path:
-        if not isinstance(data_path, Path):
-            data_path = Path(data_path)
-        input_file_path = data_path / input_file_path
+        dataset_or_file_path = load_dataset(hf_dataset_name, split="train+validation")
+        read_trees_function = read_oasst_hugging_face
+    else:
+        if not isinstance(input_file_path, Path):
+            dataset_or_file_path = Path(input_file_path)
+        if not dataset_or_file_path.is_absolute() and data_path:
+            if not isinstance(data_path, Path):
+                data_path = Path(data_path)
+            dataset_or_file_path = data_path / dataset_or_file_path
+        read_trees_function = read_message_trees
 
     threads_per_tree = []
-    for tree in read_message_trees(input_file_path):
+    for tree in read_trees_call_func(dataset_or_file_path, read_trees_function):
         if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
             continue
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Optional, TextIO
 
 import pydantic
+from datasets import Dataset
 
 from .schemas import ExportMessageNode, ExportMessageTree
 
@@ -17,8 +18,7 @@ def open_jsonl_read(input_file_path: str | Path) -> TextIO:
         return input_file_path.open("r", encoding="UTF-8")
 
 
-def read_oasst_obj(line: str) -> ExportMessageTree | ExportMessageNode:
-    dict_tree = json.loads(line)
+def read_oasst_obj(dict_tree: dict) -> ExportMessageTree | ExportMessageNode:
     # validate data
     if "message_id" in dict_tree:
         return pydantic.parse_obj_as(ExportMessageNode, dict_tree)
@@ -32,7 +32,19 @@ def read_oasst_jsonl(input_file_path: str | Path) -> Iterable[ExportMessageTree 
     with open_jsonl_read(input_file_path) as file_in:
         # read one object per line
         for line in file_in:
-            yield read_oasst_obj(line)
+            dict_tree = json.loads(line)
+            yield read_oasst_obj(dict_tree)
+
+
+def read_oasst_hugging_face_row(dataset: Dataset) -> Iterable[ExportMessageTree | ExportMessageNode]:
+    for data_row in dataset:
+        yield read_oasst_obj(data_row)
+
+
+def read_oasst_hugging_face(dataset: Dataset) -> Iterable[ExportMessageTree]:
+    for x in read_oasst_hugging_face_row(dataset):
+        assert isinstance(x, ExportMessageTree)
+        yield x
 
 
 def read_message_trees(input_file_path: str | Path) -> Iterable[ExportMessageTree]:
