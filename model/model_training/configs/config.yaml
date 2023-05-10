@@ -154,7 +154,7 @@ oasst_only:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
         hf_dataset_name: OpenAssistant/oasst1
         use_hf_dataset: true
         val_split: 0.05
@@ -166,7 +166,7 @@ reference-data:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
         input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
-        hf_dataset_name: 
+        hf_dataset_name:
         use_hf_dataset: false
         val_split: 0.05
     - alpaca
@@ -179,7 +179,7 @@ oasst_export_eu:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-        hf_dataset_name: 
+        hf_dataset_name:
         use_hf_dataset: false
     - gpt4all
     - alpaca
@@ -202,7 +202,7 @@ oasst_export_latin_cyrillic:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-        hf_dataset_name: 
+        hf_dataset_name:
         use_hf_dataset: false
     - alpaca
     - oig_file:

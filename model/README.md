@@ -30,13 +30,16 @@ files.
 
 - Use HuggingFace dataset.
 
-Declare the dataset name on configs `hf_dataset_name` and set `use_hf_dataset` to `true`.
+Declare the dataset name on configs `hf_dataset_name` and set `use_hf_dataset`
+to `true`.
 
 Example:
+
 ```yaml
 hf_dataset_name: OpenAssistant/oasst1
 use_hf_dataset: true
 ```
+
 See more [here](https://huggingface.co/datasets/OpenAssistant/oasst1)
 
 - (TODO) add better parsing of the config files that is consistent for sft, rm
