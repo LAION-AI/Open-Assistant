@@ -39,7 +39,7 @@ def get_plugin_config(url: str) -> inference.PluginConfig | None:
         return None
 
 
-def resolve_schema_reference(ref, openapi_dict):
+def resolve_schema_reference(ref: str, openapi_dict: dict):
     if not ref.startswith("#/"):
         raise ValueError(f"Invalid reference format: {ref}")
 
