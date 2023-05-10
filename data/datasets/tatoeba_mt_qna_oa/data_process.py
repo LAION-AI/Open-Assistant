@@ -1,46 +1,44 @@
+import json
 import random
-import iso639
+import uuid
+from dataclasses import dataclass
 
+import datasets
+import iso639
 import language_names
 import language_paraphrase
 import language_translate
-
 import pandas as pd
-import datasets
-from dataclasses import dataclass
 
-import json
-import uuid
 
 class DataProcess:
-
     class RandomText:
-
         # list of random quotes
         random_quote = {
-            1: '\'',
-            2: '\"',
-            3: '“',
-            4: '῎',
-            5: '`',
+            1: "'",
+            2: '"',
+            3: "“",
+            4: "῎",
+            5: "`",
         }
 
         # provide instruction with a text; process of randomization of a text
         @staticmethod
         def randomize_text(text, original_lang=None, target_lang=None):
-            templates = language_translate.random_templates_translate.get(original_lang, {}) if not ((original_lang == target_lang) and (original_lang is not None) and (target_lang is not None)) else language_paraphrase.random_templates_paraphrase.get(original_lang, {})
+            templates = (
+                language_translate.random_templates_translate.get(original_lang, {})
+                if not ((original_lang == target_lang) and (original_lang is not None) and (target_lang is not None))
+                else language_paraphrase.random_templates_paraphrase.get(original_lang, {})
+            )
             template = random.choice(list(templates.values()))
             quote = random.choice(list(DataProcess.RandomText().random_quote.values()))
             original_lang_name = DataProcess.language_name(None, original_lang, original_lang)
             target_lang_name = DataProcess.language_name(None, target_lang, original_lang)
             return template.format(text=text, lang1=target_lang_name, lang2=original_lang_name, quote=quote)
 
-    # convert to iso639_1 
+    # convert to iso639_1
     def convert_code(self, code):
-        try:
-            mapped_code = iso639.to_iso639_1(code)
-        except:
-            mapped_code = None
+        mapped_code = iso639.to_iso639_1(code)
         return mapped_code
 
     # return language #1 name in language #2
@@ -51,9 +49,10 @@ class DataProcess:
         # just in case
         elif lang1 == lang2:
             iso_name = iso639.to_native(lang1)
-            return(iso_name)
+            return iso_name
         else:
             return None
+
 
 converter = DataProcess()
 
@@ -70,6 +69,7 @@ print(converter.RandomText.randomize_text(text, "uk", "fr")) # Ти можеш �
 print(converter.RandomText.randomize_text(text, "uk", "de")) # Переклади наступний текст "test" з мови "німецька мова"
 """
 
+
 @dataclass
 class QnA:
     INSTRUCTION: str
@@ -77,17 +77,23 @@ class QnA:
     SOURCE: str
     METADATA: str
 
+
 # format to QnA
 def create_qna(row):
     # get rows; create uuid based on texts
-    text = row['Text']
-    text_length= len(text)
-    translation = row['Translated text']
-    lang_from = converter.convert_code(row['Original lang'])
-    lang_to = converter.convert_code(row['Target lang'])
+    text = row["Text"]
+    text_length = len(text)
+    translation = row["Translated text"]
+    lang_from = converter.convert_code(row["Original lang"])
+    lang_to = converter.convert_code(row["Target lang"])
     uuid_val = uuid.uuid3(uuid.NAMESPACE_OID, str(text + translation))
     # json with language, original text length, uuid and langs-pair
-    METADATA = {"language": f"{lang_to}", "length": f"{text_length}", "uuid": f"{uuid_val}", "langs-pair": f"{lang_from}-{lang_to}"}
+    METADATA = {
+        "language": f"{lang_to}",
+        "length": f"{text_length}",
+        "uuid": f"{uuid_val}",
+        "langs-pair": f"{lang_from}-{lang_to}",
+    }
     metadata_str = json.dumps(METADATA)
     source = "tatoeba"
     # randomizing INSTRUCTION
@@ -95,8 +101,9 @@ def create_qna(row):
     response = translation
     return QnA(instruction, response, source, metadata_str)
 
+
 # load the dataset from Hugging Face
-hf_dataset = datasets.load_dataset('0x22almostEvil/tatoeba-mt-llama-only', split='train')
+hf_dataset = datasets.load_dataset("0x22almostEvil/tatoeba-mt-llama-only", split="train")
 
 # original is ~3M; with num_shards=30 it'll be ~120K
 hf_dataset = hf_dataset.shard(num_shards=30, index=0)
