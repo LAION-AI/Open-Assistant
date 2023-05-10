@@ -51,6 +51,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, f
           ref={ref}
           bg="gray.200"
           borderRadius="md"
+          pe={{ base: "76px", xl: "48px" }}
           rows={1}
           maxRows={10}
           py={{ base: 2, md: 3 }}
