@@ -81,7 +81,7 @@ class PromptedLLM:
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
-        prompt = utils.truncate_prompt(self.tokenizer, self.worker_config, self.parameters, prompt, True)
+        prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, prompt, True)
 
         response = (
             llm.generate(prompts=[prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
@@ -150,10 +150,13 @@ def handle_plugin_usage(
 
     # Tool name/assistant prefix, Tool input/assistant response
     prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
+
+    # whether model decided to use Plugin or not
     assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
-    while not chain_finished and assisted and achieved_depth < plugin_max_depth:
+    # Check if there is need to go deeper
+    while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
         tool_response = use_tool(prefix, response, tools)
 
         # Save previous chain response for use in final prompt
@@ -191,7 +194,7 @@ def handle_plugin_usage(
                 final_input,
                 prompt_template,
                 memory,
-                tool_names,
+                tools_names,
                 chain.current_time,
                 language,
                 tokenizer,
