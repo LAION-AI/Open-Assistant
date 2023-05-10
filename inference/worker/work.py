@@ -269,7 +269,7 @@ def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
                 try:
                     for _ in range(batch_size):
                         stream_events = utils.get_inference_server_stream_events(stream_request)
-                        ftrs.append(executor.submit(list, *stream_events))
+                        ftrs.append(executor.submit(list, stream_events))
                     for ftr in ftrs:
                         for stream_response in ftr.result():
                             if stream_response.is_error:
