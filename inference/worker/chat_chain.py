@@ -209,16 +209,16 @@ def handle_plugin_usage(
             plugin_used.execution_details.final_generation_assisted = True
             plugin_used.execution_details.achieved_depth = achieved_depth + 1
             plugin_used.execution_details.status = "success"
-            plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-            plugin_used.trusted = getattr(plugin, "trusted", None)
-            plugin_used.url = getattr(plugin, "url", None)
+            plugin_used.name = plugin.plugin_config.name_for_human
+            plugin_used.trusted = plugin.trusted
+            plugin_used.url = plugin.url
 
             return inner_prompt, plugin_used
         achieved_depth += 1
 
-    plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-    plugin_used.trusted = getattr(plugin, "trusted", None)
-    plugin_used.url = getattr(plugin, "url", None)
+    plugin_used.name = plugin.plugin_config.name_for_human
+    plugin_used.trusted = plugin.trusted
+    plugin_used.url = plugin.url
     plugin_used.execution_details.inner_monologue = inner_monologue
 
     # Re-add ASSISTANT_PREFIX to chain_response, omitted with stop=[ASSISTANT_PREFIX]

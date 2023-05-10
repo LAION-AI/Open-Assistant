@@ -33,7 +33,8 @@ def get_plugin_config(url: str) -> inference.PluginConfig | None:
         response.raise_for_status()
         plugin_dict = response.json()
         logger.info(f"Plugin config downloaded {plugin_dict}")
-        return plugin_dict
+        plugin_config = inference.PluginConfig.parse_obj(plugin_dict)
+        return plugin_config
     except (requests.RequestException, ValueError) as e:
         logger.warning(f"Error downloading or parsing Plugin config: {e}")
         return None
@@ -135,19 +136,16 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     if not plugin_config:
         return None
 
-    api_dict = plugin_config.get("api")
-    api_url = api_dict.get("url") if api_dict else None
-    if not api_url:
+    try:
+        api_url = plugin_config.api.url
+        if not api_url.startswith("http"):
+            parsed_link = urlsplit(plugin_url)
+            base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
+            api_url = f"{base_of_url}/{api_url}"
+
+        openapi_dict = fetch_openapi_spec(api_url)
+        plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
+        return plugin_config
+    except Exception:
+        logger.debug(f"Error preparing plugin: {plugin_url}")
         return None
-
-    if not api_url.startswith("http"):
-        parsed_link = urlsplit(plugin_url)
-        base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
-        api_url = f"{base_of_url}/{api_url}"
-
-    openapi_dict = fetch_openapi_spec(api_url)
-    if not openapi_dict:
-        return None
-
-    plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
-    return plugin_config

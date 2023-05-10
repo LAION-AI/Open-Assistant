@@ -3,7 +3,7 @@ import platform
 import random
 import uuid
 from datetime import datetime
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Literal, Union
 
 import psutil
 import pydantic
@@ -160,12 +160,6 @@ class PluginConfig(pydantic.BaseModel):
     contact_email: str | None = None
     legal_info_url: str | None = None
     endpoints: list[PluginOpenAPIEndpoint] | None = None
-
-    def __getitem__(self, key: str) -> Any:
-        return getattr(self, key)
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        setattr(self, key, value)
 
 
 class PluginEntry(pydantic.BaseModel):

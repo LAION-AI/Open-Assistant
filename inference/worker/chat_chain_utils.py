@@ -224,7 +224,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
     if not plugin:
         return "", []
 
-    llm_plugin = prepare_plugin_for_llm(plugin.url)
+    llm_plugin: inference.PluginConfig = prepare_plugin_for_llm(plugin.url)
     if not llm_plugin:
         return "", []
 
@@ -298,9 +298,9 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
     # This can be long for some plugins, we need to truncate due to ctx limitations
-    plugin_description_for_model = truncate_str(llm_plugin["description_for_model"], 512)
+    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, 512)
     return (
-        f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin['name_for_model']} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
+        f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin.name_for_model} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
         tools,
     )
 
