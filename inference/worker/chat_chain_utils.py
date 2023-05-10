@@ -1,6 +1,5 @@
 import json
 import re
-from typing import Tuple
 
 import requests
 import transformers
@@ -79,7 +78,7 @@ def similarity(ts1: str, ts2: str) -> float:
 # TODO: Can be improved, like... try to use another pass trough LLM
 # with custom tuned prompt for fixing the formatting.
 # e.g. "This is malformed text, please fix it: {malformed text} -> FIX magic :)"
-def extract_tool_and_input(llm_output: str, ai_prefix: str) -> Tuple[str, str]:
+def extract_tool_and_input(llm_output: str, ai_prefix: str) -> tuple[str, str]:
     llm_output = llm_output.strip().replace("```", "")
     if f"{ai_prefix}:" in llm_output:
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
@@ -169,7 +168,7 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
     return fixed_json
 
 
-def use_tool(tool_name: str, tool_input: str, tools: list) -> Tuple[str, str]:
+def use_tool(tool_name: str, tool_input: str, tools: list) -> tuple[str, str]:
     for tool in tools:
         plugin, real_tool_name = tool.name.split(PLUGIN_DELIM)
         # This should become stricter and stricter as we get better models
