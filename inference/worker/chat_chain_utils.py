@@ -170,7 +170,12 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
 
 def use_tool(tool_name: str, tool_input: str, tools: list) -> tuple[str, str]:
     best_match, best_similarity, best_plugin = max(
-        ((tool, similarity(tool.name.split(PLUGIN_DELIM)[1], tool_name), tool.name.split(PLUGIN_DELIM)[0]) for tool in tools), key=lambda x: x[1], default=(None, 0)
+        (
+            (tool, similarity(tool.name.split(PLUGIN_DELIM)[1], tool_name), tool.name.split(PLUGIN_DELIM)[0])
+            for tool in tools
+        ),
+        key=lambda x: x[1],
+        default=(None, 0),
     )
     # This should become stricter and stricter as we get better models
     if best_match is not None and best_similarity > 0.75:
