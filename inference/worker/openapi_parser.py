@@ -64,6 +64,12 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     api_url = api_dict.get("url") if api_dict else None
     if not api_url:
         return None
+    # check if url has www or http and if not, add base url + url
+    # but delete everything from plugin_url after last slash
+    # if last char is slash, first delete it and then find last slash
+    parsed_link = urlsplit(plugin_url)
+    base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
+    api_url = api_url if api_url.startswith("http") else f"{base_of_url}/{api_url}"
     openapi_dict = fetch_openapi_spec(api_url)
 
     if not openapi_dict:
@@ -72,11 +78,12 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     endpoints = []
 
     base_url = openapi_dict.get("servers", [{}])[0].get("url")
+
     paths = openapi_dict.get("paths", {})
 
     for path, methods in paths.items():
         for method, details in methods.items():
-            split_result = urlsplit(plugin_config["api"]["url"])
+            split_result = urlsplit(api_url)
             backup_url = f"{split_result.scheme}://{split_result.netloc}"
             params_list = []
             parameters = details.get("parameters", [])
