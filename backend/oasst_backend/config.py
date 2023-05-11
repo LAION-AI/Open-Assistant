@@ -288,6 +288,9 @@ class Settings(BaseSettings):
     DISCORD_API_KEY: str | None = None
     DISCORD_CHANNEL_ID: str | None = None
 
+    TOXICITY_BATCH_SIZE: int = 100
+    HF_FEATURE_EXTRACTOR_BATCH_SIZE: int = 100
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

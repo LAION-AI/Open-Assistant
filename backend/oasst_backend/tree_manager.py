@@ -11,6 +11,7 @@ import pydantic
 import sqlalchemy as sa
 from asgiref.sync import async_to_sync
 from loguru import logger
+from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import (
@@ -789,23 +790,6 @@ class TreeManager:
                         f"TreeManager: Inserting new tree state for initial prompt {message.id=} [{message.lang}]"
                     )
                     self._insert_default_state(message.id, lang=message.lang)
-
-                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
-                    try:
-                        self.hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Extract Embedding")
-                    except OasstError:
-                        logger.error(
-                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
-                if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
-                    try:
-                        self.toxicity.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Sent Toxicity")
-                    except OasstError:
-                        logger.error(
-                            f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
 
             case protocol_schema.MessageRating:
                 logger.info(

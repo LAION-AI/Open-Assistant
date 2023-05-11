@@ -7,6 +7,7 @@ from celery import shared_task
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.celery_worker import app
+from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.task_repository import TaskRepository
 from oasst_backend.tree_manager import TreeManager
@@ -20,29 +21,47 @@ startup_time: datetime = utcnow()
 
 
 @app.task(name="toxicity")
-def toxicity(text, message_id, api_client):
-    try:
-        logger.info(f"checking toxicity : {api_client}")
+def toxicity():
+    if settings.DEBUG_SKIP_TOXICITY_CALCULATION:
+        logger.info("Skipping toxicity calculation")
+        return
+    
+    logger.info(f"calculating toxicity : {api_client}")
+    with default_session_factory() as session:
+        api_key = deps.get_api_key()
+        api_client = deps.api_auth(api_key, session)
+        pr = PromptRepository(db=session, api_client=api_client)
+        tm = TreeManager(db=session, prompt_repository=pr)
+        bs = settings.TOXICITY_BATCH_SIZE
 
-        with default_session_factory() as session:
-            pr = PromptRepository(db=session, api_client=api_client)
-            tm = TreeManager(db=session, prompt_repository=pr)
-            tm.toxicity(text, message_id)
-
-    except Exception as e:
-        logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
+        messages = pr.fetch_messages_without_toxicity_score(bs)
+        for message in messages:
+            try:
+                tm.toxicity(message.text, message.id)
+            except Exception as e:
+                logger.error(f"Could not compute toxicity for text reply to {message.id} with {message.text} by.error {str(e)}")
 
 
 @app.task(name="hf_feature_extraction")
-def hf_feature_extraction(text, message_id, api_client):
-    try:
-        with default_session_factory() as session:
-            pr = PromptRepository(db=session, api_client=api_client)
-            tm = TreeManager(db=session, prompt_repository=pr)
-            tm.hf_feature_extraction(text, message_id)
+def hf_feature_extraction():
+    if settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+        logger.info("Skipping embedding computation")
+        return
+    
+    logger.info(f"extracting feature embeddings : {api_client}")
+    with default_session_factory() as session:
+        api_key = deps.get_api_key()
+        api_client = deps.api_auth(api_key, session)
+        pr = PromptRepository(db=session, api_client=api_client)
+        tm = TreeManager(db=session, prompt_repository=pr)
+        bs = settings.HF_FEATURE_EXTRACTION_BATCH_SIZE
 
-    except Exception as e:
-        logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
+        messages = pr.fetch_messages_without_embedding(bs)
+        for message in messages:
+            try:
+                tm.hf_feature_extraction(message.text, message.id)
+            except Exception as e:
+                logger.error(f"Could not extract embedding for text reply to {message.id} with {message.text} by.error {str(e)}")
 
 
 @shared_task(name="update_user_streak")
