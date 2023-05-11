@@ -104,7 +104,7 @@ class PretrainDatasetEntry(DatasetEntry):
 
 
 class SftDatasetEntry(DatasetEntry):
-    messages: list[Utterance]
+    conversation: list[Utterance]
 
     def get_formatted(
         self,
@@ -115,10 +115,10 @@ class SftDatasetEntry(DatasetEntry):
     ) -> list[str]:
         output: list[str] = []
 
-        for i, m in enumerate(self.messages):
+        for i, m in enumerate(self.conversation):
             if m.role == Role.prompter:
-                if use_system_tag and i + 1 < len(self.messages):
-                    a = self.messages[i + 1]
+                if use_system_tag and i + 1 < len(self.conversation):
+                    a = self.conversation[i + 1]
                     assert a.role == Role.assistant
                     system_tag = a.system_tag(
                         eos_token=eos_token,
@@ -150,7 +150,7 @@ def create_dataset_entry_qa(
                 a = a[0]
             messages.append(Utterance(text=a, role=Role.assistant, lang=lang, context=context))
 
-        return SftDatasetEntry(messages=messages)
+        return SftDatasetEntry(conversation=messages)
     else:
         raise RuntimeError("Unsupported mode")
 

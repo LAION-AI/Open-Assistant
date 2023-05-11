@@ -123,7 +123,7 @@ def load_oasst_export(
                 )
                 for m in thread
             ]
-            return SftDatasetEntry(questions=conversation[0::2], answers=conversation[1::2])
+            return SftDatasetEntry(conversation=conversation)
         elif mode == "rm":
             prefix = [m.text for m in thread]
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]

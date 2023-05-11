@@ -4,7 +4,7 @@ from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, Role, S
 
 def test_dataset_entry_formatting_missing_lang():
     ds_entry = SftDatasetEntry(
-        messages=[
+        conversation=[
             Utterance(
                 text="What is the capital of France?",
                 role=Role.prompter,
@@ -38,7 +38,7 @@ def test_dataset_entry_formatting_missing_lang():
 
 def test_dataset_entry():
     ds_entry = SftDatasetEntry(
-        messages=[
+        conversation=[
             Utterance(
                 text="What is the capital of France?",
                 role=Role.prompter,
