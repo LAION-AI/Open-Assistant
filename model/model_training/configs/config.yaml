@@ -78,17 +78,17 @@ defaults:
     "You are Joi, a large language model trained by Open-Assistant. Answer as
     concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
     2023-03-12"
-  use_system_tag: true
+  use_system_tag: false
   system_property_dropout: 0.5
-  system_add_length: true
+  system_add_length: false
   per_digit_tokens: false
   is_reward_model: false
   deepspeed_config: configs/zero_config.json
 
-no_system_tag:
-  use_system_tag: false
-  system_property_dropout: 0
-  system_add_length: false
+use_system_tag:
+  use_system_tag: True
+  system_property_dropout: 0.5
+  system_add_length: True
 
 webgpt_dataset_only:
   datasets:
@@ -364,9 +364,11 @@ llama-30b-sft-8.1:
   eval_steps: 100
   num_train_epochs: 3
   save_total_limit: 3
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 912
   use_custom_sampler: true
   sort_by_length: false
-  save_strategy: epoch
+
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk,vi,zh,ko,ja,th"

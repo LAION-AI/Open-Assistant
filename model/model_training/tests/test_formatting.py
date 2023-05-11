@@ -1,23 +1,25 @@
 import pytest
-from model_training.custom_datasets.entities import Mode
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry, Utterance
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, Role, SftDatasetEntry, Utterance
 
 
 def test_dataset_entry_formatting_missing_lang():
-    ds_entry = DatasetEntry(
-        questions=[Utterance(text="What is the capital of France?")],
-        answers=[
+    ds_entry = SftDatasetEntry(
+        messages=[
+            Utterance(
+                text="What is the capital of France?",
+                role=Role.prompter,
+            ),
             Utterance(
                 text="The capital of France is Paris.",
+                role=Role.assistant,
                 context="Some context",
                 quality=1.0,
                 humor=0.0,
                 creativity=0.0,
-            )
+            ),
         ],
     )
     formatted = ds_entry.get_formatted(
-        Mode.sft,
         "<|endofline|>",
         use_system_tag=True,
         system_property_dropout=0.0,
@@ -35,21 +37,24 @@ def test_dataset_entry_formatting_missing_lang():
 
 
 def test_dataset_entry():
-    ds_entry = DatasetEntry(
-        questions=[Utterance(text="What is the capital of France?")],
-        answers=[
+    ds_entry = SftDatasetEntry(
+        messages=[
+            Utterance(
+                text="What is the capital of France?",
+                role=Role.prompter,
+            ),
             Utterance(
                 text="The capital of France is Paris.",
+                role=Role.assistant,
                 context="Some context",
                 lang="en",
                 quality=1.0,
                 humor=0.0,
                 creativity=0.0,
-            )
+            ),
         ],
     )
     formatted = ds_entry.get_formatted(
-        Mode.sft,
         "<|endofline|>",
         use_system_tag=True,
         system_property_dropout=0.0,

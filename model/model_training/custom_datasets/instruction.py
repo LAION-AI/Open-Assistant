@@ -2,7 +2,7 @@
     These are in the form of 'INSTRUCTION', 'RESPONSE'
 """
 from datasets import load_dataset
-from model_training.custom_datasets.formatting import DatasetEntry
+from model_training.custom_datasets.formatting import DatasetEntry, create_dataset_entry_qa
 from model_training.custom_datasets.utils import _filter_by_words
 from torch.utils.data import Dataset
 
@@ -32,6 +32,7 @@ class InstructionDataset(Dataset):
     def __init__(self, dataset, cache_dir, split, mode="sft"):
         assert mode in ("sft", "rl")
         self.name = dataset
+        self.mode = mode
         if dataset == "minimath":
             self.instruction_column = "question"
             self.response_column = "answer"
@@ -67,10 +68,11 @@ class InstructionDataset(Dataset):
     def __getitem__(self, idx) -> DatasetEntry:
         data = self.dataset[idx]
         lang = None
-        # these datasets have been found to have above 95% english sentences.
+        # use "en" for datasets which have more than 95% English messages
         if self.name in ["grade_school_math_instructions"]:
             lang = "en"
-        return DatasetEntry.from_strings(
+        return create_dataset_entry_qa(
+            mode=self.mode,
             questions=[data[self.instruction_column]],
             answers=[data[self.response_column]],
             lang=lang,

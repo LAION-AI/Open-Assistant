@@ -3,7 +3,7 @@ from argparse import Namespace
 import pytest
 import torch
 from model_training.custom_datasets import get_one_dataset
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, create_dataset_entry_qa
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.utils.utils import get_tokenizer, match_tokenizer_name
 from torch.utils.data import DataLoader
@@ -88,7 +88,7 @@ def test_ranking_collator_no_messages(pythia_tokenizer):
     examples = [(first_messages, first_replies)]
     rdc = RankingDataCollator(tokenizer=pythia_tokenizer, padding=True)
     eos = pythia_tokenizer.eos_token
-    examples_ds = [DatasetEntry.from_strings(questions=first_messages or [], answers=first_replies)]
+    examples_ds = [create_dataset_entry_qa(mode="rm", questions=first_messages or [], answers=first_replies)]
     # make sure that formatting via dataset entry and lists is the same
     for ex in [examples, examples_ds]:
         batch, cu_lens = rdc(examples=ex)
@@ -119,8 +119,8 @@ def test_ranking_collator_local(pythia_tokenizer):
     pad = pythia_tokenizer.pad_token
 
     examples_ds = [
-        DatasetEntry.from_strings(questions=first_messages, answers=first_replies),
-        DatasetEntry.from_strings(questions=second_messages, answers=second_replies),
+        create_dataset_entry_qa(mode="rm", questions=first_messages, answers=first_replies),
+        create_dataset_entry_qa(mode="rm", questions=second_messages, answers=second_replies),
     ]
     # make sure that formatting via dataset entry and lists is the same
     for ex in [examples, examples_ds]:

@@ -6,9 +6,8 @@ import numpy as np
 import torch
 from model_training.custom_datasets.formatting import (
     QA_SPECIAL_TOKENS,
-    DatasetEntry,
-    Mode,
     PretrainDatasetEntry,
+    SftDatasetEntry,
     format_pairs,
     format_system_prefix,
 )
@@ -59,9 +58,8 @@ class DialogueDataCollator:
             max_length = self.max_length
 
         pretrain_dataset = False
-        if isinstance(messages, DatasetEntry):
+        if isinstance(messages, SftDatasetEntry):
             messages = messages.get_formatted(
-                mode=Mode.sft,
                 eos_token=self.tokenizer.eos_token,
                 use_system_tag=self.use_system_tag,
                 system_property_dropout=self.system_property_dropout,

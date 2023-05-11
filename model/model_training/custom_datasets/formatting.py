@@ -1,9 +1,9 @@
 import re
+from enum import Enum
 from itertools import zip_longest
 from random import random, shuffle
-from typing import Optional
+from typing import Literal, Optional
 
-from model_training.custom_datasets.entities import Mode
 from pydantic import BaseModel, validator
 from pydantic.fields import ModelField
 
@@ -28,13 +28,20 @@ def compute_length(s: str) -> int:
     return len(re.findall(r"\w+", s)) // 5 + 1
 
 
-class PretrainDatasetEntry(BaseModel):
-    text: str | None = None
+class Mode(str, Enum):
+    sft = "sft"
+    rm = "rm"
+    rl = "rl"
+
+
+class Role(str, Enum):
+    prompter = "prompter"
+    assistant = "assistant"
 
 
 class Utterance(BaseModel):
     text: str
-
+    role: Role
     lang: str | None = None
     quality: float | None = None
     humor: float | None = None
@@ -89,66 +96,30 @@ class Utterance(BaseModel):
 
 
 class DatasetEntry(BaseModel):
-    # For a dialouge with [Q1, A1, Q2, A2]
-    # questions: [Q1, Q2]
-    # answers: [A1, A2]
-    questions: list[Utterance]
-    answers: list[Utterance]
+    pass
 
-    # def _get_formatted_rm(self, eos_token: str, use_system: bool, property_dropout: float, max_replies: int = 5):
-    #     if isinstance(self.answers[0], list):
-    #         answers = self.answers[0]
-    #     else:
-    #         answers = self.answers
-    #     assert len(answers) > 1 and max_replies > 1
-    #     answers = answers[:max_replies]
-    #     match len(self.questions):
-    #         case 0:
-    #             question = ""
-    #             # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
-    #             answers = [f"{a}{eos_token}" for a in answers]
-    #         case 1:
-    #             # todo: how to handle different system tags for the answers since the tag should be part of the question
-    #             # answer_system_tags = [a.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or "" for a in answers]
-    #             system_tag = self.questions[0].system_tag(
-    #                 eos_token=eos_token,
-    #                 enabled=use_system,
-    #                 property_dropout=self.property_dropout,
-    #             )
-    #             question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
-    #             answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
-    #         case _:
-    #             # todo: implement, especially oasst actually needs this
-    #             raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
-    #     return (question, answers)
+
+class PretrainDatasetEntry(DatasetEntry):
+    text: str | None = None
+
+
+class SftDatasetEntry(DatasetEntry):
+    messages: list[Utterance]
 
     def get_formatted(
         self,
-        mode: Mode,
         eos_token: str,
-        use_system_tag: bool = True,
+        use_system_tag: bool = False,
         system_property_dropout: float = 0.5,
-        system_add_length: bool = True,
-        **kwargs,
-    ) -> str | list[str] | tuple[str, list[str]]:
-        if mode == Mode.sft:
-            qa_list: list[str] = []
+        system_add_length: bool = False,
+    ) -> list[str]:
+        output: list[str] = []
 
-            # check if this is a RM capable dataset (so it has multiple answers to the same question)
-            # and if so, extract just the highest scoring answer
-            answers: list[Utterance]
-            if isinstance(self.answers[0], list):
-                answers = [answer[0] for answer in self.answers]
-            else:
-                answers = self.answers
-
-            for q, a in zip_longest(self.questions, answers):
-                if q is None or q.text is None:
-                    raise ValueError("Received answer without corresponding question.")
-                if a is None or a.text is None:
-                    raise ValueError("Received question without corresponding answer.")
-
-                if use_system_tag:
+        for i, m in enumerate(self.messages):
+            if m.role == Role.prompter:
+                if use_system_tag and i + 1 < len(self.messages):
+                    a = self.messages[i + 1]
+                    assert a.role == Role.assistant
                     system_tag = a.system_tag(
                         eos_token=eos_token,
                         property_dropout=system_property_dropout,
@@ -156,50 +127,41 @@ class DatasetEntry(BaseModel):
                     )
                 else:
                     system_tag = ""
+                output.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
+            else:
+                output.append(f"{QA_SPECIAL_TOKENS['Answer']}{m.text}{eos_token}")
 
-                qa_list.extend(
-                    [
-                        f"{QA_SPECIAL_TOKENS['Question']}{q.text}{eos_token}{system_tag}",
-                        f"{QA_SPECIAL_TOKENS['Answer']}{a.text}{eos_token}",
-                    ]
-                )
+        return output
 
-            return qa_list
 
-        # TODO: These modes are not implemented yet
+def create_dataset_entry_qa(
+    mode: Mode | Literal["sft", "rm", "rl"],
+    questions: list[str],
+    answers: list[str] | list[list[str]],
+    context: Optional[str] = None,
+    lang: Optional[str] = None,
+) -> DatasetEntry:
+    if mode == Mode.sft:
+        messages: list[Utterance] = []
 
-        # elif mode == Mode.rl:
+        for q, a in zip_longest(questions, answers):
+            messages.append(Utterance(text=q, role=Role.prompter, lang=lang))
+            if isinstance(a, list):
+                a = a[0]
+            messages.append(Utterance(text=a, role=Role.assistant, lang=lang, context=context))
 
-        # elif mode == Mode.rm:
-
-        else:
-            raise RuntimeError(f"Unsupported mode: {mode}")
-
-    @classmethod
-    def from_strings(
-        cls,
-        questions: list[str],
-        answers: list[str] | list[list[str]],
-        context: Optional[str] = None,
-        lang: Optional[str] = None,
-    ):
-        if isinstance(answers[0], list):
-            answers = [[Utterance(text=a, lang=lang, context=context) for a in l] for l in answers]
-        else:
-            # todo: this does not yet support RM case
-            answers = [Utterance(text=a, lang=lang, context=context) for a in answers]
-
-        return cls(questions=[Utterance(text=q) for q in questions], answers=answers)
+        return SftDatasetEntry(messages=messages)
+    else:
+        raise RuntimeError("Unsupported mode")
 
 
 def format_pairs(
-    pairs: list[str] | DatasetEntry,
+    pairs: list[str] | SftDatasetEntry,
     eos_token: str,
-    add_initial_reply_token: str = False,
-    mode: Mode | None = None,
+    add_initial_reply_token: bool = False,
 ) -> list[str]:
-    if isinstance(pairs, DatasetEntry) and mode is not None:
-        return pairs.get_formatted(mode=mode, eos_token=eos_token)
+    if isinstance(pairs, SftDatasetEntry):
+        return pairs.get_formatted(eos_token=eos_token)
     else:
         # backwards compatibility
         conversations = [
