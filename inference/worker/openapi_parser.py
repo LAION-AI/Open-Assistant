@@ -130,6 +130,8 @@ def get_plugin_endpoints(api_url: str, openapi_dict: dict) -> list[inference.Plu
         for method, details in methods.items():
             endpoints.append(parse_plugin_endpoint(api_url, method, details, base_url, path, openapi_dict))
 
+    return endpoints
+
 
 def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     plugin_config = get_plugin_config(plugin_url)
