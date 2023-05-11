@@ -5,6 +5,7 @@ import { OasstError } from "./oasst_api_client";
 const missingDisplayNamesForLocales = {
   eu: "Euskara",
   gl: "Galego",
+  swg: "Schwäbisch",
 };
 
 /**
