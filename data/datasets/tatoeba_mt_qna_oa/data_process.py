@@ -10,31 +10,32 @@ import language_paraphrase
 import language_translate
 import pandas as pd
 
+random.seed(42)
+
 
 class DataProcess:
-    class RandomText:
-        # list of random quotes
-        random_quote = {
-            1: "'",
-            2: '"',
-            3: "“",
-            4: "῎",
-            5: "`",
-        }
+    # list of random quotes
+    random_quote = [("'", "'"), ("“", "”"), ("῎", "῏"), ("`", "´"), ("«", "»"), ('"', '"')]
 
-        # provide instruction with a text; process of randomization of a text
-        @staticmethod
-        def randomize_text(text, original_lang=None, target_lang=None):
-            templates = (
-                language_translate.random_templates_translate.get(original_lang, {})
-                if not ((original_lang == target_lang) and (original_lang is not None) and (target_lang is not None))
-                else language_paraphrase.random_templates_paraphrase.get(original_lang, {})
-            )
-            template = random.choice(list(templates.values()))
-            quote = random.choice(list(DataProcess.RandomText().random_quote.values()))
-            original_lang_name = DataProcess.language_name(None, original_lang, original_lang)
-            target_lang_name = DataProcess.language_name(None, target_lang, original_lang)
-            return template.format(text=text, lang1=target_lang_name, lang2=original_lang_name, quote=quote)
+    # provide instruction with a text; process of randomization of a text
+    def randomize_text(self, text, original_lang=None, target_lang=None):
+        templates = (
+            language_translate.random_templates_translate.get(original_lang, {})
+            if not ((original_lang == target_lang) and (original_lang is not None) and (target_lang is not None))
+            else language_paraphrase.random_templates_paraphrase.get(original_lang, {})
+        )
+        template = random.choice(list(templates.values()))
+        quote_pair = random.choice(DataProcess().random_quote)
+        opening_quote, closing_quote = quote_pair
+        original_lang_name = DataProcess.language_name(None, original_lang, original_lang)
+        target_lang_name = DataProcess.language_name(None, target_lang, original_lang)
+        return template.format(
+            text=text,
+            lang1=target_lang_name,
+            lang2=original_lang_name,
+            opening_quote=opening_quote,
+            closing_quote=closing_quote,
+        )
 
     # convert to iso639_1
     def convert_code(self, code):
@@ -65,8 +66,8 @@ print(converter.convert_code("eng")) # Output: en
 
 # convert into INSTRUCTION format: text; to; from
 text = "test"
-print(converter.RandomText.randomize_text(text, "uk", "fr")) # Ти можеш перекласти цей вислів: 'test'?
-print(converter.RandomText.randomize_text(text, "uk", "de")) # Переклади наступний текст "test" з мови "німецька мова"
+print(converter.randomize_text(text, "uk", "fr")) # Ти можеш перекласти цей вислів: 'test'?
+print(converter.randomize_text(text, "uk", "de")) # Переклади наступний текст "test" з мови "німецька мова"
 """
 
 
@@ -97,8 +98,9 @@ def create_qna(row):
     metadata_str = json.dumps(METADATA)
     source = "tatoeba"
     # randomizing INSTRUCTION
-    instruction = converter.RandomText.randomize_text(text, lang_to, lang_from)
+    instruction = converter.randomize_text(text, lang_to, lang_from)
     response = translation
+    print(instruction)
     return QnA(instruction, response, source, metadata_str)
 
 
