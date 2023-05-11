@@ -49,6 +49,7 @@ it allows interaction of query and document in the language model. But it is slo
   for LlamaIndex
 
 ### Relevant Papers
+- SBERT [https://arxiv.org/abs/1908.10084](https://arxiv.org/abs/1908.10084)
 - BM25+CE [https://arxiv.org/abs/2104.08663v4](https://arxiv.org/abs/2104.08663v4)
 - RALM [https://arxiv.org/abs/2302.00083](https://arxiv.org/abs/2302.00083)
 - ColBert [https://arxiv.org/abs/2004.12832](https://arxiv.org/abs/2004.12832)
