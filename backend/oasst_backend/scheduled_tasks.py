@@ -25,8 +25,8 @@ def toxicity():
     if settings.DEBUG_SKIP_TOXICITY_CALCULATION:
         logger.info("Skipping toxicity calculation")
         return
-    
-    logger.info(f"calculating toxicity : {api_client}")
+
+    logger.info("calculating toxicity")
     with default_session_factory() as session:
         api_key = deps.get_api_key()
         api_client = deps.api_auth(api_key, session)
@@ -39,7 +39,9 @@ def toxicity():
             try:
                 tm.toxicity(message.text, message.id)
             except Exception as e:
-                logger.error(f"Could not compute toxicity for text reply to {message.id} with {message.text} by.error {str(e)}")
+                logger.error(
+                    f"Could not compute toxicity for text reply to {message.id} with {message.text} by.error {str(e)}"
+                )
 
 
 @app.task(name="hf_feature_extraction")
@@ -47,8 +49,8 @@ def hf_feature_extraction():
     if settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
         logger.info("Skipping embedding computation")
         return
-    
-    logger.info(f"extracting feature embeddings : {api_client}")
+
+    logger.info("extracting feature embeddings")
     with default_session_factory() as session:
         api_key = deps.get_api_key()
         api_client = deps.api_auth(api_key, session)
@@ -61,7 +63,9 @@ def hf_feature_extraction():
             try:
                 tm.hf_feature_extraction(message.text, message.id)
             except Exception as e:
-                logger.error(f"Could not extract embedding for text reply to {message.id} with {message.text} by.error {str(e)}")
+                logger.error(
+                    f"Could not extract embedding for text reply to {message.id} with {message.text} by.error {str(e)}"
+                )
 
 
 @shared_task(name="update_user_streak")

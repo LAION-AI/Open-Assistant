@@ -11,7 +11,6 @@ import pydantic
 import sqlalchemy as sa
 from asgiref.sync import async_to_sync
 from loguru import logger
-from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import (
