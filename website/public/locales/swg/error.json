@@ -1,0 +1,16 @@
+{
+  "default": "Da isch ebbes he!",
+  "err_1000": "Ogültiger Aufgabatyp",
+  "err_1001": "Konnt dui Aufgab et anerkenna",
+  "err_1002": "Konnt dui Aufgab et et anerkenna",
+  "err_1003": "Ogültiger Antwortstyp",
+  "err_1004": "Interaktionsanfrage hat et klappt",
+  "err_1005": "Konnt koine Aufgab generiera",
+  "err_1006": "Grad gibts koine sodde {{task_type}}.",
+  "err_1007": "Konnt et gugga was fiar Aufgaba s grad gibt",
+  "err_1008": "Die Nachricht isch z' lang",
+  "err_1009": "Deine letschde Nachrichta hen Duplikate",
+  "err_1010": "Dein Nachrichtentext isch leer",
+  "err_1011": "Du kosch et zwoimal uff die gleiche Nachricht antworta",
+  "err_1012": "Du hasch z' viele offene Aufgaba. Probier's in a paar Minuta nomml."
+}

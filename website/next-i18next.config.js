@@ -36,6 +36,7 @@ module.exports = {
       "sr",
       "sl",
       "sv",
+      "swg",
       "th",
       "tr",
       "uk-UA",
