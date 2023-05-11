@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import aiohttp
 import fastapi
@@ -121,8 +122,14 @@ async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> infe
                     content_type = response.headers.get("Content-Type")
 
                     if response.status == 200:
-                        if "application/json" in content_type or url.endswith(".json"):
-                            config = await response.json()
+                        if "application/json" in content_type or "text/json" in content_type or url.endswith(".json"):
+                            if "text/json" in content_type:
+                                logger.warning(
+                                    f"Plugin {url} is using text/json as its content type. This is not recommended."
+                                )
+                                config = json.loads(await response.text())
+                            else:
+                                config = await response.json()
                         elif (
                             "application/yaml" in content_type
                             or "application/x-yaml" in content_type

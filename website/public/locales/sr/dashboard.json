@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Zgrabi zadatak!",
+  "create": "Kreiraj",
+  "evaluate": "Evaluiraj",
+  "label": "Oznaka",
+  "dashboard": "Kontrolna tabla",
+  "go": "Kreni",
+  "welcome_message": {
+    "label": "Dobrodošli, {{username}}!",
+    "contributor": "Saradnik",
+    "description": "„Open Assistant“ je AI asistent otvorenog koda koji koristi i obučava napredne jezičke modele da razume ljude i odgovori na njihova pitanja.",
+    "instruction": "Kompletirajte zadatke koji će nam pomoći da što bolje obučimo AI model i pri tome osvojite poene."
+  }
+}

@@ -235,7 +235,7 @@ const MessageActions = ({
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
 
-  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
+  const { trigger: stopTree } = useSWRMutation<any, any, any, never>(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
       const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
       toast({

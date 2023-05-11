@@ -28,6 +28,33 @@ const Dashboard = () => {
     return { [TaskCategory.Random]: taskTypes };
   }, [data]);
 
+  const chatButtonStyle = {
+    position: "relative",
+    display: "inline-block",
+    backgroundColor: "blue.500",
+    color: "white",
+    padding: "0.5em 1em",
+    boxShadow: "0 0.5em 1em rgba(0,0,0,0.2)",
+    "&::before": {
+      content: "''",
+      position: "absolute",
+      top: "100%",
+      left: "1.25em",
+      width: 0,
+      height: 0,
+      borderTop: "-1.25em solid transparent",
+      borderBottom: "1.25em solid transparent",
+      borderLeft: "1.25em solid #3182CE",
+      transition: "all 0.3s ease-in-out",
+    },
+    "&:hover": {
+      backgroundColor: "blue.600",
+      "&::before": {
+        borderLeft: "1.25em solid #2b6cb0",
+      },
+    },
+  };
+
   return (
     <>
       <Head>
@@ -40,9 +67,7 @@ const Dashboard = () => {
           <Flex direction="column" gap={4}>
             <Heading size="lg">{t("index:try_our_assistant")}</Heading>
             <Link href="/chat" aria-label="Chat">
-              <Button variant="solid" colorScheme="blue" px={5} py={6}>
-                {t("index:try_our_assistant")}
-              </Button>
+              <Button sx={chatButtonStyle}>{t("index:try_our_assistant")}</Button>
             </Link>
           </Flex>
         )}
