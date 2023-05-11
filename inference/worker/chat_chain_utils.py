@@ -160,15 +160,27 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
     return fixed_json
 
 
-def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
-    best_match, best_similarity = max(
-        ((tool, similarity(tool.name, tool_name)) for tool in tools), key=lambda x: x[1], default=(None, 0)
+def select_tool(tool_name: str, tools: list[Tool]) -> Tool | None:
+    tool = next((t for t in tools if t.name in tool_name), None)
+    if tool:
+        return tool
+    tool, similarity = max(
+        ((t, similarity(t.name, tool_name)) for t in tools),
+        key=lambda x: x[1],
+        default=(None, 0),
     )
-    # This should become stricter as we get better models
-    if best_match is not None and best_similarity > 0.75:
-        tool_input = prepare_json(tool_input)
-        return best_match.func(tool_input)
-    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
+    if tool and similarity > 0.75:
+        return tool
+    return None
+
+
+def use_tool(tool_name: str, tool_input: str, tools: list[Tool]) -> str:
+    tool = select_tool(tool_name, tools)
+    if not tool:
+        return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
+    prepared_input = prepare_json(tool_input)
+    tool_output = tool.func(prepared_input)
+    return tool_output
 
 
 # Needs more work for errors, error-prompt tweaks are currently based on
