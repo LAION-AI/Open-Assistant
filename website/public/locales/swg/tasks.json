@@ -1,0 +1,82 @@
+{
+  "available_task_count": "{{count}} Aufgaba verfügbar",
+  "classify_assistant_reply": {
+    "label": "Antwort des Assistenta klassifiziera",
+    "desc": "Labelschd dui Antwort.",
+    "overview": "Guggsch dir des folgende Gespräch oa ond beantwortesch die Froag zur letzta Antwort in dr Diskussion."
+  },
+  "classify_initial_prompt": {
+    "label": "Initiales Prompt klassifiziera",
+    "desc": "Labelschd z' initiale Prompt.",
+    "overview": "Liesch dir z' folgende Prompt durch ond beantwortesch dann dui Froag dazu."
+  },
+  "classify_prompter_reply": {
+    "label": "Prompter-Antwort klassifiziera",
+    "desc": "Labelschd dui Antwort.",
+    "overview": "Guggsch dir des folgende Gespräch oa ond beantwortesch die Froag zur letschda Antwort in dr Diskussion."
+  },
+  "create_initial_prompt": {
+    "label": "Initiales Prompt",
+    "desc": "Schreibsch a nuies Prompt, om Open Assistant zom helfa, uff verschiedene Nachrichta zu antworta.",
+    "overview": "Erstellsch a erste Nachricht, die an dr Assistent gschickt werra soll",
+    "instruction": "Gibsch z' initiale Prompt ein",
+    "response_placeholder": "Schreibsch hier des Prompt..."
+  },
+  "default": {
+    "unchanged_title": "Koine Änderunga",
+    "unchanged_message": "Weddsch wirklich fortfahra?"
+  },
+  "label_assistant_reply": {
+    "label": "Antwort des Assistenta labela",
+    "desc": "Labelschd dui Antwort.",
+    "overview": "Wählschd oagsichts dr folgenda Diskussion Labels fiar d' letschde Nachricht aus."
+  },
+  "label_initial_prompt": {
+    "label": "Initiale Prompts labela",
+    "desc": "Labelschd des initiale Prompt.",
+    "overview": "Wählschd Labels für z' folgende Prompt."
+  },
+  "label_prompter_reply": {
+    "label": "Prompter-Antwort labela",
+    "desc": "Labelschd dui Antwort.",
+    "overview": "Wählschd oagsichts dr folgenda Diskussion Labels für d' letschde Nachricht aus."
+  },
+  "random": {
+    "label": "Uff gut Glück",
+    "desc": "Hilfsch ons, Open Assistant bessr zu macha, indem de a zufällige uffgabe stardesch."
+  },
+  "rank_assistant_replies": {
+    "label": "Assistentaantworta einstufa",
+    "desc": "Bewertesch dui Antwort des Assistenta basierend uff ihrer Gnauigkeit ond Lesbarkeit.",
+    "overview": "Sortiersch dui Assistanta-Antworta von de Besten zo de Schlechteste, wobei die Beschde zerscht ond die Schlechteste zletzt kommt.",
+    "unchanged_title": "Reihenfolge overändert",
+    "unchanged_message": "Du haschd Reihenfolge et gändert. Weddsch wirklich fortfahra?"
+  },
+  "rank_initial_prompts": {
+    "label": "Initiales Prompt einstufa",
+    "desc": "Bewertesch des initiale Prompts basierend uff dr Genauigkeit und Lesbarkeit.",
+    "overview": "Sortiersch dui initiale Prompts vom Besta zom Schlechtesta, wobei z' Beste zerscht und z' Schlechteste zletzt kommt.",
+    "unchanged_title": "Reihenfolge overändert",
+    "unchanged_message": "Du haschd Reihenfolge et gändert. Weddsch wirklich fortfahra?"
+  },
+  "rank_user_replies": {
+    "label": "Benutzerantworten einstufa",
+    "desc": "Hilfsch m Open Assistant dabei, seine Antworta uff Gespräche mit andere Leit zu verbessera.",
+    "overview": "Sortiersch dui Benutzerantworta von dr Besta zur Schlechtesta, wobei d' Beste zerscht und d' Schlechteste zletzt kommt.",
+    "unchanged_title": "Reihenfolge overändert",
+    "unchanged_message": "Du haschd Reihenfolge et gändert. Weddsch wirklich fortfahra?"
+  },
+  "reply_as_assistant": {
+    "label": "Als Assistent antworta",
+    "desc": "Hilfsch m Open Assistant dabei, seine Antworta uff Gespräche mit andere Leit zu verbessera.",
+    "overview": "Gibsch oagsichts des folgenden Gschprächs a oagmessene Antwort.",
+    "response_placeholder": "Schreibsch hier dei Antwort..."
+  },
+  "reply_as_user": {
+    "label": "Als Benutzer antworta",
+    "desc": "Chattesch mem Open Assistant ond hilfsch mit, seine Antworta zu verbessera, während de mit ihm schwätzt.",
+    "overview": "Gibsch oagsichts des folgenden Gschprächs a oagmessene Antwort.",
+    "instruction": "Gibsch die Antwort des Benutzers oa",
+    "response_placeholder": "Schreibsch hier dei Antwort..."
+  }
+}

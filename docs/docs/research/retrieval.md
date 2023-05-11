@@ -1,22 +1,15 @@
 # Retrieval Directions and Research Papers
 
-## 1. Retrieval-Index
+## Dataset and Benchmark
 
-At first, either a rule-based search a fixed encoder for sematic vector-based
-retrieval (e.g. BERT, Contriever) could be used.
+- BEIR
+  [https://arxiv.org/abs/2104.08663v4](https://arxiv.org/abs/2104.08663v4) -
+  Benchmark for Information Retrieval
+- MS MARCO(part of BEIR)
+  [https://arxiv.org/abs/1611.09268v3](https://arxiv.org/abs/1611.09268v3) -
+  Machine Reading Comprehension Dataset / Retrieval Benchmark
 
-### Relevant Papers
-
-1. FAISS: [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734) -
-   vector index by Facebook
-2. SCaNN: [https://arxiv.org/abs/1908.10396](https://arxiv.org/abs/1908.10396) -
-   vector index by Google
-3. BEIR:
-   [https://arxiv.org/abs/2104.08663v4](https://arxiv.org/abs/2104.08663v4) -
-   Benchmark for Information Retrieval
-4. MS MARCO
-   [https://arxiv.org/abs/1611.09268v3](https://arxiv.org/abs/1611.09268v3) -
-   Machine Reading Comprehension Dataset / Retrieval Benchmark
+## Search Algorithm
 
 ### Links
 
@@ -33,10 +26,29 @@ retrieval (e.g. BERT, Contriever) could be used.
 - Open Retrieval Index Code:
   [https://github.com/kenhktsui/open-information-retrieval](https://github.com/kenhktsui/open-information-retrieval)
 
-## 2. Plugin-based approach
+### Relevant Papers
 
-In this approach, the retrieval is used on top of a language model. It acts as
-an additional tool, like a search engine for a human.
+- FAISS: [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734) -
+  vector index by Facebook
+- SCaNN: [https://arxiv.org/abs/1908.10396](https://arxiv.org/abs/1908.10396) -
+  vector index by Google
+
+## 1. Retrieval-Index
+
+At first, either a rule-based search or sparse vector search (e.g. BM25) or a
+dense vector search (semantic search) (e.g. BERT, Contriever) could be used. In
+practice, retrieval is a layered approach, where the first search is optimised
+for recall and reranking is optimised for precision.
+
+The first search in general is a sparse vector search, or dense vector search
+(bi-encoder). The advantage is that it is fast because document can be
+pre-indexed and stored in a DB. Consine similarity is used to find the most
+similar pre-indexed document embedding given the query embedding. Reranking is a
+technique to boost the performance of top K documents from the first search. For
+example, cross-encoder which takes both query and document into a language
+model, and output a scalar relevance between 0 and 1. It has more superior
+performance than bi-encoder because it allows interaction of query and document
+in the language model. But it is slow because no index can be pre-computed.
 
 ### Links
 
@@ -51,6 +63,27 @@ an additional tool, like a search engine for a human.
 
 ### Relevant Papers
 
+- SBERT [https://arxiv.org/abs/1908.10084](https://arxiv.org/abs/1908.10084)
+- BM25+CE
+  [https://arxiv.org/abs/2104.08663v4](https://arxiv.org/abs/2104.08663v4)
+- RALM [https://arxiv.org/abs/2302.00083](https://arxiv.org/abs/2302.00083)
+- ColBert [https://arxiv.org/abs/2004.12832](https://arxiv.org/abs/2004.12832)
+- DPR [https://arxiv.org/abs/2004.04906](https://arxiv.org/abs/2004.04906)
+- UPR [https://arxiv.org/abs/2204.07496](https://arxiv.org/abs/2204.07496)
+- ...
+
+## 2. Plugin-based approach
+
+In this approach, retrieval as a tool, is embedded into the training data,
+including:
+
+- when a retrieval is required
+- how to do a search (what to search)
+- how to use search result As such, a language model trained with this data is
+  able to do retrieval from a next token prediction objective.
+
+### Relevant Papers
+
 - Toolformer: [http://arxiv.org/abs/2302.04761](http://arxiv.org/abs/2302.04761)
 - ...
 
@@ -62,4 +95,7 @@ model, e.g. via an additional encoder and cross-attention.
 ### Relevant papers
 
 - RETRO: [http://arxiv.org/abs/2112.04426](http://arxiv.org/abs/2112.04426)
+- REALM: [https://arxiv.org/abs/2002.08909](https://arxiv.org/abs/2002.08909)
+- RAG: [https://arxiv.org/abs/2005.11401](https://arxiv.org/abs/2005.11401)
+- Atlas [https://arxiv.org/abs/2208.03299](https://arxiv.org/abs/2208.03299)
 - ...
