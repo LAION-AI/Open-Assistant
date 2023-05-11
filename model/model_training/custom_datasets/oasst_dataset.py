@@ -110,12 +110,11 @@ def load_oasst_export(
 
     def process_thread(thread: list[ExportMessageNode]):
         if mode == "sft":
-            # verify that roles strictly alternate
+            # ensure roles are strictly alternating between prompter and assistant
             assert all(m.role == "prompter" for m in thread[0::2]) and all(m.role == "assistant" for m in thread[1::2])
             conversation: list[Utterance] = [
                 Utterance(
                     text=m.text,
-                    length=Utterance.compute_length(m.text),
                     lang=m.lang,
                     quality=m.get_label_value("quality"),
                     humor=m.get_label_value("humor"),

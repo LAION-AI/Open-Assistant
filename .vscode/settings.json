@@ -4,9 +4,5 @@
   "eslint.workingDirectories": ["./website", "./docs"],
   "python.testing.pytestArgs": ["backend/tests", "oasst-shared/tests"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true,
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none"
+  "python.testing.pytestEnabled": true
 }
