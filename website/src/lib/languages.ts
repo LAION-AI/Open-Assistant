@@ -3,6 +3,7 @@ import { NextApiRequest } from "next";
 import { OasstError } from "./oasst_api_client";
 
 const missingDisplayNamesForLocales = {
+  bar: "Bairisch",
   eu: "Euskara",
   gl: "Galego",
 };
