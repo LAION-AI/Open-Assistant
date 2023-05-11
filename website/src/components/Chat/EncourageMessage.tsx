@@ -30,6 +30,7 @@ export const EncourageMessage = ({
         ms={{
           md: "38px",
         }}
+        borderRadius="2xl"
       >
         {t("feedback_message")}
         <Flex>
