@@ -1,0 +1,82 @@
+{
+  "available_task_count": "Soffl {{count}} Aufgoubm sein",
+  "classify_assistant_reply": {
+    "label": "Ontwort von Assistent klassifiziern",
+    "desc": "Label daina Ontwort.",
+    "overview": "Schaugg do dain Chatvolauf un unt gib an Ontwort zi do Frouge in letschtn Obsotz."
+  },
+  "classify_initial_prompt": {
+    "label": "Iss Initiale Prompt klassifiziern",
+    "desc": "Label is initiale Prompt.",
+    "overview": "Läs do is Prompt durch und tui di Frouge beontwortn."
+  },
+  "classify_prompter_reply": {
+    "label": "Di Prompter-Ontwort klassifiziern",
+    "desc": "Label daina Ontwort.",
+    "overview": "Schaugg do in Chatvolauf un unt gib an Ontwort zi do Frouge in letschtn Obsotz.."
+  },
+  "create_initial_prompt": {
+    "label": "Iss Initiale Prompt",
+    "desc": "Schraib a nois Prompt finn Open Assistant, dassa in Zukunft bessara Ontwortn gebm konn.",
+    "overview": "Schraib a Nouchricht de wos noa in Open Assistent gschickt wert.",
+    "instruction": "Gib a initials Prompt in",
+    "response_placeholder": "Dou schraibsche dai Prompt..."
+  },
+  "default": {
+    "unchanged_title": "Koana Ändorung",
+    "unchanged_message": "Willsche fortfohrn?"
+  },
+  "label_assistant_reply": {
+    "label": "Di Ontwort von Assistent label",
+    "desc": "Label daina Ontwort.",
+    "overview": "Label fi di leschte Nouchricht."
+  },
+  "label_initial_prompt": {
+    "label": "Iss Initiale Prompts label",
+    "desc": "Label is initiale Prompt.",
+    "overview": "Label fis initiale Prompt."
+  },
+  "label_prompter_reply": {
+    "label": "Di Prompter-Ontwort label",
+    "desc": "Label dai Prompter-Ontwort.",
+    "overview": "Label fi dain Prompter-Ontwort."
+  },
+  "random": {
+    "label": "Aff guit Glick",
+    "desc": "Hilf ins in Open Assistant bessa zi mochn, indeme a zuifälliga Aufgoube startisch."
+  },
+  "rank_assistant_replies": {
+    "label": "Assistentenontwortn instufn",
+    "desc": "Bewert di Ontwort von Assistent basierend uff ihrer Gnauigkeit ond Lesbarkeit.",
+    "overview": "Tui dey Assistentontwortn von Beschtn zinn letzigschtn sortiern. Iss Beschte kimp zearschto, ins Letzigschte zilescht.",
+    "unchanged_title": "Reihnfolge unvoändot",
+    "unchanged_message": "Du hosch di Reihnfolge et giändot. Willsche schun fortfohrn?"
+  },
+  "rank_initial_prompts": {
+    "label": "Initials Prompt instufn",
+    "desc": "Tui dey initialn Prompts instufn und schaug aff Ginauigkeit und Läsbarkeit.",
+    "overview": "Tui dey initialn Prompts von Beschtn zinn letzigschtn sortiern. Iss Beschte kimp zearschto, ins Letzigschte zilescht.",
+    "unchanged_title": "Reihnfolge unvoändot",
+    "unchanged_message": "Du hasch di Reihnfolge et giändot. Willsche schun fortfohrn?"
+  },
+  "rank_user_replies": {
+    "label": "Benutzaontwortn inschtufn",
+    "desc": "Stuf dey Ontwortn dey wos ondra Benutza gebm homm, in",
+    "overview": "Tui dey Benutzaontwortn von Beschtn zinn letzigschtn sortiern. Iss Beschte kimp zearschto, ins Letzigschte zilescht.",
+    "unchanged_title": "Reihenfolge unvoändot",
+    "unchanged_message": "Du hosvh di Reihnfolge et giändot. Willsche schun fortfohrn?"
+  },
+  "reply_as_assistant": {
+    "label": "Ass Assistent ontwortn",
+    "desc": "Ontwort ass Assistent.",
+    "overview": "Les di gonze Konversation und gibb an ordntlicha Ontwort.",
+    "response_placeholder": "Tui dou dain Ontwort hin schreibm..."
+  },
+  "reply_as_user": {
+    "label": "Ass Benutza ontwortn",
+    "desc": "Chat mitn Open Assistant unt hilf in, seina Ontwortn zi vobesson, bolle mit ihm retsch.",
+    "overview": "Läs di gonze Konversation und gibb an ordntlicha Ontwort.",
+    "instruction": "Gibb di Ontwort von Benutzer un",
+    "response_placeholder": "Tui dou dain Ontwort hin schreibm..."
+  }
+}
