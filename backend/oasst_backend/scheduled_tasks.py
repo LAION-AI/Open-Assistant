@@ -1,10 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 
+import uuid
 from datetime import datetime, timedelta
 
 from celery import shared_task
 from loguru import logger
-import uuid
 from oasst_backend.api import deps
 from oasst_backend.celery_worker import app
 from oasst_backend.prompt_repository import PromptRepository

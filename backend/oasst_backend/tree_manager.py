@@ -12,7 +12,6 @@ import sqlalchemy as sa
 from asgiref.sync import async_to_sync
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
-from oasst_backend.api import deps
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import (
     Message,
@@ -1893,7 +1892,7 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             cumulative_split += responder.ratio
             if rand < cumulative_split:
                 return db.query(User).filter(User.ai_model == responder.model).one()
-    
+
     def complete_task(self, request: protocol_schema.TaskRequest, user: User) -> None:
         if user.ai_model is None:
             raise ValueError("Cannot complete task for user without AI model")

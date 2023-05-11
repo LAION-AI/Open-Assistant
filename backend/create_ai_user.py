@@ -1,14 +1,14 @@
 import argparse
 import uuid
-from pydantic import BaseModel
-from sqlmodel import Session
 
-from oasst_backend.database import engine
 from oasst_backend.api.deps import create_api_client
+from oasst_backend.database import engine
 from oasst_backend.models.api_client import ApiClient
 from oasst_backend.models.user import User
 from oasst_backend.user_repository import UserRepository
 from oasst_shared.schemas import protocol as protocol_schema
+from pydantic import BaseModel
+from sqlmodel import Session
 
 CREATE_AI_USER_ID = uuid.UUID("2b4e4aa1-8746-4db3-b44c-90c30b316bf8")
 
@@ -23,7 +23,7 @@ def create_ai_user(db: Session, api_client: ApiClient, config: AIUserConfig) -> 
     user = protocol_schema.User(
         id=config.model,
         display_name=f"AI {config.model}",
-        auth_method='system',
+        auth_method="system",
         ai_model=config.model,
     )
     user = ur.lookup_client_user(user, create_missing=True)
