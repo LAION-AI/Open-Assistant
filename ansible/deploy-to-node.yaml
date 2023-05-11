@@ -179,6 +179,10 @@
             true) }}"
           BACKEND_CORS_ORIGINS_CSV:
             "{{ lookup('ansible.builtin.env', 'BACKEND_CORS_ORIGINS') }}"
+          DISCORD_API_KEY:
+            "{{ lookup('ansible.builtin.env', 'DISCORD_API_KEY') }}"
+          DISCORD_CHANNEL_ID:
+            "{{ lookup('ansible.builtin.env', 'DISCORD_CHANNEL_ID') }}"
         ports:
           - "{{ backend_port }}:8080"
 
@@ -207,7 +211,7 @@
             "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_ID') }}"
           GOOGLE_CLIENT_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_SECRET') }}"
-          EMAIL_FROM: open-assistent@laion.ai
+          EMAIL_FROM: open-assistant@laion.ai
           EMAIL_SERVER_HOST:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
           EMAIL_SERVER_PASSWORD:

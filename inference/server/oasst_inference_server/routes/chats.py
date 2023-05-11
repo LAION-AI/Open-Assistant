@@ -110,6 +110,8 @@ async def create_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
         return prompter_message.to_read()
+    except fastapi.HTTPException:
+        raise
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
@@ -138,6 +140,7 @@ async def create_assistant_message(
             work_parameters = inference.WorkParameters(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
+                plugins=request.plugins,
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,
@@ -154,6 +157,8 @@ async def create_assistant_message(
             status_code=fastapi.status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The server is currently busy. Please try again later.",
         )
+    except fastapi.HTTPException:
+        raise
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
@@ -229,6 +234,14 @@ async def message_events(
                         f"Received {response_packet.response_type=} response for {chat_id}. This should not happen."
                     )
                     break
+
+                if response_packet.response_type == "safe_prompt":
+                    logger.info(f"Received safety intervention for {chat_id}")
+                    yield {
+                        "data": chat_schema.SafePromptResponseEvent(
+                            safe_prompt=response_packet.safe_prompt,
+                        ).json(),
+                    }
 
                 if response_packet.response_type == "internal_error":
                     yield {
@@ -307,6 +320,7 @@ async def handle_update_chat(
             chat_id=chat_id,
             title=request.title,
             hidden=request.hidden,
+            allow_data_use=request.allow_data_use,
         )
     except Exception:
         logger.exception("Error when updating chat")

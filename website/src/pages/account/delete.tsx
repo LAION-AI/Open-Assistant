@@ -2,7 +2,7 @@ import { Button, Divider, Flex, Grid, Icon, ListItem, Text, UnorderedList } from
 import Head from "next/head";
 import Link from "next/link";
 import React, { useCallback } from "react";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";

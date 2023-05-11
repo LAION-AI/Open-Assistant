@@ -25,6 +25,10 @@ def format_system_prefix(prefix, eos_token):
     )
 
 
+class PretrainDatasetEntry(BaseModel):
+    text: str | None = None
+
+
 class DatasetEntry(BaseModel):
     questions: list[str]
     answers: list[str] | list[list[str]]
@@ -131,7 +135,7 @@ class DatasetEntry(BaseModel):
 
     @classmethod
     def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):
-        """Creates a DatasetEntry from a qa of given structure. Even if qa contains consecutative assistant or prompter phrases.
+        """Creates a DatasetEntry from a qa of given structure. Even if qa contains consecutive assistant or prompter phrases.
 
 
         Returns:

@@ -1,7 +1,7 @@
 import { Box, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { TermsOfService } from "src/components/ToS";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const TermsOfServicePage = () => {
   return (

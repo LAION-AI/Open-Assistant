@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { Stats } from "src/components/Stats";
 import { get } from "src/lib/api";
 import { Stats as StatsType } from "src/types/Stat";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import uswSWRImmutable from "swr/immutable";
 
 const StatsPage = () => {
@@ -23,6 +23,6 @@ const StatsPage = () => {
   );
 };
 
-StatsPage.getLayout = getDashboardLayout;
+StatsPage.getLayout = DashboardLayout;
 
 export default StatsPage;

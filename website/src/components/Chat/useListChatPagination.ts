@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { get } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWRInfinite from "swr/infinite";
 
-export function useListChatPagination(initialChats?: GetChatsResponse) {
+export type ChatListViewSelection = "visible" | "visible_hidden";
+
+export function useListChatPagination(view: ChatListViewSelection) {
   const {
     data: responses,
     mutate: mutateChatResponses,
@@ -11,15 +14,15 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
     isLoading,
   } = useSWRInfinite<GetChatsResponse>(
     (pageIndex, previousPageData: GetChatsResponse) => {
-      if (!previousPageData && pageIndex === 0) return "/api/chat"; // initial call
+      const params = { include_hidden: view === "visible_hidden" };
+      if (!previousPageData && pageIndex === 0) return API_ROUTES.LIST_CHAT_WITH_PARMS(params); // initial call
       if (previousPageData && !previousPageData.next) return null; // reached the end
-      return `/api/chat?after=${previousPageData.next}`; // paginated call
+      return API_ROUTES.LIST_CHAT_WITH_PARMS({ ...params, after: previousPageData.next }); // paginated call
     },
     get,
     {
       keepPreviousData: true,
       revalidateFirstPage: false,
-      fallbackData: initialChats ? [initialChats] : undefined,
     }
   );
   const loadMoreRef = useRef(null);
@@ -29,9 +32,7 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
     const handleObserver: IntersectionObserverCallback = (entries) => {
       const target = entries[0];
       if (target.isIntersecting && !isLoading && !isEnd) {
-        setSize((size) => {
-          return size + 1;
-        });
+        setSize((size) => size + 1);
       }
     };
     const observer = new IntersectionObserver(handleObserver);

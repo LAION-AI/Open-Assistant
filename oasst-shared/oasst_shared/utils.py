@@ -1,3 +1,4 @@
+import hashlib
 import time
 from datetime import datetime, timezone
 from functools import wraps
@@ -66,3 +67,29 @@ def log_timing(func=None, *, log_kwargs: bool = False, level: int | str = "DEBUG
     if func and callable(func):
         return decorator(func)
     return decorator
+
+
+def sha256_hash(key: str, seed: int) -> str:
+    return hashlib.sha256(f"{key}{seed}".encode("UTF-8")).hexdigest()
+
+
+class Anonymizer:
+    def __init__(self, seed, value_generator=lambda key, seed: sha256_hash(key, seed)):
+        self._map = {}
+        self._values = set()
+        self._seed = seed
+        self._gen = value_generator
+
+    def __getitem__(self, key):
+        if key not in self._map:
+            new_value = self._gen(key, self._seed)
+            if new_value in self._values:
+                raise ValueError("Generated value already exists. Try a different seed or value generator.")
+            self._map[key] = new_value
+            self._values.add(new_value)
+        return self._map[key]
+
+    def anonymize(self, collection: str, key: str | None) -> str | None:
+        if key is None:
+            return None
+        return self[f"{collection}:{key}"]

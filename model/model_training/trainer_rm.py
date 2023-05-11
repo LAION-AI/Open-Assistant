@@ -163,7 +163,7 @@ def argument_parsing(notebook=False, notebook_args=None):
         conf["rng_seed"] = args.rng_seed
     conf["show_dataset_stats"] = args.show_dataset_stats
 
-    # get the world size in deeepspeed
+    # get the world size in deepspeed
     if conf["deepspeed"]:
         conf["world_size"] = int(os.getenv("WORLD_SIZE", default="1"))
     else:

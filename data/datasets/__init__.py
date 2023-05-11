@@ -24,6 +24,8 @@ INSTRUCTION_DATASETS = {
     "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
     "poetry_instruction": "checkai/instruction-poems",
     "oa_stackexchange": "donfu/oa-stackexchange",
+    "stable_diffusion_instructional_dataset": "MadVoyager/stable_diffusion_instructional_dataset",
+    "ru_riddles_337": "0x22almostEvil/ru-riddles-377",
 }
 
 SAFETY_DATASETS = {

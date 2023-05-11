@@ -316,10 +316,13 @@ def main():
     if args.n:
         prompts = prompts[: args.n]
 
+    args_dict = vars(args)
+    if "auth_token" in args_dict:
+        del args_dict["auth_token"]
     report = SamplingReport(
         model_name=model_name,
         date=datetime.utcnow().isoformat(),
-        args=vars(args),
+        args=args_dict,
         prompts=sample_prompt_continuations(
             prompts=prompts,
             model=model,

@@ -1,24 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, useBoolean, useToast } from "@chakra-ui/react";
-import { memo, useCallback, useRef, useState } from "react";
+import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
+import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
+import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,
+  ChatItem,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
 } from "src/types/Chat";
 import { mutate } from "swr";
+import useSWR from "swr";
 
-import { useChatContext } from "./ChatContext";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
+import { ChatWarning } from "./ChatWarning";
 
 interface ChatConversationProps {
   chatId: string;
@@ -26,26 +31,58 @@ interface ChatConversationProps {
 }
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
+  const { t } = useTranslation("chat");
+  const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
+  const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+  const toast = useToast();
+
+  const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
+    onSuccess(data) {
+      setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
+    },
+    onError: (err) => {
+      if (err instanceof OasstError && err.httpStatusCode === 404) {
+        // chat does not exist, probably deleted
+        return router.push("/chat");
+      }
+      toast({
+        title: "Failed to load chat",
+        status: "error",
+      });
+    },
+  });
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, ...sampling_parameters } = getConfigValues();
+      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
         model_config_name,
         sampling_parameters,
+        plugins,
       };
 
-      const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
-        arg: assistant_arg,
-      });
+      let assistant_message: InferenceMessage;
+      try {
+        assistant_message = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
+          arg: assistant_arg,
+        });
+      } catch (e) {
+        if (e instanceof OasstError) {
+          toast({
+            title: e.message,
+            status: "error",
+          });
+        }
+        setIsSending.off();
+        return;
+      }
 
       // we have to do this manually since we want to stream the chunks
       // there is also EventSource, but it is callback based
@@ -74,9 +111,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setResponse(null);
       setIsSending.off();
     },
-    [getConfigValues, setIsSending]
+    [getConfigValues, setIsSending, toast]
   );
-  const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || isSending) {
@@ -106,7 +142,19 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       parent_id: parentId,
     };
 
-    const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+    let prompter_message: InferenceMessage;
+    try {
+      prompter_message = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+    } catch (e) {
+      if (e instanceof OasstError) {
+        toast({
+          title: e.message,
+          status: "error",
+        });
+      }
+      setIsSending.off();
+      return;
+    }
     if (messages.length === 0) {
       // revalidate chat list after creating the first prompter message to make sure the message already has title
       mutate(API_ROUTES.LIST_CHAT);
@@ -200,6 +248,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
+  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(messages, streamedResponse);
+
   return (
     <Box
       pt="4"
@@ -217,23 +267,77 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         bg: "blackAlpha.300",
       }}
     >
-      <SimpleBar
-        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
-        classNames={{
-          contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
-        }}
-      >
-        <ChatConversationTree
-          messages={messages}
-          onVote={handleOnVote}
-          onRetry={handleOnRetry}
-          isSending={isSending}
-          retryingParentId={retryingParentId}
-          onEditPromtp={handleEditPrompt}
-        ></ChatConversationTree>
-        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-      </SimpleBar>
-      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
+      <Box height="full" minH={0} position="relative">
+        {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
+        <SimpleBar
+          onMouseDown={updateEnableAutoScroll}
+          scrollableNodeProps={scrollableNodeProps}
+          style={{ maxHeight: "100%", height: "100%", minHeight: "0", paddingBottom: "1rem" }}
+          classNames={{
+            contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
+          }}
+        >
+          <ChatConversationTree
+            messages={messages}
+            onVote={handleOnVote}
+            onRetry={handleOnRetry}
+            isSending={isSending}
+            retryingParentId={retryingParentId}
+            onEditPromtp={handleEditPrompt}
+          ></ChatConversationTree>
+          {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+          <div ref={messagesEndRef} style={{ height: 0 }}></div>
+        </SimpleBar>
+
+        {queueInfo && (
+          <Badge position="absolute" bottom="0" left="50%" transform="translate(-50%)">
+            {t("queue_info", queueInfo)}
+          </Badge>
+        )}
+      </Box>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage}></ChatForm>
+      <ChatWarning />
     </Box>
   );
 });
+
+const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | null) => {
+  const enableAutoScroll = useRef(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const updateEnableAutoScroll = useCallback(() => {
+    const container = chatContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const isEnable = container.scrollHeight - container.scrollTop - container.clientHeight < 10;
+    enableAutoScroll.current = isEnable;
+  }, []);
+
+  useEffect(() => {
+    if (!enableAutoScroll.current) {
+      return;
+    }
+
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamedResponse]);
+
+  const scrollableNodeProps = useMemo(
+    () => ({
+      ref: chatContainerRef,
+      onWheel: updateEnableAutoScroll,
+      // onScroll: handleOnScroll,
+      onKeyDown: (e: KeyboardEvent) => {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          updateEnableAutoScroll();
+        }
+      },
+      onTouchMove: updateEnableAutoScroll,
+      onMouseDown: updateEnableAutoScroll(),
+    }),
+    [updateEnableAutoScroll]
+  );
+
+  return { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll };
+};
