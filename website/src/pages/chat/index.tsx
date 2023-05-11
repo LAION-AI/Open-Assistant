@@ -14,6 +14,8 @@ const ChatList = () => {
         <title>{t("chat")}</title>
       </Head>
       <ChatListBase
+        // TODO: enable this after visually differentiating hidden from visible chats & allowing 'unhide'
+        allowViews={process.env.NODE_ENV === "development"}
         className="max-w-5xl mx-auto"
         pt="4"
         px="4"
