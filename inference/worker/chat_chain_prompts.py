@@ -11,6 +11,8 @@ END_SEQ = "End!"
 # Adjust according to the training dates and datasets used
 KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 
+TALKING_STYLE = ""
+
 JSON_FORMAT_NO_PAYLOAD = """{"request": {"params": {query or url parameters}}}"""
 JSON_FORMAT_PAYLOAD = """{"request": {"params": {query or url parameters}, "payload": {...payload}}}"""
 
@@ -58,6 +60,6 @@ SUFFIX = f"""
 Previous conversation history:
 {{chat_history}}
 
-When answering a question, you MUST use the following language: {{language}}
+When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
 New input: {{input}}
 """
