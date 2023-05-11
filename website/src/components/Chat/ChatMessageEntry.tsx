@@ -186,7 +186,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
         )}
         {work_parameters && <WorkParametersDisplay parameters={work_parameters} />}
       </PendingMessageEntry>
-      {state === "complete" && showEncourageMessage && (
+      {state === "complete" && isAssistant && showEncourageMessage && (
         <EncourageMessage
           onThumbsUp={handleThumbsUp}
           onThumbsDown={handleThumbsDown}
