@@ -1,11 +1,12 @@
-from datasets import load_dataset, concatenate_datasets
-from dataclasses import dataclass
-import pandas as pd
-
 import json
+from dataclasses import dataclass
+
+import pandas as pd
+from datasets import concatenate_datasets, load_dataset
 
 configs = ["biology-12th", "philosophy-12th", "geography-12th", "history-12th", "history-quiz"]
 datasets = []
+
 
 @dataclass
 class QnA:
@@ -13,6 +14,7 @@ class QnA:
     RESPONSE: str
     SOURCE: str
     METADATA: str
+
 
 # format in QnA
 def create_qna(row):
@@ -28,6 +30,7 @@ def create_qna(row):
     }
     metadata_str = json.dumps(metadata)
     return QnA(instruction, response, source, metadata_str)
+
 
 # merge dataset configs into one
 for config in configs:
