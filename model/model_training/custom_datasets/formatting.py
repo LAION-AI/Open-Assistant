@@ -227,21 +227,18 @@ def create_dataset_entry_qa(
 
 
 def format_pairs(
-    pairs: list[str] | DatasetEntrySft,
+    pairs: list[str],
     eos_token: str,
     add_initial_reply_token: bool = False,
 ) -> list[str]:
-    if isinstance(pairs, DatasetEntrySft):
-        return pairs.get_formatted(eos_token=eos_token)
-    else:
-        # backwards compatibility
-        conversations = [
-            "{}{}{}".format(QA_SPECIAL_TOKENS["Question" if i % 2 == 0 else "Answer"], pairs[i], eos_token)
-            for i in range(len(pairs))
-        ]
-        if add_initial_reply_token:
-            conversations.append(QA_SPECIAL_TOKENS["Answer"])
-        return conversations
+    assert isinstance(pairs, list)
+    conversations = [
+        "{}{}{}".format(QA_SPECIAL_TOKENS["Question" if i % 2 == 0 else "Answer"], pairs[i], eos_token)
+        for i in range(len(pairs))
+    ]
+    if add_initial_reply_token:
+        conversations.append(QA_SPECIAL_TOKENS["Answer"])
+    return conversations
 
 
 def format_rl_text(pairs: list[str]) -> str:

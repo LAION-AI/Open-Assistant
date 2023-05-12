@@ -169,6 +169,8 @@ if __name__ == "__main__":
         #     pp.pprint(f"Found the following occurances in VAL {dataset_name}:")
         #     pp.pprint(dict(matched_val))
         if len(matched_train) + len(matched_val) == 0:
-            print(f"\nNOT FIND OF THE SPECIFIED REGULAR EXPRESSIONS OR FILTER WORDS. FOR THE DATASET {dataset_name}")
+            print(
+                f"\nNON OF THE SPECIFIED REGULAR EXPRESSIONS OR FILTER WORDS WAS FOUND FOR THE DATASET {dataset_name}"
+            )
     if len(overview_dct) > 0:
         pp.pprint(overview_dct)
