@@ -24,7 +24,7 @@ def create_qna(row):
     url = row["url"]
     id_str = row["id"]
     metadata = {
-        "language": f"bg",
+        "language": "bg",
         "url": f"{url}",
         "id": f"{id_str}",
     }
