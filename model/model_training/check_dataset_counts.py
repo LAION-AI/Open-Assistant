@@ -89,7 +89,7 @@ def argument_parsing(notebook=False, notebook_args=None):
                 raise ValueError(
                     f'Error: Could not find the dataset "{name}" in {mode.config_name()}. ',
                     f"Tried to look for this dataset within th key {mode.default_config()} ",
-                    "and as seperate key.",
+                    "and as separate key.",
                 )
 
             datasets_list.extend(datasets_value)

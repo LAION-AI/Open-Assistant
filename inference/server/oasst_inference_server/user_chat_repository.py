@@ -51,7 +51,9 @@ class UserChatRepository(pydantic.BaseModel):
                 sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
             )
 
-        chat = (await self.session.exec(query)).one()
+        chat = (await self.session.exec(query)).one_or_none()
+        if chat is None:
+            raise fastapi.HTTPException(status_code=404, detail="Chat not found")
         return chat
 
     async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
@@ -89,6 +91,9 @@ class UserChatRepository(pydantic.BaseModel):
         if chat is None:
             raise fastapi.HTTPException(status_code=403)
         logger.debug(f"Deleting {chat_id=}")
+        message_ids = [message.id for message in chat.messages]
+        # delete reports associated with messages
+        await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
         # delete messages
         await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
@@ -123,7 +128,8 @@ class UserChatRepository(pydantic.BaseModel):
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
-            chat.title = content
+            if chat.title is None:
+                chat.title = content
         else:
             msg_dict = chat.get_msg_dict()
             if parent_id not in msg_dict:

@@ -1,5 +1,7 @@
+aiohttp
 hf_transfer
 huggingface_hub
+langchain==0.0.142
 loguru
 lorem
 nvidia-ml-py

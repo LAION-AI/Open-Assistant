@@ -60,4 +60,4 @@ python model/model_eval/rejection_sampling.py --data_path model/model_eval/manua
 }
 ```
 
-- additionally, selected and rejected samples will be saved to seperate files
+- additionally, selected and rejected samples will be saved to separate files

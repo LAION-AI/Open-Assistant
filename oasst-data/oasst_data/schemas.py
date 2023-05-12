@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 
 
 class LabelAvgValue(BaseModel):
@@ -36,6 +36,17 @@ class ExportMessageEventRanking(ExportMessageEvent):
     ranking_parent_id: Optional[str]
     message_tree_id: Optional[str]
     not_rankable: Optional[bool]  # flawed, factually incorrect or unacceptable
+
+
+class ExportMessageEventReport(ExportMessageEvent):
+    type: Literal["report"] = "report"
+    report_type: str
+    reason: str
+
+
+class ExportMessageEventScore(ExportMessageEvent):
+    type: Literal["score"] = "score"
+    score: conint(ge=-1, le=1)
 
 
 class DetoxifyRating(BaseModel):

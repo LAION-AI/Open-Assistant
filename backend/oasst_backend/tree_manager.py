@@ -19,6 +19,8 @@ from oasst_backend.models import (
     Task,
     TextLabels,
     User,
+    UserStats,
+    UserStatsTimeFrame,
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
@@ -269,10 +271,13 @@ class TreeManager:
             def activate_one(db: Session) -> int:
                 # select among distinct users
                 authors_qry = (
-                    db.query(Message.user_id)
+                    db.query(Message.user_id, func.coalesce(UserStats.reply_ranked_1, 0).label("reply_ranked_1"))
                     .select_from(MessageTreeState)
                     .join(Message, MessageTreeState.message_tree_id == Message.id)
                     .join(User, Message.user_id == User.id)
+                    .outerjoin(
+                        UserStats, and_(UserStats.user_id == User.id, UserStats.time_frame == UserStatsTimeFrame.month)
+                    )
                     .filter(
                         MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
                         Message.lang == lang,
@@ -284,16 +289,21 @@ class TreeManager:
                     .distinct(Message.user_id)
                 )
 
-                author_ids = authors_qry.all()
-                if len(author_ids) == 0:
+                author_data = authors_qry.all()
+                if len(author_data) == 0:
                     logger.info(
                         f"No prompts for prompt lottery available ({num_missing_growing=}, trees missing for {lang=})."
                     )
                     return False
 
+                author_ids = [data["user_id"] for data in author_data]
+                # add one to avoid any scenario where all weights are 0
+                # this also means inactive users can still occasionally be selected
+                weights = [data["reply_ranked_1"] + 1 for data in author_data]
+
                 # first select an author
-                prompt_author_id: UUID = random.choice(author_ids)["user_id"]
-                logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_ids)} candidates.")
+                prompt_author_id: UUID = random.choices(author_ids, weights=weights)[0]
+                logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_data)} candidates.")
 
                 # select random prompt of author
                 qry = (

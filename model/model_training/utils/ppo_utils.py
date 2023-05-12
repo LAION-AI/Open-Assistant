@@ -553,7 +553,7 @@ def triton_server_ref_model():  # noqa:  C901
         for i in range(math.ceil(len(all_tokens) / mbs)):
             batch_ixs = slice(i * mbs, (i + 1) * mbs)
 
-            # We specififed int32 as types for a triton client
+            # We specified int32 as types for a triton client
             result = client.infer(
                 triton_model,
                 [

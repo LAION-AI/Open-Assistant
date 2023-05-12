@@ -55,7 +55,7 @@ def load_oasst_export(
             if tree.tree_state not in ("ready_for_export", "prompt_lottery_waiting"):
                 continue
 
-        # extract all threads up to last asssitant reply
+        # extract all threads up to last assistant reply
         threads: list[list[ExportMessageNode]] = []
 
         def thread_filter(thread: list[ExportMessageNode]) -> bool:

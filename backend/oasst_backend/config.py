@@ -274,6 +274,9 @@ class Settings(BaseSettings):
 
     TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
 
+    DISCORD_API_KEY: str | None = None
+    DISCORD_CHANNEL_ID: str | None = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

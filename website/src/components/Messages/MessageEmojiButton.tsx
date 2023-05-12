@@ -1,4 +1,4 @@
-import { Button, ButtonProps, useColorModeValue } from "@chakra-ui/react";
+import { Button, ButtonProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import { ElementType, PropsWithChildren } from "react";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { MessageEmoji } from "src/types/Conversation";
@@ -47,6 +47,7 @@ type BaseMessageEmojiButtonProps = PropsWithChildren<{
   onClick?: () => void;
   isDisabled?: boolean;
   sx?: ButtonProps["sx"];
+  label?: string;
 }>;
 
 export const BaseMessageEmojiButton = ({
@@ -56,10 +57,10 @@ export const BaseMessageEmojiButton = ({
   isDisabled,
   sx,
   children,
+  label,
 }: BaseMessageEmojiButtonProps) => {
   const disabledColor = useColorModeValue("gray.500", "gray.400");
-
-  return (
+  const button = (
     <Button
       onClick={onClick}
       variant={checked ? "solid" : "ghost"}
@@ -80,5 +81,15 @@ export const BaseMessageEmojiButton = ({
       <Emoji style={{ height: "1em" }} />
       {children}
     </Button>
+  );
+
+  if (!label) {
+    return button;
+  }
+
+  return (
+    <Tooltip label={label} placement="top">
+      {button}
+    </Tooltip>
   );
 };

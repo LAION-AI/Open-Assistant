@@ -1,0 +1,28 @@
+{
+  "back_to_chat_list": "Nazad na listu za ćaskanje",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Konfiguracija",
+  "empty": "Bez naslova",
+  "login_message": "Da biste koristili ovu funkciju, morate se ponovo prijaviti. Prijavite se pomoću jednog od ovih provajdera:",
+  "max_new_tokens": "Max novih tokena",
+  "model": "Model",
+  "parameter_description": {
+    "max_new_tokens": "Max novih tokena: Ovaj parametar govori modelu koliko novih tokena treba da generiše najviše za odgovor.",
+    "repetition_penalty": "Penali Ponavljanja: Ovaj parametar smanjuje verovatnoću ponavljanja istih tokena iznova i iznova čineći ponovljene tokene manje verovatnim nego što bi model obično predvideo.",
+    "temperature": "Temperatura: Svaki token koji generišete je uzorkovan iz distribucije p(next_token|previous_tokens). Parametar temperature može da „izoštri“ ili priguši ovu distribuciju. Postavljanje na 1 znači da model generiše tokene na osnovu njihove predviđene verovatnoće (tj., ako model predviđa da „XYZ“ ima verovatnoću od 12,3%, on će ga generisati sa verovatnoćom od 12,3%). Smanjenje temperature ka nuli čini model „pohlepnijim“, što dovodi do toga da velike verovatnoće postanu još veće, a niske verovatnoće da postanu još niže (imajte na umu da ovo nije linearna veza!). Povećanje temperature čini sve verovatnoće sličnijim. Intuitivno, niska temperatura znači da model generiše odgovore koji su usko usklađeni sa njegovim uverenjima, dok visoka temperatura omogućava kreativnije i raznovrsnije odgovore.",
+    "top_k": "Top-k: Ovo je slično uzorkovanju top-p, ali umesto da se uzimaju prvi tokeni dok njihova kumulativna verovatnoća ne pređe 'p', uzima se samo K najverovatnijih tokena. Top-p je obično poželjniji jer omogućava modelu da 'podesi' radijus pretrage, ali top-k može biti koristan kao hitna pauza kada model nema pojma šta da generiše sledeće i dodeljuje veoma ujednačenu distribuciju mnogim tokenima.",
+    "top_p": "Top-p (takođe poznato kao nukleus) uzorkovanje: Ovaj metod smanjuje distribuciju verovatnoće da bi se posmatrao samo najveći 'p' procenat tokena. Odbacivanjem tokena male verovatnoće, pomaže da se poveže generacija i spreči model da generiše gramatički netačne rečenice.",
+    "typical_p": "Tipično p: Tipično uzorkovanje je informaciono-teorijska tehnika koja pored verovatnoće uzima u obzir i entropiju sekvence (tj. sadržaj informacije prema verovatnoći). To znači da tipično uzorkovanje „preteže“ neke od tokena sa manjom verovatnoćom zato što se smatraju „interesantnim“, a premašuje tokene velike verovatnoće jer se smatraju „dosadnim“."
+  },
+  "preset": "Unapred postavljeno",
+  "preset_custom": "Prilagođen",
+  "queue_info": "Vaša poruka je u redu čekanja, vi ste na poziciji {{ queuePosition, number, integer }} u redu.",
+  "repetition_penalty": "Penali ponavljanja",
+  "temperature": "Temperatura",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Tipično P",
+  "you_are_logged_in": "Prijavljeni ste na uslugu ćaskanja",
+  "your_chats": "Vaša ćaskanja",
+  "input_placeholder": "Postavite bilo koje pitanje"
+}

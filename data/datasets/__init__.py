@@ -22,10 +22,11 @@ INSTRUCTION_DATASETS = {
     "oa_leet10k": "ehartford/oa_leet10k",
     "LogicInference_OA": "KK04/LogicInference_OA",
     "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
+    "TSSB-3M": "zirui3/TSSB-3M-instructions",
     "poetry_instruction": "checkai/instruction-poems",
     "oa_stackexchange": "donfu/oa-stackexchange",
-    "multilingual_wikihow_qa_8k": "0x22almostEvil/multilingual-wikihow-qa-8k",
     "stable_diffusion_instructional_dataset": "MadVoyager/stable_diffusion_instructional_dataset",
+    "ru_riddles_337": "0x22almostEvil/ru-riddles-377",
 }
 
 SAFETY_DATASETS = {
