@@ -49,7 +49,7 @@ export interface InferenceMessage {
     };
     plugins: PluginEntry[];
   };
-  used_plugin?: object | null;
+  used_plugins?: object | null;
 }
 
 export interface GetChatsResponse {

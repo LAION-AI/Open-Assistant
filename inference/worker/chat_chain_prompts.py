@@ -63,3 +63,5 @@ Previous conversation history:
 When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
 New input: {{input}}
 """
+
+PLUGIN_DELIM = ";;"

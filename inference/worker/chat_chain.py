@@ -15,7 +15,7 @@ from chat_chain_prompts import (
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
 )
-from chat_chain_utils import compose_tools_from_plugin, extract_tool_and_input, prepare_prompt, use_tool
+from chat_chain_utils import compose_tools_from_plugins, extract_tool_and_input, prepare_prompt, use_tool
 from hf_langchain_inference import HFInference
 from langchain.agents import Tool
 from langchain.memory import ConversationBufferMemory
@@ -63,11 +63,11 @@ def handle_plugin_usage(
     language: str,
     tools: list[Tool],
     memory: ConversationBufferMemory,
-    plugin: inference.PluginEntry | None,
+    plugins: list[inference.PluginEntry],
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
     parameters: interface.GenerateStreamParameters,
-) -> tuple[str, inference.PluginUsed]:
+) -> tuple[str, inference.PluginsUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
         final_tool_output="",
@@ -76,14 +76,10 @@ def handle_plugin_usage(
         error_message="",
         status="failure",
     )
-    plugin_used = inference.PluginUsed(
-        name=None,
-        url=None,
-        execution_details=execution_details,
-    )
+    plugins_used = inference.PluginsUsed()
 
-    if plugin is None:
-        return input_prompt, plugin_used
+    if len(plugins) == 0:
+        return input_prompt, plugins_used
 
     chain_finished = False
     achieved_depth = 0
@@ -140,14 +136,18 @@ def handle_plugin_usage(
     assisted = False if ASSISTANT_PREFIX in out_1 else True
     chain_finished = not assisted
 
+    all_responses = ""
+
     # Check if there is need to go deeper
     while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
-        tool_response = use_tool(out_1, out_2, tools)
+        tool_response, used_plugin_name = use_tool(out_1, out_2, tools)
+
+        all_responses += f"{chain_response}{OBSERVATION_SEQ} {tool_response}\n"
 
         # Save previous chain response, that we will use for the final prompt
         prev_chain_response = chain_response
 
-        new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
+        new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{all_responses}"
         memory, new_prompt = prepare_prompt(
             new_prompt,
             prompt_template,
@@ -191,6 +191,17 @@ def handle_plugin_usage(
             chain_response = prev_chain_response
             assisted = True
 
+        single_used_plugin: inference.PluginEntry | None = None
+        for possible_plugin in plugins:
+            if getattr(possible_plugin.plugin_config, "name_for_human", None) == used_plugin_name:
+                single_used_plugin = possible_plugin
+                break
+
+        if isinstance(single_used_plugin, inference.PluginEntry) and used_plugin_name not in plugins_used.name:
+            plugins_used.names.append(getattr(single_used_plugin.plugin_config, "name_for_human", None))
+            plugins_used.trusted.append(getattr(single_used_plugin, "trusted", None))
+            plugins_used.urls.append(getattr(single_used_plugin, "url", None))
+
         # Now LLM is done with using the plugin,
         # so we need to generate the final prompt
         if not assisted:
@@ -201,11 +212,9 @@ def handle_plugin_usage(
                 input_variables = ["input", "chat_history", "language", "current_time"]
 
                 prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
-                tools_names = None
+                tools_names = []
 
-            final_input = (
-                f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
-            )
+            final_input = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{all_responses}"
             memory, inner_prompt = prepare_prompt(
                 final_input,
                 prompt_template,
@@ -220,23 +229,34 @@ def handle_plugin_usage(
 
             inner_prompt = f"{inner_prompt}\n{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
 
-            plugin_used.execution_details.inner_monologue = inner_monologue
-            plugin_used.execution_details.final_tool_output = tool_response
-            plugin_used.execution_details.final_prompt = inner_prompt
-            plugin_used.execution_details.final_generation_assisted = True
-            plugin_used.execution_details.achieved_depth = achieved_depth + 1
-            plugin_used.execution_details.status = "success"
-            plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-            plugin_used.trusted = getattr(plugin, "trusted", None)
-            plugin_used.url = getattr(plugin, "url", None)
+            plugins_used.execution_details.inner_monologue = inner_monologue
+            plugins_used.execution_details.final_tool_output = tool_response
+            plugins_used.execution_details.final_prompt = inner_prompt
+            plugins_used.execution_details.final_generation_assisted = True
+            plugins_used.execution_details.achieved_depth = achieved_depth + 1
+            plugins_used.execution_details.status = "success"
 
-            return inner_prompt, plugin_used
+            return inner_prompt, plugins_used
         achieved_depth += 1
 
-    plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-    plugin_used.trusted = getattr(plugin, "trusted", None)
-    plugin_used.url = getattr(plugin, "url", None)
-    plugin_used.execution_details.inner_monologue = inner_monologue
+    if not plugins_used[used_plugin_name]:
+        for possible_plugin in plugins:
+            if getattr(possible_plugin.plugin_config, "name_for_human", None) == used_plugin_name:
+                single_used_plugin = possible_plugin
+        plugins_used[used_plugin_name] = (
+            inference.PluginUsed(
+                name=used_plugin_name,
+                url=getattr(single_used_plugin, "url", None),
+                execution_details=execution_details,
+            ),
+            single_used_plugin,
+        )
+    plugin_used, single_used_plugin = plugins_used[used_plugin_name]
+
+    plugin_used.name = getattr(single_used_plugin.plugin_config, "name_for_human", None)
+    plugin_used.trusted = getattr(single_used_plugin, "trusted", None)
+    plugin_used.url = getattr(single_used_plugin, "url", None)
+    plugin_used.execution_details.inner_monologue += inner_monologue
 
     # bring back ASSISTANT_PREFIX to chain_response,
     # that was omitted with stop=[ASSISTANT_PREFIX]
@@ -248,10 +268,10 @@ def handle_plugin_usage(
         if not out_2 or out_2 == "":
             plugin_used.execution_details.status = "failure"
             plugin_used.execution_details.error_message = "Malformed LLM output"
-            return init_prompt, plugin_used
+            return init_prompt, plugins_used
 
         plugin_used.execution_details.status = "success"
-        return f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
+        return f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugins_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt
@@ -259,7 +279,7 @@ def handle_plugin_usage(
         plugin_used.execution_details.status = "failure"
         plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
         init_prompt = f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
-        return init_prompt, plugin_used
+        return init_prompt, plugins_used
 
 
 def handle_conversation(
@@ -267,7 +287,7 @@ def handle_conversation(
     worker_config: inference.WorkerConfig,
     parameters: interface.GenerateStreamParameters,
     tokenizer: transformers.PreTrainedTokenizer,
-) -> tuple[str, inference.PluginUsed | None]:
+) -> tuple[str, inference.PluginsUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
         if not original_prompt:
@@ -278,12 +298,12 @@ def handle_conversation(
         # Get one and only one enabled plugin
         # TODO: Add support for multiple plugins at once
         # maybe... should be explored
-        plugin = next((p for p in parameters.plugins if p.enabled), None)
+        plugins = list(p for p in parameters.plugins if p.enabled)
 
         # Compose tools from plugin, where every endpoint of plugin will become
         # one tool, and return prepared prompt with instructions
-        tools_instructions_template, tools = compose_tools_from_plugin(plugin)
-        plugin_enabled = len(tools)
+        tools_instructions_template, tools = compose_tools_from_plugins(plugins)
+        plugin_enabled = len(tools) > 0
 
         eos_token = ""
         if hasattr(tokenizer, "eos_token"):
@@ -316,7 +336,7 @@ def handle_conversation(
         # using sampling settings derived from frontend UI
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, tools, memory, plugin, worker_config, tokenizer, parameters
+                original_prompt, prompt_template, language, tools, memory, plugins, worker_config, tokenizer, parameters
             )
 
         # Just regular prompt template without plugin chain.

@@ -68,8 +68,8 @@ def is_safety_triggered(safety_label: str, safety_level: int) -> bool:
 
 
 def parse_safety_response(safety_opinion: str) -> tuple[str, str]:
-    safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
-    label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
+    safety_opinions = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
+    label, rots = safety_opinions[0], "and".join([x.strip(".") for x in safety_opinions[1:]])
     label = label.replace("<pad>", "").strip()
     return label, rots
 
@@ -82,12 +82,12 @@ def handle_work_request(
 ):
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     prompt = ""
-    used_plugin = None
+    used_plugins = None
 
     # Check if any plugin is enabled, if so, use it.
     for plugin in parameters.plugins:
         if plugin.enabled:
-            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
+            prompt, used_plugins = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
             # When using plugins, and final prompt being truncated due to the input
             # length limit, LLaMA llm has tendency to leak internal promptings,
             # and generate undesirable continuations, so here we will be adding
@@ -96,7 +96,7 @@ def handle_work_request(
             break
 
     # If no plugin was "used", use the default prompt generation.
-    if not used_plugin:
+    if not used_plugins:
         prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
 
     logger.debug(f"Prompt: {prompt}")
@@ -130,7 +130,7 @@ def handle_work_request(
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
     else:
-        prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, prompt, used_plugin is not None)
+        prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, prompt, used_plugins is not None)
         stream_request = interface.GenerateStreamRequest(
             inputs=prompt,
             parameters=parameters,
@@ -192,7 +192,7 @@ def handle_work_request(
             ]
             + [len(stream_response.generated_text)]
         )
-        if end_seq_index != -1 and used_plugin is not None:
+        if end_seq_index != -1 and used_plugins is not None:
             stream_response.generated_text = stream_response.generated_text[:end_seq_index]
 
     logger.info(f"Done. {stream_response=}")
@@ -203,7 +203,7 @@ def handle_work_request(
             text=stream_response.generated_text,
             finish_reason=stream_response.details.finish_reason,
             metrics=inference.WorkerMetricsInfo(),
-            used_plugin=used_plugin,
+            used_plugins=used_plugins,
         ),
     )
     logger.debug("Work complete. Waiting for more work...")

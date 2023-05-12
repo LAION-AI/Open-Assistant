@@ -194,6 +194,13 @@ class PluginUsed(pydantic.BaseModel):
     execution_details: PluginExecutionDetails
 
 
+class PluginsUsed(pydantic.BaseModel):
+    names: list[str] = []
+    urls: list[str] = []
+    trusted: list[str] = []
+    execution_details: PluginExecutionDetails
+
+
 def make_seed() -> int:
     return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
 
@@ -253,7 +260,7 @@ class MessageRead(pydantic.BaseModel):
     safety_level: int | None
     safety_label: str | None
     safety_rots: str | None
-    used_plugin: PluginUsed | None = None
+    used_plugins: PluginsUsed | None = None
 
     @property
     def is_assistant(self) -> bool:
@@ -347,7 +354,7 @@ class GeneratedTextResponse(WorkerResponseBase):
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
     metrics: WorkerMetricsInfo | None = None
-    used_plugin: PluginUsed | None = None
+    used_plugins: PluginsUsed | None = None
 
 
 class InternalFinishedMessageResponse(WorkerResponseBase):

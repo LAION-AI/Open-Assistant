@@ -52,11 +52,22 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
   const handlePluginSelect = useCallback(
     (index: number) => {
       const plugin = plugins[index];
-      if (plugin) {
-        setValue("plugins", [plugin], { shouldDirty: true });
+      let cur_plugins = getValues("plugins");
+      let contains = false;
+      for (const p of cur_plugins.values()) {
+        if (p === plugin) {
+          contains = true;
+          break;
+        }
       }
+      if (contains) {
+        cur_plugins = cur_plugins.filter((p) => p !== plugin);
+      } else {
+        cur_plugins.push(plugin);
+      }
+      setValue("plugins", cur_plugins, { shouldDirty: true });
     },
-    [plugins, setValue]
+    [plugins, setValue, getValues]
   );
 
   const handlePluginEdit = useCallback(
@@ -145,37 +156,9 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
     toast,
   ]);
 
-  const selectedPlugin = getValues("plugins")?.[0];
-
-  const handleUnSelect = useCallback(
-    (e: MouseEvent) => {
-      e.stopPropagation();
-      setValue("plugins", [], { shouldDirty: true });
-    },
-    [setValue]
-  );
-
   return (
     <>
       <Menu placement="bottom" isLazy lazyBehavior="keepMounted">
-        <MenuButton
-          as={Button}
-          size="lg"
-          rightIcon={selectedPlugin ? <X onClick={handleUnSelect} /> : undefined}
-          maxW="full"
-        >
-          {selectedPlugin ? (
-            <Text mt="4px" fontSize="sm" isTruncated display="flex" gap={2} overflow="hidden">
-              <PluginImage plugin={selectedPlugin}></PluginImage>
-              {selectedPlugin.plugin_config?.name_for_human}
-            </Text>
-          ) : (
-            <Box display="flex" justifyContent="center" gap={2}>
-              <Paperclip />
-              {t("plugins")}
-            </Box>
-          )}
-        </MenuButton>
         <MenuList w="235px" pb="0">
           <SimpleBar
             style={{ maxHeight: "250px" }}

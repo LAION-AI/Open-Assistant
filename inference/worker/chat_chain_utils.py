@@ -3,7 +3,14 @@ import re
 
 import requests
 import transformers
-from chat_chain_prompts import INSTRUCTIONS, OBSERVATION_SEQ, TOOLS_PREFIX, V2_ASST_PREFIX, V2_PROMPTER_PREFIX
+from chat_chain_prompts import (
+    INSTRUCTIONS,
+    OBSERVATION_SEQ,
+    PLUGIN_DELIM,
+    TOOLS_PREFIX,
+    V2_ASST_PREFIX,
+    V2_PROMPTER_PREFIX,
+)
 from hf_langchain_inference import HFInference
 from langchain.agents import Tool
 from langchain.memory import ConversationBufferMemory
@@ -53,7 +60,7 @@ def similarity(ts1: str, ts2: str) -> float:
     if match == 0:
         return 0
 
-    t = 0
+    t: float = 0
     point = 0
 
     for i in range(len1):
@@ -161,14 +168,19 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
     return fixed_json
 
 
-def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
-    best_match, best_similarity = max(
-        ((tool, similarity(tool.name, tool_name)) for tool in tools), key=lambda x: x[1], default=(None, 0)
+def use_tool(tool_name: str, tool_input: str, tools: list) -> tuple[str, str]:
+    best_match, best_similarity, best_plugin = max(
+        (
+            (tool, similarity(tool.name.split(PLUGIN_DELIM)[1], tool_name), tool.name.split(PLUGIN_DELIM)[0])
+            for tool in tools
+        ),
+        key=lambda x: x[1],
+        default=(None, 0),
     )
     # This should become stricter and stricter as we get better models
     if best_match is not None and best_similarity > 0.75:
         tool_input = prepare_json(tool_input)
-        return best_match.func(tool_input)
+        return best_match.func(tool_input), best_plugin
     return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
 
 
@@ -176,13 +188,17 @@ def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
 # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
 # TODO: Add other missing methods and Content-Types etc...
 class RequestsForLLM:
-    def run(self, params: str, url: str, param_location: str, type: str, payload: str | None = None) -> str:
+    def run(
+        self, params: str | dict[str, str], url: str, param_location: str, type: str, payload: str | None = None
+    ) -> str:
         return self.run_request(params, url, param_location, type, payload)
 
-    def run_request(self, params: str, url: str, param_location: str, type: str, payload: str = None) -> str:
+    def run_request(
+        self, params: str | dict[str, str], url: str, param_location: str, type: str, payload: str | None = None
+    ) -> str:
         try:
             query_params = params
-            if param_location == "path":
+            if param_location == "path" and isinstance(query_params, dict):
                 for key, value in query_params.items():
                     url = url.replace(f"{{{key}}}", value)
                 query_params = {}
@@ -221,6 +237,16 @@ class RequestsForLLM:
             return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
 
         return truncate_str(res.text, RESPONSE_MAX_LENGTH)
+
+
+def compose_tools_from_plugins(plugins: list[inference.PluginEntry]) -> tuple[str, list[Tool]]:
+    descriptions = ""
+    tools = []
+    for plugin in plugins:
+        desc, tool = compose_tools_from_plugin(plugin)
+        descriptions += f"{desc}\n"
+        tools += tool
+    return descriptions, tools
 
 
 def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str, list[Tool]]:
@@ -292,12 +318,13 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
         )
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
+        plugin_name = getattr(plugin.plugin_config, "name_for_human", None)
 
-        # some plugins do not have operation_id, so we use path as fallback
         path = endpoint.path[1:] if endpoint.path and len(endpoint.path) > 0 else endpoint.path
+        name = endpoint.operation_id if endpoint.operation_id != "" else path
 
         tool = Tool(
-            name=endpoint.operation_id if endpoint.operation_id != "" else path,
+            name=f"{plugin_name}{PLUGIN_DELIM}{name}",
             # Could be path, e.g /api/v1/endpoint
             # but it can lead LLM to makeup some URLs
             # and problem with EP description is that
