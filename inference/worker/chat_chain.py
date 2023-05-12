@@ -184,7 +184,7 @@ def handle_plugin_usage(
                 input_variables = ["input", "chat_history", "language", "current_time"]
 
                 prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
-                tools_names = None
+                tool_names = None
 
             final_input = (
                 f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
@@ -193,7 +193,7 @@ def handle_plugin_usage(
                 final_input,
                 prompt_template,
                 memory,
-                tools_names,
+                tool_names,
                 chain.current_time,
                 language,
                 tokenizer,
