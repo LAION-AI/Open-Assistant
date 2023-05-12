@@ -48,5 +48,5 @@
   "preset_name_placeholder": "Enter name",
   "feedback_message": "How did I do? Your feedback will make me better!",
   "feedback_action_great": "Great",
-  "feedback_action_worst": "Worst"
+  "feedback_action_poor": "Poor"
 }

@@ -50,7 +50,7 @@ export const EncourageMessage = ({
               onClose();
             }}
           >
-            {t("feedback_action_worst")}
+            {t("feedback_action_poor")}
           </FeedBackButton>
           <FeedBackButton p="2" onClick={onClose}>
             <X size="20px" />
