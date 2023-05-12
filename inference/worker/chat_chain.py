@@ -78,13 +78,13 @@ class PromptedLLM:
             self.tool_names,
             self.current_time,
             self.language,
-            tokenizer,
-            worker_config,
+            self.tokenizer,
+            self.worker_config,
             self.action_input_format,
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
-        prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, prompt, True)
+        prompt = utils.truncate_prompt(self.tokenizer, self.worker_config, self.parameters, prompt, True)
 
         response = (
             llm.generate(prompts=[prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])

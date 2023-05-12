@@ -164,12 +164,12 @@ def select_tool(tool_name: str, tools: list[Tool]) -> Tool | None:
     tool = next((t for t in tools if t.name in tool_name), None)
     if tool:
         return tool
-    tool, similarity = max(
+    tool, tool_similarity = max(
         ((t, similarity(t.name, tool_name)) for t in tools),
         key=lambda x: x[1],
         default=(None, 0),
     )
-    if tool and similarity > 0.75:
+    if tool and tool_similarity > 0.75:
         return tool
     return None
 
