@@ -18,7 +18,7 @@ import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { WorkParametersDisplay } from "./WorkParameters";
 import { InferenceMessage } from "src/types/Chat";
 
-type OnDraftPickedFn = (regen_index: number, message_index: number) => void;
+type OnDraftPickedFn = (chat_id: string, regen_index: number, message_index: number) => void;
 type OnRetryFn = (params: { parentId: string; chatId: string }) => void;
 
 type ChatAssistantDraftViewerProps = {
@@ -132,7 +132,7 @@ export const ChatAssistantDraftViewer = ({
                   width={"full"}
                   rounded="md"
                   cursor="pointer"
-                  onClick={() => onDraftPicked(regenIndex, index)}
+                  onClick={() => onDraftPicked(chatId, regenIndex, index)}
                   _hover={{ backgroundColor: responseHoverBackgroundColor }}
                   transition="background-color 0.2 ease-in-out"
                 >

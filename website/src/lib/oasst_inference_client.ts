@@ -92,6 +92,13 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}/votes`, { method: "POST", data: { score } });
   }
 
+  sibling_active({ chat_id, message_id, active }: { chat_id: string; message_id: string; active: boolean }) {
+    return this.request(`/chats/${chat_id}/messages/${message_id}/sibling_active`, {
+      method: "POST",
+      data: { active },
+    });
+  }
+
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }

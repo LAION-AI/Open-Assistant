@@ -238,6 +238,7 @@ class MessageState(str, enum.Enum):
 class MessageRead(pydantic.BaseModel):
     id: str
     parent_id: str | None
+    active_sibling: bool | None
     content: str | None
     chat_id: str
     created_at: datetime

@@ -135,11 +135,7 @@ class UserChatRepository(pydantic.BaseModel):
                 raise fastapi.HTTPException(status_code=400, detail="Parent message is not complete")
 
         message = models.DbMessage(
-            role="prompter",
-            chat_id=chat_id,
-            chat=chat,
-            parent_id=parent_id,
-            content=content,
+            role="prompter", chat_id=chat_id, chat=chat, parent_id=parent_id, content=content, active_sibling=True
         )
         self.session.add(message)
         chat.modified_at = message.created_at
@@ -217,6 +213,7 @@ class UserChatRepository(pydantic.BaseModel):
             state=inference.MessageState.pending,
             work_parameters=work_parameters,
             worker_compat_hash=worker_compat_hash,
+            active_sibling=False,
         )
         self.session.add(message)
         await self.session.commit()
@@ -250,6 +247,20 @@ class UserChatRepository(pydantic.BaseModel):
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         message.score = score
+        await self.session.commit()
+        return message
+
+    async def set_sibling_active(self, chat_id: str, message_id: str, active: bool) -> models.DbMessage:
+        logger.info(f"Setting sibling message {message_id=} active to {active=}")
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            .where(models.DbMessage.chat_id == chat_id, models.DbMessage.id == message_id)
+        )
+        message: models.DbMessage = (await self.session.exec(query)).one()
+        if message.chat.user_id != self.user_id:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
+        message.active_sibling = active
         await self.session.commit()
         return message
 

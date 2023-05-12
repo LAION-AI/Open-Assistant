@@ -31,6 +31,7 @@ export interface InferenceMessage {
   id: string;
   chat_id: string;
   parent_id: string | null;
+  active_sibling: boolean | null;
   created_at: string; //timestamp
   content: string | null;
   state: "manual" | "pending" | "in_progress" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";

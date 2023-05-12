@@ -19,6 +19,7 @@ class DbMessage(SQLModel, table=True):
     reports: list["DbReport"] = Relationship(back_populates="message")
 
     parent_id: str | None = Field(None)
+    active_sibling: bool | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     content: str | None = Field(None)
     error: str | None = Field(None)
@@ -58,6 +59,7 @@ class DbMessage(SQLModel, table=True):
         return inference.MessageRead(
             id=self.id,
             parent_id=self.parent_id,
+            active_sibling=self.active_sibling,
             chat_id=self.chat_id,
             content=self.content,
             created_at=self.created_at,

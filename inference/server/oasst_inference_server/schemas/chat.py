@@ -56,6 +56,10 @@ class VoteRequest(pydantic.BaseModel):
     score: int
 
 
+class SiblingActivationRequest(pydantic.BaseModel):
+    active: bool
+
+
 class ReportRequest(pydantic.BaseModel):
     report_type: inference.ReportType
     reason: str

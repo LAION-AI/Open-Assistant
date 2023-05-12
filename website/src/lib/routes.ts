@@ -58,6 +58,7 @@ export const API_ROUTES = {
   CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
   CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
+  CHAT_SIBLING_SET_ACTIVE: `/api/chat/sibling_active`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",

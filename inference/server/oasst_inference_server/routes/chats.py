@@ -291,6 +291,21 @@ async def handle_create_vote(
         return fastapi.Response(status_code=500)
 
 
+@router.post("/{chat_id}/messages/{message_id}/sibling_active")
+async def handle_set_sibling_activation(
+    chat_id: str,
+    message_id: str,
+    sibling_active_request: chat_schema.SiblingActivationRequest,
+    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+) -> fastapi.Response:
+    try:
+        await ucr.set_sibling_active(chat_id=chat_id, message_id=message_id, active=sibling_active_request.active)
+        return fastapi.Response(status_code=200)
+    except Exception:
+        logger.exception("Error setting sibling activity")
+        return fastapi.Response(status_code=500)
+
+
 @router.post("/{chat_id}/messages/{message_id}/reports")
 async def handle_create_report(
     message_id: str,

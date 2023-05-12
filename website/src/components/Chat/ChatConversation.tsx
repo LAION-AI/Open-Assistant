@@ -302,6 +302,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       const dummyMessage: InferenceMessage = {
         id: "__dummy__",
         ...prompter_arg,
+        active_sibling: false,
         created_at: new Date().toISOString(),
         role: "prompter",
         state: "complete",
@@ -332,14 +333,26 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 
   const handleDraftPicked = useCallback(
-    async (regen_index, index) => {
+    async (chat_id, regen_index, index) => {
       if (!isAwaitingMessageSelect) {
         return toast({
           title: "Draft messages are still generating.",
         });
       }
 
-      setMessages((messages) => [...messages, draftMessages[regen_index][index]!]);
+      const draftsWithSelection = [...draftMessages];
+      draftsWithSelection[regen_index][index].active_sibling = true;
+
+      const messagesWithoutSelection = messages.map((message) => {
+        if (message.parent_id === draftsWithSelection[regen_index][index].parent_id && message.active_sibling) {
+          post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: { chat_id, message_id: message.id, active: false } });
+          return { ...message, active_sibling: false };
+        } else {
+          return message;
+        }
+      });
+
+      setMessages([...messagesWithoutSelection, ...draftsWithSelection[regen_index]]);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
       setDraftMessages([]);
