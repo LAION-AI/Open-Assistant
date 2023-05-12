@@ -19,7 +19,7 @@ random_templates_translate = {
         8: "Как можно перевести {opening_quote}{text}{closing_quote}?",
         9: "{lang1}-{lang2}: {opening_quote}{text}{closing_quote}",
     },
-"de": {
+    "de": {
         1: "Übersetze {opening_quote}{text}{closing_quote} in {lang2}",
         2: "Könntest du {opening_quote}{text}{closing_quote} übersetzen?",
         3: "Übersetze {opening_quote}{text}{closing_quote}",
@@ -31,7 +31,7 @@ random_templates_translate = {
         9: "Wie würde man {opening_quote}{text}{closing_quote} auf {lang2} ausdrücken?",
         10: "{lang1}-{lang2}: {opening_quote}{text}{closing_quote}",
     },
-"uk": {
+    "uk": {
         1: "Перекладіть для мене текст {opening_quote}{text}{closing_quote} на мову {lang1}.",
         2: "Як перекласти текст {opening_quote}{text}{closing_quote} на мову {lang2}?",
         3: "Як перекласти на мову {lang2} вислів {opening_quote}{text}{closing_quote}?",
