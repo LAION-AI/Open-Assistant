@@ -100,7 +100,6 @@ def create_qna(row):
     # randomizing INSTRUCTION
     instruction = converter.randomize_text(text, lang_to, lang_from)
     response = translation
-    print(instruction)
     return QnA(instruction, response, source, metadata_str)
 
 
