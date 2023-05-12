@@ -39,6 +39,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+  const [showEncourageMessage, setShowEncourageMessage] = useBoolean(false);
+
   const toast = useToast();
 
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
@@ -110,8 +112,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
+      setShowEncourageMessage.on();
     },
-    [getConfigValues, setIsSending, toast]
+    [getConfigValues, setIsSending, setShowEncourageMessage, toast]
   );
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
@@ -119,6 +122,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       return;
     }
     setIsSending.on();
+    setShowEncourageMessage.off();
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
@@ -164,7 +168,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
+  }, [isSending, setIsSending, setShowEncourageMessage, chatId, messages, createAndFetchAssistantMessage, toast]);
 
   const sendVote = useMessageVote();
 
@@ -284,6 +288,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             isSending={isSending}
             retryingParentId={retryingParentId}
             onEditPromtp={handleEditPrompt}
+            showEncourageMessage={showEncourageMessage}
+            onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>
