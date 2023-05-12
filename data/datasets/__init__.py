@@ -28,6 +28,7 @@ INSTRUCTION_DATASETS = {
     "stable_diffusion_instructional_dataset": "MadVoyager/stable_diffusion_instructional_dataset",
     "ru_riddles_337": "0x22almostEvil/ru-riddles-377",
     "tatoeba_mt_qna_oa": "0x22almostEvil/tatoeba-mt-qna-oa",
+    "0x22almostEvil/reasoning_bg_oa": "0x22almostEvil/reasoning_bg_oa",
 }
 
 SAFETY_DATASETS = {
