@@ -92,6 +92,21 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}/votes`, { method: "POST", data: { score } });
   }
 
+  set_inferior_drafts({
+    chat_id,
+    message_id,
+    inferior_message_ids,
+  }: {
+    chat_id: string;
+    message_id: string;
+    inferior_message_ids: string[];
+  }) {
+    return this.request(`/chats/${chat_id}/messages/${message_id}/inferior_drafts`, {
+      method: "POST",
+      data: { inferior_message_ids },
+    });
+  }
+
   sibling_active({ chat_id, message_id, active }: { chat_id: string; message_id: string; active: boolean }) {
     return this.request(`/chats/${chat_id}/messages/${message_id}/sibling_active`, {
       method: "POST",

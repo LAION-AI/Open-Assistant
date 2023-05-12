@@ -250,7 +250,23 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         return message
 
-    async def set_sibling_active(self, chat_id: str, message_id: str, active: bool) -> models.DbMessage:
+    async def add_inferior_drafts(self, chat_id: str, message_id: str, inferior_message_ids: list[str]):
+        logger.info(f"Setting draft messages {inferior_message_ids=} as inferior to {message_id=}")
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            .where(models.DbMessage.chat_id == chat_id, models.DbMessage.id == message_id)
+        )
+        message: models.DbMessage = (await self.session.exec(query)).one()
+        if message.chat.user_id != self.user_id:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
+        if message.inferior_drafts is None:
+            message.inferior_drafts = inferior_message_ids
+        else:
+            message.inferior_drafts.append(inferior_message_ids)
+        await self.session.commit()
+
+    async def set_sibling_active(self, chat_id: str, message_id: str, active: bool):
         logger.info(f"Setting sibling message {message_id=} active to {active=}")
         query = (
             sqlmodel.select(models.DbMessage)
@@ -262,7 +278,6 @@ class UserChatRepository(pydantic.BaseModel):
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         message.active_sibling = active
         await self.session.commit()
-        return message
 
     async def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
         logger.info(f"Adding report to {message_id=}: {reason=}")

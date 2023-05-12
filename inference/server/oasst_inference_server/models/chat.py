@@ -40,6 +40,7 @@ class DbMessage(SQLModel, table=True):
     worker_config: inference.WorkerConfig | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     score: int = Field(0)
+    inferior_drafts: list[str] | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     @property
     def has_finished(self) -> bool:

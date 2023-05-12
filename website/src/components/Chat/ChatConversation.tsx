@@ -352,6 +352,17 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         }
       });
 
+      const selected_draft_id = draftMessages[regen_index][index].id;
+      await post(API_ROUTES.CHAT_SET_INFERIOR_DRAFTS, {
+        arg: {
+          chat_id,
+          message_id: selected_draft_id,
+          inferior_message_ids: draftMessages[regen_index]
+            .filter((draft) => draft.id !== selected_draft_id)
+            .map((draft) => draft.id),
+        },
+      });
+
       setMessages([...messagesWithoutSelection, ...draftsWithSelection[regen_index]]);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
