@@ -1,9 +1,9 @@
 import pytest
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, Role, SftDatasetEntry, Utterance
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntrySft, Role, Utterance
 
 
 def test_dataset_entry_formatting_missing_lang():
-    ds_entry = SftDatasetEntry(
+    ds_entry = DatasetEntrySft(
         conversation=[
             Utterance(
                 text="What is the capital of France?",
@@ -37,7 +37,7 @@ def test_dataset_entry_formatting_missing_lang():
 
 
 def test_dataset_entry():
-    ds_entry = SftDatasetEntry(
+    ds_entry = DatasetEntrySft(
         conversation=[
             Utterance(
                 text="What is the capital of France?",

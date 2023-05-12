@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, Optional
 
-from model_training.custom_datasets.formatting import Role, SftDatasetEntry, Utterance
+from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
 from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -123,7 +123,7 @@ def load_oasst_export(
                 )
                 for m in thread
             ]
-            return SftDatasetEntry(conversation=conversation)
+            return DatasetEntrySft(conversation=conversation)
         elif mode == "rm":
             prefix = [m.text for m in thread]
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]

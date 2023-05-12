@@ -103,7 +103,7 @@ class PretrainDatasetEntry(DatasetEntry):
     text: str | None = None
 
 
-class SftDatasetEntry(DatasetEntry):
+class DatasetEntrySft(DatasetEntry):
     conversation: list[Utterance]
 
     def get_formatted(
@@ -134,6 +134,65 @@ class SftDatasetEntry(DatasetEntry):
         return output
 
 
+class DatasetEntryRm(DatasetEntry):
+    messages: list[Utterance] | None  # conversation history
+    replies: list[Utterance]  # ordered reply variants, best first
+
+    def get_formatted(
+        self,
+        eos_token: str,
+        use_system_tag: bool = False,
+        system_property_dropout: float = 0.5,
+        system_add_length: bool = False,
+        max_replies: int = 5,
+    ) -> tuple[str, list[str]]:
+        reply_variants = self.replies
+        if len(reply_variants) > max_replies:
+            reply_variants = reply_variants[:max_replies]
+
+        # special handling for non-dialogue datasets like Hellaswag
+        if self.messages is None or len(self.messages) == 1 and self.messages[0] is None:
+            prefix = ""
+            replies = [r.text + eos_token for r in reply_variants]
+            return prefix, replies
+
+        assert len(self.messages) > 0 and self.messages[-1].role == Role.prompter
+
+        # format conversation history (prefix)
+        prefix_messages: list[str] = []
+        for i, m in enumerate(self.messages):
+            if m.role == Role.prompter:
+                prefix_messages.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}")
+            else:
+                if use_system_tag:
+                    assert m.role == Role.assistant
+                    system_tag = m.system_tag(
+                        eos_token=eos_token,
+                        property_dropout=system_property_dropout,
+                        add_length=system_add_length,
+                    )
+                else:
+                    system_tag = ""
+                prefix_messages.append(f"{system_tag}{QA_SPECIAL_TOKENS['Answer']}{m.text}{eos_token}")
+        prefix = "".join(prefix_messages)
+
+        #  format reply variants
+        replies: list[str] = []
+        for r in reply_variants:
+            assert r.role == Role.assistant
+            if use_system_tag:
+                system_tag = r.system_tag(
+                    eos_token=eos_token,
+                    property_dropout=system_property_dropout,
+                    add_length=system_add_length,
+                )
+            else:
+                system_tag = ""
+            replies.append(f"{system_tag}{QA_SPECIAL_TOKENS['Answer']}{r.text}{eos_token}")
+
+        return prefix, replies
+
+
 def create_dataset_entry_qa(
     mode: Mode | Literal["sft", "rm", "rl"],
     questions: list[str],
@@ -150,17 +209,29 @@ def create_dataset_entry_qa(
                 a = a[0]
             messages.append(Utterance(text=a, role=Role.assistant, lang=lang, context=context))
 
-        return SftDatasetEntry(conversation=messages)
+        return DatasetEntrySft(conversation=messages)
+    elif mode == Mode.rm:
+        if len(questions) != 1:
+            raise RuntimeError("QA dataset entry factory does not support multi-turn conversation for the RM case.")
+
+        if len(answers) == 1 and isinstance(answers[0], list):
+            answers = answers[0]
+
+        assert isinstance(answers, list) and len(answers) > 1 and isinstance(answers[0], str)
+        conversation_history = [Utterance(text=questions[0], role=Role.prompter, lang=lang)]
+        reply_variants = [Utterance(text=a, role=Role.assistant, lang=lang, context=context) for a in answers]
+        return DatasetEntryRm(messages=conversation_history, replies=reply_variants)
+    # elif mode == Mode.rl:
     else:
-        raise RuntimeError("Unsupported mode")
+        raise RuntimeError(f"Unsupported mode ({mode=})")
 
 
 def format_pairs(
-    pairs: list[str] | SftDatasetEntry,
+    pairs: list[str] | DatasetEntrySft,
     eos_token: str,
     add_initial_reply_token: bool = False,
 ) -> list[str]:
-    if isinstance(pairs, SftDatasetEntry):
+    if isinstance(pairs, DatasetEntrySft):
         return pairs.get_formatted(eos_token=eos_token)
     else:
         # backwards compatibility

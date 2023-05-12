@@ -21,7 +21,7 @@ from collections import defaultdict
 
 from model_training.check_dataset_counts import Mode
 from model_training.custom_datasets import get_one_dataset
-from model_training.custom_datasets.formatting import PretrainDatasetEntry, SftDatasetEntry
+from model_training.custom_datasets.formatting import DatasetEntrySft, PretrainDatasetEntry
 
 # from model_training.custom_datasets.qa_datasets import (
 #     re_reference_remove,
@@ -116,7 +116,7 @@ def check_in_dataset_row(row: str | list[str] | tuple[str], matched=dict[str, li
             if not isinstance(r, str):
                 raise ValueError(f"Unexpected type: {type(row)}")
             matched = _check_single_string(r, matched)
-    elif isinstance(row, SftDatasetEntry):
+    elif isinstance(row, DatasetEntrySft):
         formatted = row.get_formatted(eos_token="</s>")
         for r in formatted:
             if not isinstance(r, str):
