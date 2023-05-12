@@ -7,16 +7,17 @@ import {
   Divider,
   Flex,
   Tag,
-  Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useEffect, useState, useCallback } from "react";
+import { lazy, useEffect, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
-import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
-import { WorkParametersDisplay } from "./WorkParameters";
 import { InferenceMessage } from "src/types/Chat";
+import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
+import { PluginUsageDetails } from "../Messages/PluginUsageDetails";
+import { WorkParametersDisplay } from "./WorkParameters";
+const RenderedMarkdown = lazy(() => import("../Messages/RenderedMarkdown"));
 
 type OnDraftPickedFn = (chat_id: string, regen_index: number, message_index: number) => void;
 type OnRetryFn = (params: { parentId: string; chatId: string }) => void;
@@ -140,22 +141,32 @@ export const ChatAssistantDraftViewer = ({
                     Draft {index + 1}
                   </Tag>
                   <Collapse startingHeight={100} in={expandedMessage === index}>
-                    <Text
+                    <Box
                       bgGradient={
                         expandedMessage === index
                           ? "linear(to-b, #000000, #000000)"
-                          : "linear(to-b, #000000 50px, #00000000 100px)"
+                          : "linear(to-b, #000000 40px, #00000000 95px)"
                       }
                       _dark={{
                         bgGradient:
                           expandedMessage === index
                             ? "linear(to-b, #FFFFFF, #FFFFFF)"
-                            : "linear(to-b, #FFFFFF 50px, #00000000 100px)",
+                            : "linear(to-b, #FFFFFF 40px, #00000000 95px)",
                       }}
                       backgroundClip={"text"}
+                      padding={0}
+                      minHeight={"100px"}
+                      gap={0}
                     >
-                      {isComplete ? message.content : message}
-                    </Text>
+                      {isComplete ? (
+                        <>
+                          <PluginUsageDetails usedPlugin={message.usedPlugin} />
+                          <RenderedMarkdown markdown={message.content} disallowedElements={[]}></RenderedMarkdown>
+                        </>
+                      ) : (
+                        message
+                      )}
+                    </Box>
                   </Collapse>
                   <Button
                     size="sm"
