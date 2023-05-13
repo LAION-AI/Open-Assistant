@@ -1,0 +1,27 @@
+{
+  "back_to_chat_list": "Nazaj na klepetalno listo",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Konfiguracija klepeta",
+  "empty": "Neimenovan",
+  "login_message": "Za uporabo te funkcije se morate ponovno prijaviti. Prijava uporablja enega izmed teh ponudnikov:",
+  "max_new_tokens": "Maksimalno število novih žetonov",
+  "model": "Model",
+  "parameter_description": {
+    "max_new_tokens": "Maksimalno število novih žetonov: Ta parameter pove modelu koliko žetonov lahko ustvari največ za odziv.",
+    "repetition_penalty": "Kazen za ponavljanje: Ta parameter zmanjšuje verjetnost ponavljanja enakih žetonov vedno znova in znova, kar pomeni zmanjšanje verjetnosti, ki bi jih model običajno predvidel.",
+    "temperature": "Temperatura: vsak žeton, ki ga ustvarite je vzorčen iz distribucije p(next_token|previous_tokens). Parameter temperature lahko \"izostri\" ali zamegli to porazdelitev. Nastavitev na 1 pomeni, da model ustvari žetone, ki temeljijo na njihovi predvideni verjetnosti (tj., če model napoveduje, da ima \"XYZ\" verjetnost 12,3%, ga bo ustvaril z 12,3-odstotno verjetnostjo). Zniževanje temperature proti ničli naredi model bolj oster, kar povzroči, da postanejo visoke verjetnosti še večje in nizke še nižje (s tem, da to ni linearen odnos!). Zaradi povečanja temperature so si vse verjetnosti medsebojno bolj podobne. Intuitivno nizka temperatura pomeni, da model ustvarja odzive, ki se bolj ujemajo s prepričanji modela, medtem ko visoka temperatura omogoča bolj izvirne in raznolike odzive.",
+    "top_k": "Top-k: To je podobno top-p vzorčenju, s tem, da dokler kumulativna verjetnost vrha žetonov presega 'p', vzame samo K najbolj verjetnih žetonov. Top-p ima običajno prednost, saj modelu omogoča 'uglasitev' iskalnega polmera, vendar je lahko top-k uporaben kot nujna omejitev, ko model ne razume kaj naj ustvari in zato dodeli enotno porazdelitev številnim žetonom.",
+    "top_p": "Top-p (znan tudi pod imenom jedro) vzorčenje: Ta metoda zmanjšuje porazdelitev verjetnosti, da upošteva samo procentualni vrh top-p žetonov. Z zavrnitvijo žetonov z nizko verjetnostjo pomaga povezati generacijo in prepreči modelu, da bi generiral slovnično napačne stavke.",
+    "typical_p": "Typical p: Tipično vzorčenje je informacijsko-teoretična tehnika, ki poleg verjetnosti upošteva tudi entropijo zaporedja (torej vsebino informacij glede na verjetnost). To pomeni, da tipično vzorčenje \"preko-oteži\" nekatere žetone z nižjo verjetnostjo, kar se zdi \"zanimivo,\" in zmanjša verjetnost žetonom, ker se zdi \"dolgočasno.\""
+  },
+  "preset": "Prednastavitve",
+  "preset_custom": "Nastavitve",
+  "queue_info": "Vaše sporočilo je v čakalni vrsti, kjer ste {{ queuePosition, number, integer }} v vrsti.",
+  "repetition_penalty": "Kazen za ponovitve",
+  "temperature": "Temperatura",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
+  "you_are_logged_in": "prijavljeni ste v storitev klepeta",
+  "your_chats": "Vaši klepeti"
+}

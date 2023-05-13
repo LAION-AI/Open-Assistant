@@ -1,0 +1,9 @@
+{
+  "delete_account": "Zbrišite račun",
+  "delete_account_data": "Vsi prispevani podatki v Open Assistant, z reševanjem opravil, razvrščanjem sporočil in pogovori, ki so bili v uporabi storitve klepeta, bodo obdržani. Vsi sklici na prvotnega uporabnika pa so anonimni.",
+  "delete_account_intro": "Brisanje računa pomeni naslednje:",
+  "delete_account_leaderboard": "Računi zbrisanih uporabnikov se ne bodo prikazovali na lestvicah",
+  "delete_account_permanent": "To dejanje je trajno in ga ni mogoče razveljaviti",
+  "go_to_dashboard": "Nazaj na nadzorno ploščo dashboard",
+  "yes_delete": "Da, trajno izbrišite moj račun"
+}

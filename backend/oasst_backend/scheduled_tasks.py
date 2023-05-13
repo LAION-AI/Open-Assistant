@@ -94,7 +94,7 @@ def update_user_streak() -> None:
                             if lastactitvitydelta.days > 1 or user.streak_days is None:
                                 user.streak_days = 0
                                 user.streak_last_day_date = current_time
-                        # streak_last_day_date has a current timestamp in DB. Idealy should not be NULL.
+                        # streak_last_day_date has a current timestamp in DB. Ideally should not be NULL.
                         if streak_last_day_date is not None:
                             streak_delta = current_time - streak_last_day_date
                             # if user completed tasks on consecutive days then increment the streak days

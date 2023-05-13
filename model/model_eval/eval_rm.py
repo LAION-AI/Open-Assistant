@@ -49,7 +49,7 @@ def batch_inference(inputs, model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--dataset", type=str, help="name of evaluation dataset")
-    parser.add_argument("--split", type=str, help="dataset splits seperated by comma", default="train")
+    parser.add_argument("--split", type=str, help="dataset splits separated by comma", default="train")
     parser.add_argument("--model", type=str, help="Path or url of the model file")
     parser.add_argument("--metrics", type=str, help="metrics to evaluate", default="accuracy")
     parser.add_argument("--batch_size", type=int, help="Batch Size", default=8)

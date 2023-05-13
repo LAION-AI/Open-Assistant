@@ -185,4 +185,5 @@ export interface GetChatsParams {
   limit?: number;
   before?: string;
   after?: string;
+  include_hidden?: string;
 }

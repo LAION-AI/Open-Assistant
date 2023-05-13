@@ -1,0 +1,26 @@
+{
+  "blurb": "Verujemo da možemo zajedno da napravimo revoluciju.",
+  "blurb1": "Na isti način na koji je „Stable Diffusion“ pomogao svetu da poboljša umetnost i omogući kreiranje slika na sasvim nove načine, mi želimo da poboljšamo svet pružanjem neverovatne konverzacijske veštačke inteligencije.",
+  "description": "Konverzacijski AI za svakoga. Projekat otvorenog koda za kreiranje „GPT“ „LLM“ sa omogućenim ćaskanjem koji vodi „LAION“ i saradnici širom sveta.",
+  "faq_items": {
+    "q0": "Dokle je stigao projekat sa ravojem?",
+    "a0": "Nalazimo se u ranoj fazi razvoja, radimo od utvrđenog istraživanja u primeni „RLHF“ do velikih jezičkih modela.",
+    "q1": "Ko stoji iza projekta „Open Assistant“?",
+    "a1": "„Open Assistant“ je projekat koji organizuju „LAION“ i pojedinci širom sveta zainteresovani da ovu tehnologiju približe svima.",
+    "q2": "Koju licencu koristi „Open Assistant“?",
+    "a2": "Kod i modeli su licencirani pod licencom „Apache 2.0.“",
+    "q3": "Da li će biti objavljeni i podaci o treningu modela?",
+    "a3": "Da, pod „CC BY 4.0.“ licencom",
+    "q4": "Da li će „Open Assistant“ ostati besplatan?",
+    "a4": "Da, „Open Assistant“ će biti besplatan kako za korišćenje tako i za modifikovanje.",
+    "q5": "Koji hardver će biti potreban za pokretanje modela?",
+    "a5": "Postojaće verzije koje će se moći pokrenuti na potrošačkom hardveru."
+  },
+  "faq_title": "Često Postavljana Pitanja",
+  "help_us_improve": "Pomozite nam da se poboljšamo",
+  "hugging_face_link": "Pogledajte našu „HuggingFace“ organizaciju",
+  "join_us_description": "Svi projekti otvorenog koda počinju sa ljudima poput vas. Otvoreni kod je uverenje da ako sarađujemo možemo zajedno da poklonimo svoje znanje i tehnologiju svetu za dobrobit čovečanstva. Da li ste sa nama? Pronađite nas ovde:",
+  "join_us_title": "Pridružite nam se",
+  "subtitle": "Conversational AI za sve.",
+  "try_our_assistant": "Probajte našeg AI asistenta"
+}

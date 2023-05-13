@@ -79,6 +79,7 @@ class ChatListRead(pydantic.BaseModel):
     modified_at: datetime.datetime
     title: str | None
     hidden: bool = False
+    allow_data_use: bool = True
 
 
 class ChatRead(ChatListRead):

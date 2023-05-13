@@ -1,5 +1,6 @@
+import interface
+import utils
 from langchain.llms.base import LLM
-from text_generation import Client
 
 
 class HFInference(LLM):
@@ -23,22 +24,30 @@ class HFInference(LLM):
         else:
             stop += self.stop_sequences
 
-        print(stop)
-        client = Client(self.inference_server_url, timeout=1000)
-        res = client.generate(
-            prompt,
-            stop_sequences=stop,
-            max_new_tokens=self.max_new_tokens,
-            top_k=self.top_k,
-            top_p=self.top_p,
-            typical_p=self.typical_p,
-            temperature=self.temperature,
-            repetition_penalty=self.repetition_penalty,
-            seed=self.seed,
+        request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=interface.GenerateStreamParameters(
+                stop=stop,
+                max_new_tokens=self.max_new_tokens,
+                top_k=self.top_k,
+                top_p=self.top_p,
+                typical_p=self.typical_p,
+                temperature=self.temperature,
+                repetition_penalty=self.repetition_penalty,
+                seed=self.seed,
+            ),
         )
+
+        for event in utils.get_inference_server_stream_events(request):
+            stream_response = event
+
+        generated_text = stream_response.generated_text
+        if generated_text is None:
+            generated_text = ""
+
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
-            if stop_seq in res.generated_text:
-                res.generated_text = res.generated_text[: res.generated_text.index(stop_seq)]
+            if stop_seq in generated_text:
+                generated_text = generated_text[: generated_text.index(stop_seq)]
 
-        return res.generated_text
+        return generated_text

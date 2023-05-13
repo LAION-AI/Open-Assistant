@@ -4,19 +4,18 @@ import { useTranslation } from "next-i18next";
 import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useFallbackRef } from "src/hooks/ui/useFallbackRef";
-import { QueueInfo } from "src/lib/chat_stream";
-import { ChatConfigDrawer } from "./ChatConfigMobile";
+
+import { ChatConfigMobileTrigger } from "./ChatConfigMobile";
 import { ChatInputIconButton } from "./ChatInputIconButton";
 
 type ChatFormProps = {
   isSending: boolean;
   onSubmit: () => void;
-  queueInfo: QueueInfo | null;
 };
 
 // eslint-disable-next-line react/display-name
 export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, forwardedRef) => {
-  const { isSending, onSubmit: onSubmit, queueInfo } = props;
+  const { isSending, onSubmit } = props;
   const { t } = useTranslation("chat");
   const handleSubmit = useCallback(
     (e: SyntheticEvent) => {
@@ -52,6 +51,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, f
           ref={ref}
           bg="gray.200"
           borderRadius="md"
+          pe={{ base: "76px", xl: "48px" }}
           rows={1}
           maxRows={10}
           py={{ base: 2, md: 3 }}
@@ -69,7 +69,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, f
           style={{ resize: "none" }}
         />
         <Flex position="absolute" zIndex="10" className="ltr:right-0 rtl:left-0 top-0 h-full items-center px-4" gap="2">
-          <ChatConfigDrawer />
+          <ChatConfigMobileTrigger />
           {isSending ? (
             <CircularProgress isIndeterminate size="20px" />
           ) : (

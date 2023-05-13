@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
-import { useChatContext } from "src/components/Chat/ChatContext";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -31,6 +32,8 @@ interface ChatConversationProps {
 }
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
+  const { t } = useTranslation("chat");
+  const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
@@ -41,13 +44,19 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+  const [showEncourageMessage, setShowEncourageMessage] = useBoolean(false);
+
   const toast = useToast();
 
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
     },
-    onError: () => {
+    onError: (err) => {
+      if (err instanceof OasstError && err.httpStatusCode === 404) {
+        // chat does not exist, probably deleted
+        return router.push("/chat");
+      }
       toast({
         title: "Failed to load chat",
         status: "error",
@@ -108,8 +117,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
+      setShowEncourageMessage.on();
     },
-    [getConfigValues, setIsSending, toast]
+    [getConfigValues, setIsSending, setShowEncourageMessage, toast]
   );
   const createAssistantDrafts = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
@@ -202,6 +212,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     }
 
     setIsSending.on();
+    setShowEncourageMessage.off();
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
@@ -247,7 +258,16 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAssistantDrafts({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAssistantDrafts, toast, isSending, isAwaitingMessageSelect]);
+  }, [
+    setIsSending,
+    chatId,
+    messages,
+    createAssistantDrafts,
+    toast,
+    isSending,
+    isAwaitingMessageSelect,
+    setShowEncourageMessage,
+  ]);
 
   const sendVote = useMessageVote();
 
@@ -368,6 +388,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setStreamedDrafts(null);
       setDraftMessages([]);
       setReytryingParentId(null);
+      setShowEncourageMessage.on();
     },
     [
       isAwaitingMessageSelect,
@@ -378,6 +399,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setStreamedDrafts,
       setDraftMessages,
       setReytryingParentId,
+      setShowEncourageMessage,
     ]
   );
 
@@ -405,36 +427,46 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         bg: "blackAlpha.300",
       }}
     >
-      {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
-      <SimpleBar
-        onMouseDown={updateEnableAutoScroll}
-        scrollableNodeProps={scrollableNodeProps}
-        style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
-        classNames={{
-          contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
-        }}
-      >
-        <ChatConversationTree
-          messages={messages}
-          onVote={handleOnVote}
-          onRetry={handleOnRetry}
-          isSending={isSending}
-          retryingParentId={retryingParentId}
-          onEditPromtp={handleEditPrompt}
-        ></ChatConversationTree>
-        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-        {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
-          <ChatAssistantDraftViewer
-            chatId={chatId}
-            streamedDrafts={streamedDrafts}
-            draftMessages={draftMessages}
-            onDraftPicked={handleDraftPicked}
+      <Box height="full" minH={0} position="relative">
+        {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
+        <SimpleBar
+          onMouseDown={updateEnableAutoScroll}
+          scrollableNodeProps={scrollableNodeProps}
+          style={{ maxHeight: "100%", height: "100%", minHeight: "0", paddingBottom: "1rem" }}
+          classNames={{
+            contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
+          }}
+        >
+          <ChatConversationTree
+            messages={messages}
+            onVote={handleOnVote}
             onRetry={handleOnRetry}
-          />
+            isSending={isSending}
+            retryingParentId={retryingParentId}
+            onEditPromtp={handleEditPrompt}
+            showEncourageMessage={showEncourageMessage}
+            onEncourageMessageClose={setShowEncourageMessage.off}
+          ></ChatConversationTree>
+          {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+          {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
+            <ChatAssistantDraftViewer
+              chatId={chatId}
+              streamedDrafts={streamedDrafts}
+              draftMessages={draftMessages}
+              onDraftPicked={handleDraftPicked}
+              onRetry={handleOnRetry}
+            />
+          )}
+          <div ref={messagesEndRef} style={{ height: 0 }}></div>
+        </SimpleBar>
+
+        {queueInfo && (
+          <Badge position="absolute" bottom="0" left="50%" transform="translate(-50%)">
+            {t("queue_info", queueInfo)}
+          </Badge>
         )}
-        <div ref={messagesEndRef} style={{ height: 0 }}></div>
-      </SimpleBar>
-      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
+      </Box>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage}></ChatForm>
       <ChatWarning />
     </Box>
   );
