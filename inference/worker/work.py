@@ -88,7 +88,7 @@ def handle_work_request(
             # When using plugins and final prompt is truncated due to length limit
             # LLaMA has tendency to leak internal prompts and generate bad continuations
             # So we add keywords/sequences to the stop sequences to reduce this
-            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, ASSISTANT_PREFIX])
+            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
             break
 
     if not used_plugin:
