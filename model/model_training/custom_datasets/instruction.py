@@ -69,7 +69,14 @@ class InstructionDataset(Dataset):
         data = self.dataset[idx]
         lang = None
         # use "en" for datasets which have more than 95% English messages
-        if self.name in ["grade_school_math_instructions"]:
+        if self.name in [
+            "humaneval_mbpp_codegen_qa",
+            "humaneval_mbpp_testgen_qa",
+            "grade_school_math_instructions",
+            "recipes",
+            "poem_instructions",
+            "tell_a_joke",
+        ]:
             lang = "en"
         return create_dataset_entry_qa(
             mode=self.mode,
