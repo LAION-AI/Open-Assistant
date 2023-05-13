@@ -30,6 +30,7 @@ INSTRUCTION_DATASETS = {
     "instructional_codesearchnet_python": "Nan-Do/instructional_codesearchnet_python",
     "tatoeba_mt_qna_oa": "0x22almostEvil/tatoeba-mt-qna-oa",
     "reasoning_bg_oa": "0x22almostEvil/reasoning_bg_oa",
+    "reasoning_gsm_qna_oa": "0x22almostEvil/reasoning-gsm-qna-oa",
 }
 
 SAFETY_DATASETS = {
