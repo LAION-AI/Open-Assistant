@@ -18,15 +18,13 @@ class QnA:
 
 # format in QnA
 def create_qna(row):
-    instruction = row["question"] + " " + ", ".join(row["answers"]) + "?"
+    instruction = f'{row["question"]} {", ".join(row["answers"])}?'
     response = row["correct"].translate(str.maketrans("", "", "();"))
     source = "reasoning_bg"
-    url = row["url"]
-    id_str = row["id"]
     metadata = {
         "language": "bg",
-        "url": f"{url}",
-        "id": f"{id_str}",
+        "url": f'{row["url"]}',
+        "id": f'{row["id"]}',
     }
     metadata_str = json.dumps(metadata)
     return QnA(instruction, response, source, metadata_str)
