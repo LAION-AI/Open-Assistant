@@ -29,6 +29,7 @@ INSTRUCTION_DATASETS = {
     "ru_riddles_337": "0x22almostEvil/ru-riddles-377",
     "instructional_codesearchnet_python": "Nan-Do/instructional_codesearchnet_python",
     "tatoeba_mt_qna_oa": "0x22almostEvil/tatoeba-mt-qna-oa",
+    "reasoning_bg_oa": "0x22almostEvil/reasoning_bg_oa",
 }
 
 SAFETY_DATASETS = {
