@@ -2,7 +2,7 @@
 
 ### Dataset Summary
 
-*  License: apache-2.0
+* License: apache-2.0
 * Contains Parquet of a list of instructions and answers in Bulgarian language.
 
 Each row consists of
