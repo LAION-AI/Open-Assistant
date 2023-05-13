@@ -6,6 +6,7 @@ import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState 
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { OasstError } from "src/lib/oasst_api_client";
@@ -33,6 +34,7 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const { t } = useTranslation("chat");
+  const { ENABLE_DRAFTS_FOR_PLUGINS } = useBrowserConfig();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
@@ -257,12 +259,20 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
-    await createAssistantDrafts({ parentId: prompter_message.id, chatId });
+    const { plugins } = getConfigValues();
+    if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+      await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
+    } else {
+      await createAssistantDrafts({ parentId: prompter_message.id, chatId });
+    }
   }, [
+    getConfigValues,
+    ENABLE_DRAFTS_FOR_PLUGINS,
     setIsSending,
     chatId,
     messages,
     createAssistantDrafts,
+    createAndFetchAssistantMessage,
     toast,
     isSending,
     isAwaitingMessageSelect,
@@ -277,9 +287,23 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     async (params: { parentId: string; chatId: string }) => {
       setIsSending.on();
       setReytryingParentId(params.parentId);
-      await createAssistantDrafts(params);
+
+      const { plugins } = getConfigValues();
+      if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+        await createAndFetchAssistantMessage(params);
+        setReytryingParentId(null);
+      } else {
+        await createAssistantDrafts(params);
+      }
     },
-    [createAssistantDrafts, setIsSending, isAwaitingMessageSelect]
+    [
+      createAssistantDrafts,
+      setIsSending,
+      isAwaitingMessageSelect,
+      getConfigValues,
+      ENABLE_DRAFTS_FOR_PLUGINS,
+      createAndFetchAssistantMessage,
+    ]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -344,12 +368,25 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
       if (prompter_message) {
         setDraftMessages([]);
-        await createAssistantDrafts({ parentId: prompter_message.id, chatId: chatId });
+        const { plugins } = getConfigValues();
+        if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+          await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
+        } else {
+          await createAssistantDrafts({ parentId: prompter_message.id, chatId });
+        }
       }
 
       setReytryingParentId(null);
     },
-    [createAssistantDrafts, isSending, setIsSending, setDraftMessages]
+    [
+      createAssistantDrafts,
+      createAndFetchAssistantMessage,
+      isSending,
+      setIsSending,
+      setDraftMessages,
+      getConfigValues,
+      ENABLE_DRAFTS_FOR_PLUGINS,
+    ]
   );
 
   const handleDraftPicked = useCallback(
@@ -410,6 +447,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     streamedDrafts
   );
 
+  const { plugins } = getConfigValues();
+
   return (
     <Box
       pt="4"
@@ -448,15 +487,17 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-          {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
-            <ChatAssistantDraftViewer
-              chatId={chatId}
-              streamedDrafts={streamedDrafts}
-              draftMessages={draftMessages}
-              onDraftPicked={handleDraftPicked}
-              onRetry={handleOnRetry}
-            />
-          )}
+          {(ENABLE_DRAFTS_FOR_PLUGINS || plugins.length === 0) &&
+            (isSending || isAwaitingMessageSelect) &&
+            streamedDrafts && (
+              <ChatAssistantDraftViewer
+                chatId={chatId}
+                streamedDrafts={streamedDrafts}
+                draftMessages={draftMessages}
+                onDraftPicked={handleDraftPicked}
+                onRetry={handleOnRetry}
+              />
+            )}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>
         </SimpleBar>
 
