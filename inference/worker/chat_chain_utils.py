@@ -16,6 +16,7 @@ from settings import settings
 from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
+DESCRIPTION_FOR_MODEL_MAX_LENGTH = 512
 
 llm_json_parser = HFInference(
     inference_server_url=settings.inference_server_url,
@@ -311,7 +312,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
     # This can be long for some plugins, we need to truncate due to ctx limitations
-    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, 512)
+    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, DESCRIPTION_FOR_MODEL_MAX_LENGTH)
     return (
         f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin.name_for_model} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
         tools,
