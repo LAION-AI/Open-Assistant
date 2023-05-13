@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { lazy, useEffect, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { useTranslation } from "next-i18next";
 
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { InferenceMessage } from "src/types/Chat";
@@ -37,6 +38,8 @@ export const ChatAssistantDraftViewer = ({
   onDraftPicked,
   onRetry,
 }: ChatAssistantDraftViewerProps) => {
+  const { t } = useTranslation("chat");
+
   const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState<number>(0);
@@ -138,7 +141,7 @@ export const ChatAssistantDraftViewer = ({
                   transition="background-color 0.2 ease-in-out"
                 >
                   <Tag size="md" variant="outline" maxW="max-content" marginBottom={1.5} borderRadius="full">
-                    Draft {index + 1}
+                    {t("draft")} {index + 1}
                   </Tag>
                   <Collapse startingHeight={100} in={expandedMessage === index}>
                     <Box
@@ -182,7 +185,7 @@ export const ChatAssistantDraftViewer = ({
                       handleToggleExpand(index);
                     }}
                   >
-                    Show {expandedMessage === index ? "Less" : "More"}
+                    {expandedMessage === index ? t("show_less") : t("show_more")}
                   </Button>
                 </Box>
                 {index !== streamedDrafts.length - 1 && (
