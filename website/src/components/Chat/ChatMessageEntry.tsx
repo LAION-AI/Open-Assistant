@@ -67,8 +67,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
       onVote({ newScore, chatId, messageId, oldScore: score });
+      if (showEncourageMessage) {
+        onEncourageMessageClose();
+      }
     },
-    [chatId, messageId, onVote, score]
+    [chatId, messageId, onEncourageMessageClose, onVote, score, showEncourageMessage]
   );
 
   const handleThumbsUp = useCallback(() => {
