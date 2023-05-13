@@ -1,6 +1,6 @@
 import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
-import { Inter } from "@next/font/google";
+import { Inter } from "next/font/google";
 import { withProse } from "@nikolovlazar/chakra-ui-prose";
 
 import { colors } from "./colors";
