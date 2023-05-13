@@ -169,6 +169,7 @@ def select_tool(tool_name: str, tools: list[Tool]) -> Tool | None:
         key=lambda x: x[1],
         default=(None, 0),
     )
+    # TODO: make stricter with better models
     if tool and tool_similarity > 0.75:
         return tool
     return None
