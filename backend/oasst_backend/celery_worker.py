@@ -25,7 +25,7 @@ app.conf.beat_schedule = {
     },
     "update-search-vectors": {
         "task": "update_search_vectors",
-        "schedule": 60.0 * 60.0,
+        "schedule": 60.0 * 20.0,
         "args": (1000,),  # (batch_size,)
     },
 }

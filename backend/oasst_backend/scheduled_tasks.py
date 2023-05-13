@@ -77,13 +77,13 @@ def update_search_vectors(batch_size: int) -> None:
             to_update: list[Message] = session.query(Message).filter(Message.search_vector.is_(None)).all()
             for idx, message in enumerate(to_update):
                 message_payload: MessagePayload = message.payload.payload
-                message_lang: str = db_lang_to_postgres_ts_lang(message_payload.lang)
+                message_lang: str = db_lang_to_postgres_ts_lang(message.lang)
                 message.search_vector = func.to_tsvector(message_lang, message_payload.text)
                 if (idx + 1) % batch_size == 0:
                     session.commit()
             session.commit()
     except Exception as e:
-        logger.error(str(e))
+        logger.error(f"update_search_vectors failed with error: {str(e)}")
 
 
 @shared_task(name="update_user_streak")

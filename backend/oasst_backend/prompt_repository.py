@@ -38,7 +38,6 @@ from oasst_shared.utils import unaware_to_utc, utcnow
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
-from starlette.status import HTTP_403_FORBIDDEN
 
 _task_type_and_reaction = (
     (
@@ -953,6 +952,7 @@ class PromptRepository:
         review_result: Optional[bool] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
+        search_query: Optional[str] = None,
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
@@ -1019,6 +1019,11 @@ class PromptRepository:
 
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
+
+        if search_query is not None:
+            ts_lang: str = db_lang_to_postgres_ts_lang(lang)
+            ts_query = func.to_tsquery(ts_lang, search_query)
+            qry = qry.filter(ts_query.match(Message.search_vector))
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
@@ -1259,33 +1264,6 @@ WHERE message.id = cc.id;
         self.db.add(message)
         self.db.flush()
         return message
-
-    def search_messages(
-        self,
-        search_query: str,
-        lang: str,
-        limit: int = 20,
-        include_deleted: bool = False,
-    ) -> list[Message]:
-        """Perform text search over messages. Only trusted clients may perform text search."""
-        if not self.api_client.trusted:
-            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
-
-        ts_lang: str = db_lang_to_postgres_ts_lang(lang)
-        ts_query = func.to_tsquery(ts_lang, search_query)
-
-        db_query = self.db.query(Message).filter(
-            Message.lang == lang,
-            ts_query.match(Message.search_vector),
-        )
-
-        if not include_deleted:
-            db_query = db_query.filter(not_(Message.deleted))
-
-        db_query = db_query.order_by(Message.created_date.desc()).limit(limit)
-
-        messages: list[Message] = db_query.all()
-        return messages
 
     def fetch_flagged_messages(self, max_count: Optional[int]) -> list[FlaggedMessage]:
         qry = self.db.query(FlaggedMessage)
