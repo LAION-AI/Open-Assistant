@@ -1,0 +1,16 @@
+{
+  "default": "Do isch eppas folsch gong!",
+  "err_1000": "Aufgoubntyp isch et giltig",
+  "err_1001": "Honn di Aufgobe et dokennt",
+  "err_1002": "Honn di Aufgobe et et dokennt",
+  "err_1003": "Ontwortstyp isch et giltig",
+  "err_1004": "Interaktionsanfrage hat et klappt",
+  "err_1005": "I honn koan Aufgoube gikennt generiern",
+  "err_1006": "Ess gib grot koana selcha {{task_type}}.",
+  "err_1007": "Konnt et gugga was fiar Aufgaba s grad gibt",
+  "err_1008": "Di Nouchricht isch zi long",
+  "err_1009": "Deina letschtn Nochrichtn homm Duplikate",
+  "err_1010": "Dein Nochrichtentext isch laare",
+  "err_1011": "Du kosch et zwoamol aff di gleiche Nochricht ontwortn",
+  "err_1012": "Du hasch zi viel Aufgabm offe. Probiers noummo in a poor Minutn."
+}

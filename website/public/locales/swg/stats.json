@@ -1,0 +1,20 @@
+{
+  "assistant": "Assistent",
+  "backlog_ranking": "Backlog-Ranking",
+  "choose_a_language": "Wählsch a Sprach aus",
+  "count": "Anzahl",
+  "growing": "Wachsend",
+  "halted_by_moderator": "Vom Moderator oaghalta",
+  "human_messages_by_lang": "Menscha-Nachrichta nach Sprach",
+  "human_messages_by_role": "Menscha-Nachrichta nach Rolle",
+  "initial_prompt_review": "Initial-Prompts send prüft",
+  "language_stats": "Sprach",
+  "message_trees_by_state": "Nachrichtabäumla nach Status",
+  "message_trees_states_by_lang": "Nachrichtabaumstatus nach Sprach",
+  "prompt_lottery_waiting": "In dr Prompt-Lotterie",
+  "prompter": "Prompter",
+  "ranking": "Ranking",
+  "ready_for_export": "Zum Export fertig",
+  "stats": "Statistik",
+  "users_accepted_tos": "Leit, die d' AGB's akzeptiert haben"
+}

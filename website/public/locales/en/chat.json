@@ -46,5 +46,7 @@
   "save_preset": "Save this preset",
   "preset_exists_error": "A preset with this name already exists",
   "preset_name_placeholder": "Enter name",
-  "feedback_message": "Thoughts? Let us know!"
+  "feedback_message": "How did I do? Your feedback will make me better!",
+  "feedback_action_great": "Good",
+  "feedback_action_poor": "Could be better"
 }

@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Schnapp dir a Aufgäble!",
+  "create": "Erstella",
+  "evaluate": "Auswerta",
+  "label": "Labela",
+  "dashboard": "Dashboard",
+  "go": "Los",
+  "welcome_message": {
+    "label": "Schee dass de do bisch, {{username}}!",
+    "contributor": "Mitarbeiter",
+    "description": "Open Assistant isch a open-source KI-Assistent der halt neue Language Models nemmt und trainiert, damit er alle Leid verstanda ond mit ihne schwätza ko.",
+    "instruction": "Schliesch doch au a paar Aufgäbla ab om mit dem Training zom helfa und dir a paar Pünktla zom verdiena. Zeig alle was fir en Schwoab de bisch!"
+  }
+}
