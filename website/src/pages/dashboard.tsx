@@ -67,7 +67,7 @@ const Dashboard = () => {
           <Flex direction="column" gap={4}>
             <Heading size="lg">{t("index:try_our_assistant")}</Heading>
             <Link href="/chat" aria-label="Chat">
-              <Button sx={chatButtonStyle}>{t("index:try_our_assistant")}</Button>
+              <Button sx={chatButtonStyle}>{t("index:chat_with_our_assistant")}</Button>
             </Link>
           </Flex>
         )}
