@@ -12,6 +12,10 @@ from the function from 90% of the samples. To generate the summaries this
 [model](https://huggingface.co/Salesforce/codet5-base-codexglue-sum-python) has
 been used.
 
+**Note**: some summarisation tasks are very easy because the prompt already
+contains a docstring in the function which is then used as the ground truth
+response. It may be useful to filter these in future.
+
 ### Summarize_codesearchnet_for_python.ipynb
 
 This notebook is used to generate the python annotated version of the
