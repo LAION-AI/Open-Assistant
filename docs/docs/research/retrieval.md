@@ -115,7 +115,6 @@ index needs to be re-updated during training.
 - Atlas [https://arxiv.org/abs/2208.03299](https://arxiv.org/abs/2208.03299)
 - ...
 
-
 ## Paper summaries
 
 ### Borgeaud et al 2020.: Improving Language Models by Retrieving from Trillions of Tokens - "RETRO"
@@ -138,9 +137,20 @@ i.e. the 7B can utilize 40 nearest neighbor chunks, a 172M model only 10 NNs.
 
 ### Izacard et al. 2022: Unsupervised Dense Information Retrieval with Contrastive Learning - "Contriver"
 
-They present Contriver, an open-source implementation of their novel approach to information retrieval using neural networks that outperforms traditional methods and can be applied to a wide range of retrieval settings. The main idea behind Contriver is to use contrastive learning to train dense retrievers for information retrieval. Their key contribution is showing that this approach leads to strong performance in various retrieval settings, including cross-lingual retrieval, and outperforms traditional unsupervised term-frequency methods such as BM25. 
+They present Contriver, an open-source implementation of their novel approach to
+information retrieval using neural networks that outperforms traditional methods
+and can be applied to a wide range of retrieval settings. The main idea behind
+Contriver is to use contrastive learning to train dense retrievers for
+information retrieval. Their key contribution is showing that this approach
+leads to strong performance in various retrieval settings, including
+cross-lingual retrieval, and outperforms traditional unsupervised term-frequency
+methods such as BM25.
 
-Specifically, on the BEIR benchmark, their unsupervised model outperforms BM25 on 11 out of 15 datasets for the Recall@100. When used as pre-training before fine-tuning, either on a few thousands in-domain examples or on the large MS MARCO dataset, their contrastive model leads to improvements on the BEIR benchmark.
+Specifically, on the BEIR benchmark, their unsupervised model outperforms BM25
+on 11 out of 15 datasets for the Recall@100. When used as pre-training before
+fine-tuning, either on a few thousands in-domain examples or on the large MS
+MARCO dataset, their contrastive model leads to improvements on the BEIR
+benchmark.
 
 Pre-trained model and source code are available on Huggingface and GitHub.
 
@@ -179,11 +189,25 @@ effective utilization of world knowledge.
 
 ### Zamani et al. 2022: Retrieval-Enhanced Machine Learning
 
-This paper introduces a new research program called Retrieval-Enhanced Machine Learning (REML), which combines information retrieval techniques with machine learning to improve model accuracy and interpretability. The authors describe the core principles of indexing, representation, retrieval, and ranking that underlie REML models, and provide examples of how these models have been applied in real-world scenarios. 
+This paper introduces a new research program called Retrieval-Enhanced Machine
+Learning (REML), which combines information retrieval techniques with machine
+learning to improve model accuracy and interpretability. The authors describe
+the core principles of indexing, representation, retrieval, and ranking that
+underlie REML models, and provide examples of how these models have been applied
+in real-world scenarios.
 
-The main contribution of this paper is to lay out a research agenda for REML that includes several key challenges and opportunities for future work. These include developing new optimization algorithms that can handle large-scale data sets, exploring the use of deep learning architectures in conjunction with retrieval-based methods, and investigating the impact of different retrieval strategies on model performance.
+The main contribution of this paper is to lay out a research agenda for REML
+that includes several key challenges and opportunities for future work. These
+include developing new optimization algorithms that can handle large-scale data
+sets, exploring the use of deep learning architectures in conjunction with
+retrieval-based methods, and investigating the impact of different retrieval
+strategies on model performance.
 
-Overall, the key idea behind REML is to leverage the strengths of both information retrieval and machine learning to create more powerful and flexible models that can handle complex data sets and produce more accurate results. By combining these two fields, researchers hope to pave the way for new advances in artificial intelligence and information access research.
+Overall, the key idea behind REML is to leverage the strengths of both
+information retrieval and machine learning to create more powerful and flexible
+models that can handle complex data sets and produce more accurate results. By
+combining these two fields, researchers hope to pave the way for new advances in
+artificial intelligence and information access research.
 
 (https://arxiv.org/abs/2205.01230)[https://arxiv.org/abs/2205.01230]
 
@@ -234,4 +258,3 @@ as base + neural re-ranking
 - Goyal et al. 2023: Retrieval Augmented Reinforcement Learning
 
 - Humphreys et al. 2022: Large-Scale Retrieval for Reinforcement Learning
-
