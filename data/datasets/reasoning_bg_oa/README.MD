@@ -2,17 +2,20 @@
 
 ### Dataset Summary
 
-* License: apache-2.0
-* Contains Parquet of a list of instructions and answers in Bulgarian language.
+- License: apache-2.0
+- Contains Parquet of a list of instructions and answers in Bulgarian language.
 
 Each row consists of
 
-* INSTRUCTION
-* RESPONSE
-* SOURCE (reasoning_bg)
-* METADATA (json with language, url, id).
+- INSTRUCTION
+- RESPONSE
+- SOURCE (reasoning_bg)
+- METADATA (json with language, url, id).
 
 ### Link:
-* https://huggingface.co/datasets/0x22almostEvil/reasoning_bg_oa
+
+- https://huggingface.co/datasets/0x22almostEvil/reasoning_bg_oa
+
 ### Original Dataset is available here:
-* https://huggingface.co/datasets/reasoning_bg
+
+- https://huggingface.co/datasets/reasoning_bg
