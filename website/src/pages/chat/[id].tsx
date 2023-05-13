@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { ChatContextProvider } from "src/components/Chat/ChatContext";
+import { ChatInitialDataProvider } from "src/components/Chat/ChatInitialDataContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
 import { ChatLayout } from "src/components/Layout/ChatLayout";
 import { get } from "src/lib/api";
@@ -26,9 +26,9 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
       {modelInfos && plugins && (
-        <ChatContextProvider modelInfos={modelInfos} plugins={plugins}>
+        <ChatInitialDataProvider modelInfos={modelInfos} builtInPlugins={plugins}>
           <ChatSection chatId={id} />
-        </ChatContextProvider>
+        </ChatInitialDataProvider>
       )}
     </>
   );

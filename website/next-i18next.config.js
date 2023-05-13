@@ -3,6 +3,7 @@ module.exports = {
     defaultLocale: "en",
     locales: [
       "ar",
+      "bar",
       "bg",
       "bn",
       "ca",
@@ -32,8 +33,10 @@ module.exports = {
       "ro",
       "ru",
       "sk",
+      "sr",
       "sl",
       "sv",
+      "swg",
       "th",
       "tr",
       "uk-UA",

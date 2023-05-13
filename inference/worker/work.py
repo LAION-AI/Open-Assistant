@@ -181,12 +181,13 @@ def handle_work_request(
 
     if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
+        # NOTE: This is only help for RLHF models using plugin prompts...
         # Get the generated text up to the first occurrence of any of:
         # START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ
         end_seq_index = min(
             [
                 stream_response.generated_text.find(seq)
-                for seq in [START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ]
+                for seq in [START_SEQ, END_SEQ, f"{ASSISTANT_PREFIX}:", THOUGHT_SEQ, OBSERVATION_SEQ]
                 if seq in stream_response.generated_text
             ]
             + [len(stream_response.generated_text)]

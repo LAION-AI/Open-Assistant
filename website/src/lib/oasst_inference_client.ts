@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
+  GetChatsParams,
   GetChatsResponse,
   InferenceMessage,
   InferencePostAssistantMessageParams,
@@ -10,7 +11,6 @@ import {
   ModelInfo,
   PluginEntry,
   TrustedClient,
-  GetChatsParams,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
@@ -120,12 +120,7 @@ export class OasstInferenceClient {
   }
 
   get_plugin_config({ plugin }: { plugin: PluginEntry }) {
-    try {
-      return this.request<PluginEntry>("/configs/plugin_config", { method: "POST", data: plugin });
-    } catch (err) {
-      console.log(err);
-      return {};
-    }
+    return this.request<PluginEntry>("/configs/plugin_config", { method: "POST", data: plugin });
   }
 }
 

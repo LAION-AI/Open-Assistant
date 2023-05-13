@@ -1,0 +1,20 @@
+{
+  "assistant": "Assistent",
+  "backlog_ranking": "Backlog-Ranking",
+  "choose_a_language": "Schprouche wähl",
+  "count": "Nummo",
+  "growing": "Woxt",
+  "halted_by_moderator": "Fonan Moderator unkoltn",
+  "human_messages_by_lang": "Leit-Nochrichtn nouch Schprouche",
+  "human_messages_by_role": "Leit-Nochrichtn nouch Rolle",
+  "initial_prompt_review": "Initial-Prompts ibboprüft",
+  "language_stats": "Schprouche",
+  "message_trees_by_state": "Nochrichtnbaame nouch Schtatus",
+  "message_trees_states_by_lang": "Nochrichtnbaamschtatus nouch Schtatus",
+  "prompt_lottery_waiting": "In do Prompt-Lotterie",
+  "prompter": "Prompter",
+  "ranking": "Ranking",
+  "ready_for_export": "Finn Exportiern förtig",
+  "stats": "Schtatistik",
+  "users_accepted_tos": "Leit, des wos di AGB's akzeptiert houbm"
+}
