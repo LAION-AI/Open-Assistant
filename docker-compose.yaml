@@ -265,7 +265,7 @@ services:
       - "/dev/dri"
     ipc: host
     cap-add:
-      - SYS_PTRACE 
+      - SYS_PTRACE
     security-opt:
       - seccomp=unconfined
     build:
