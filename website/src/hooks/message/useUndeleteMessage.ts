@@ -4,7 +4,7 @@ import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 export const useUndeleteMessage = (messageId: string, onSuccess?: () => void) => {
-  return useSWRMutation(API_ROUTES.ADMIN_UNDELETE_MESSAGE(messageId), put, {
+  return useSWRMutation<any, any, any, never>(API_ROUTES.ADMIN_UNDELETE_MESSAGE(messageId), put, {
     onSuccess: async () => {
       onSuccess?.();
       await mutate(

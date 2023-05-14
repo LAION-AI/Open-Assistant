@@ -1,0 +1,26 @@
+{
+  "blurb": "Miar glabn miar kenn a Revolution unfong.",
+  "blurb1": "Stable Diffusion hott päriga noia Bildo gimocht. Miar well di Welt fobesson mit päriga Konversations-KI.",
+  "description": "Konversations-KI fi Olla. A Open Source Projekt fi a Chat-fähigs GPT LLM, wos fo LAION und Leit aff do ganzn Welt betriebn wert. Und sell isch jo klor, dassz Bairisch pleddot!",
+  "faq_items": {
+    "q0": "Wi weit sammo?",
+    "a0": "Miar homm erscht ungfong in Assistent mit bewährta Forschung af RLFH af groassa Schprouchmoddelle (LLMs) zi traniern.",
+    "q1": "Wear mocht des olls?",
+    "a1": "Open Assistant isch a projekt wos fo LAION und Leit fo do gonzn Welt organisiert wert. Inso Ziel ischs iss Open Assistant Schprouchmodell fi olla Leit zugänglich zi mochn.",
+    "q2": "Wecha Lizenz hot Open Assistant?",
+    "a2": "Do Code und di Modelle sein lizensiert unto do Apache 2.0 Lizenz.",
+    "q3": "Wern di Trainingsdatn a foöffntlicht?",
+    "a3": "Jo, unto CC BY 4.0.",
+    "q4": "Wert do Open Assistant gratis sein?",
+    "a4": "Jo, do Open Assistant wert gratis zinn hernemm und modifiziern sein.",
+    "q5": "Wecha Hardware wert man brauchn um die Modelle gian lossn zi kenn?",
+    "a5": "Es wert Version gebm woe lai an normala Compiuta brauchsch."
+  },
+  "faq_title": "Oft gschtellta Frougn",
+  "help_us_improve": "Hilf ins dassmo ins fobesson",
+  "hugging_face_link": "Schaug amol insra HuggingFace Organisation un",
+  "join_us_description": "Die gonzn open source Projekte fong mit Leit wi dier un. Di Open Source Softwareentwicklung ermöglicht ins inso Wissn zomm und insra Technologie zinn Wohl fo olla Leit ziddo Fofügung zi schtell. Bisch du a dobei? Du finsch ins dou:",
+  "join_us_title": "Tui miit",
+  "subtitle": "Konversations-KI fi olla.",
+  "try_our_assistant": "Probier amol Open Assistant aus!"
+}

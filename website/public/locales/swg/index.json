@@ -1,0 +1,25 @@
+{
+  "blurb": "Mir glaubet, dass mir ebbes Revolutionäres macha kennet.",
+  "blurb1": "Grad so wie Stable Diffusion es alle möglich gmacht hat, Kunst und Bilder zom erschaffen, wellet mir au d' Welt verbessera, indem mir a zubbr Konversations-KI bäschdla.",
+  "description": "Konversations-KI fiar alle. A Open-Source-Projekt fiar a Chat-fähigens GPT LLM, des von LAION und Leit uff dr ganza Welt betrieba wird. Ond es schwätzt au schwäbisch",
+  "faq_items": {
+    "q0": "Wie siehts grad aus?",
+    "a0": "Mir hen grad erschd oagfanga den Assistenda zu trainiera ond schaffed anhand dr Forschung z' RLHF Prinzip auf große Sprachmodelle (LLMs) ozuwenda.",
+    "q1": "Wer organisiert des Ganze?",
+    "a1": "Open Assistant isch a Projekt, des von LAION und Leitla uff dr ganza Welt organisiert wird. Onser Ziel ischs des Open Assistant Sprachmodell alle Leit omasonschd zugänglich zom macha.",
+    "q2": "Welle Lizenz hat dr Open Assistant?",
+    "a2": "Onsr Code und d' Modelle send unter der Apache 2.0 Lizenz herausgegeba. Auf gut deutsch - se koschded NIX",
+    "q3": "Send dui Trainingsdaten au veröffentlicht?",
+    "a3": "Hajoa, unter dr CC BY 4.0.",
+    "q4": "Wird dr Open Assistant umasoaschd sein?",
+    "a4": "Hajoa, Open Assistant wird mr umasoaschd nemma und oapassa kenna.",
+    "q5": "Welle Hardware brauch I om die Modelle laufa zu lassa?",
+    "a5": "Es wird alle megliche Versiona geba - welle fiar Server aber au welle die uff normale Rechner laufa kennet."
+  },
+  "faq_title": "Oft gschtellte Fraga",
+  "help_us_improve": "Hilfsch mit ons zu verbessra",
+  "join_us_description": "Elle Open-Source-Projekte fanget mit Leit wie Dir oa! Die Open Source Softwareentwicklung ermöglichts ons zamma onsr Wissa ond unsere Technologie zum Wohle fiar alle Leit zur Verfügung zu stella. Bisch au dabei? Du findesch uns hier:",
+  "join_us_title": "Machsch mit",
+  "subtitle": "Konversations-KI fiar alle.",
+  "try_our_assistant": "Probiersch dr Assistent moal aus"
+}

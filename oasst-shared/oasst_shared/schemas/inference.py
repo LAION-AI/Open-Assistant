@@ -200,7 +200,9 @@ def make_seed() -> int:
 
 class WorkParameters(pydantic.BaseModel):
     model_config: ModelConfig
-    sampling_parameters: SamplingParameters = pydantic.Field(default_factory=SamplingParameters)
+    sampling_parameters: SamplingParameters = pydantic.Field(
+        default_factory=SamplingParameters,
+    )
     do_sample: bool = True
     seed: int = pydantic.Field(
         default_factory=make_seed,
@@ -221,7 +223,7 @@ class Vote(pydantic.BaseModel):
 
 class Report(pydantic.BaseModel):
     id: str
-    type: ReportType
+    report_type: ReportType
     reason: str
 
 
@@ -290,7 +292,9 @@ class WorkRequest(WorkerRequestBase):
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
-    safety_parameters: SafetyParameters = pydantic.Field(default_factory=SafetyParameters)
+    safety_parameters: SafetyParameters = pydantic.Field(
+        default_factory=SafetyParameters,
+    )
 
 
 class PingRequest(WorkerRequestBase):

@@ -1,6 +1,7 @@
 {
   "blurb": "Creemos que podemos crear una revolución.",
   "blurb1": "De la misma forma que Stable Diffusion ayudó al mundo a crear arte e imágenes de nuevas maneras, queremos mejorar el mundo proporcionando una IA conversacional asombrosa.",
+  "chat_with_our_assistant": "Chatea con nuestro asistente",
   "description": "IA conversacional para todos. Un proyecto de código abierto para crear un GPT LLM preparado para chatear administrado por LAION y colaboradores de todo el mundo.",
   "faq_items": {
     "q0": "¿Qué tan avanzado está el proyecto?",

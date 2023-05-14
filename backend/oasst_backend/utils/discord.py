@@ -36,10 +36,11 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID) ->
         res = requests.post(
             f"{ROOT_ENDPOINT}/channels/{settings.DISCORD_CHANNEL_ID}/messages",
             headers={
+                "user-agent": "DiscordBot (https://open-assistant.io, 1)",
                 "authorization": f"Bot {settings.DISCORD_API_KEY}",
             },
             json={
-                "content": f"New flagged message https://open-assistant.io/messages/{message.id}",
+                "content": f"New flagged message https://open-assistant.io/admin/messages/{message.id}",
                 "embeds": [message_content_embed, label_text_embed],
             },
         )

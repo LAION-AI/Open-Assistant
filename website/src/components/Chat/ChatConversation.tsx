@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
@@ -31,19 +32,26 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const { t } = useTranslation("chat");
+  const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+  const [showEncourageMessage, setShowEncourageMessage] = useBoolean(false);
+
   const toast = useToast();
 
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
     },
-    onError: () => {
+    onError: (err) => {
+      if (err instanceof OasstError && err.httpStatusCode === 404) {
+        // chat does not exist, probably deleted
+        return router.push("/chat");
+      }
       toast({
         title: "Failed to load chat",
         status: "error",
@@ -104,8 +112,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
+      setShowEncourageMessage.on();
     },
-    [getConfigValues, setIsSending, toast]
+    [getConfigValues, setIsSending, setShowEncourageMessage, toast]
   );
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
@@ -113,6 +122,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       return;
     }
     setIsSending.on();
+    setShowEncourageMessage.off();
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
@@ -158,7 +168,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
+  }, [isSending, setIsSending, setShowEncourageMessage, chatId, messages, createAndFetchAssistantMessage, toast]);
 
   const sendVote = useMessageVote();
 
@@ -278,6 +288,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             isSending={isSending}
             retryingParentId={retryingParentId}
             onEditPromtp={handleEditPrompt}
+            showEncourageMessage={showEncourageMessage}
+            onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>

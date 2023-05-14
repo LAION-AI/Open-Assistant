@@ -1,10 +1,33 @@
-import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, Pencil, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  CircularProgress,
+  Flex,
+  Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Portal,
+  Text,
+  Tooltip,
+  useBoolean,
+  useDisclosure,
+  useOutsideClick,
+  useToast,
+} from "@chakra-ui/react";
+import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X, FolderX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
-import { put } from "src/lib/api";
+import { KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useRef } from "react";
+import { del, put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
 import useSWRMutation from "swr/mutation";
@@ -13,10 +36,12 @@ export const ChatListItem = ({
   chat,
   onUpdateTitle,
   onHide,
+  onDelete,
 }: {
   chat: ChatItem;
   onUpdateTitle: (params: { chatId: string; title: string }) => void;
   onHide: (params: { chatId: string }) => void;
+  onDelete: (params: { chatId: string }) => void;
 }) => {
   const { query } = useRouter();
   const { t } = useTranslation("chat");
@@ -24,18 +49,10 @@ export const ChatListItem = ({
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  useOutsideClick({
-    ref: rootRef,
-    handler: () => {
-      if (isEditing) {
-        setIsEditing.off();
-      }
-    },
-  });
-  const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
-    API_ROUTES.UPDATE_CHAT(chat.id),
-    put
-  );
+
+  useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
+
+  const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
   const handleConfirmEdit = useCallback(async () => {
     const title = inputRef.current?.value.trim();
     if (!title) return;
@@ -137,6 +154,21 @@ export const ChatListItem = ({
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
+            {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
+            <div onClick={stopEvent}>
+              <Menu>
+                <MenuButton>
+                  <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
+                </MenuButton>
+                <Portal>
+                  {/* higher z-index so that it is displayed over the mobile sidebar */}
+                  <MenuList zIndex="var(--chakra-zIndices-popover)">
+                    <OptOutDataButton chatId={chat.id} />
+                    <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+                  </MenuList>
+                </Portal>
+              </Menu>
+            </div>
           </>
         )}
       </Flex>
@@ -151,7 +183,7 @@ const EditChatButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: { chatId: string }) => void }) => {
-  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.UPDATE_CHAT(chatId), put);
+  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
 
   const onClick = useCallback(async () => {
     await triggerHide({ chat_id: chatId, hidden: true });
@@ -163,8 +195,108 @@ const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: 
   return <ChatListItemIconButton label={t("hide")} icon={EyeOff} onClick={onClick} />;
 };
 
+const DeleteChatButton = ({
+  chatId,
+  onDelete,
+}: {
+  chatId: string;
+  onDelete?: (params: { chatId: string }) => void;
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const { t } = useTranslation(["chat", "common"]);
+  const { trigger: triggerDelete } = useSWRMutation<any, any, any, { chat_id: string }>(
+    API_ROUTES.DELETE_CHAT(chatId),
+    del
+  );
+  const onDeleteCallback = useCallback(async () => {
+    await triggerDelete({ chat_id: chatId });
+    onDelete?.({ chatId });
+  }, [onDelete, triggerDelete, chatId]);
+  const alert = (
+    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize="lg" fontWeight="bold">
+            {t("delete_chat")}
+          </AlertDialogHeader>
+          <AlertDialogBody>
+            <Text fontWeight="bold" py="2">
+              {t("delete_confirmation")}
+            </Text>
+            <Text py="2">{t("delete_confirmation_detail")}</Text>
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              {t("common:cancel")}
+            </Button>
+            <Button colorScheme="red" onClick={onDeleteCallback} ml={3}>
+              {t("common:delete")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  );
+  return (
+    <>
+      <MenuItem onClick={onOpen} icon={<Trash size={16} />}>
+        {t("common:delete")}
+      </MenuItem>
+      {alert}
+    </>
+  );
+};
+
+const OptOutDataButton = ({ chatId }: { chatId: string }) => {
+  const { t } = useTranslation(["chat", "common"]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const { trigger: updateChat, isMutating: isUpdating } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
+  const toast = useToast();
+
+  const handleOptOut = useCallback(async () => {
+    await updateChat({ chat_id: chatId, allow_data_use: false });
+    onClose();
+    toast({
+      title: t("chat:opt_out.success_message"),
+      status: "success",
+      position: "top",
+    });
+  }, [chatId, onClose, updateChat]);
+
+  const alert = (
+    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize="lg" fontWeight="bold">
+            {t("chat:opt_out.dialog.title")}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              {t("common:cancel")}
+            </Button>
+            <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
+              {t("common:confirm")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  );
+
+  return (
+    <>
+      <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
+        {t("chat:opt_out.button")}
+      </MenuItem>
+      {alert}
+    </>
+  );
+};
+
 type ChatListItemIconButtonProps = {
-  onClick: () => void;
+  onClick?: () => void;
   label?: string;
   icon: LucideIcon;
 };
@@ -176,9 +308,8 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
         as="button"
         aria-label={label}
         onClick={(e: MouseEvent) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onClick();
+          stopEvent(e);
+          onClick?.();
         }}
       >
         <Box
@@ -196,4 +327,9 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
       </Box>
     </Tooltip>
   );
+};
+
+const stopEvent = (e: SyntheticEvent) => {
+  e.stopPropagation();
+  e.preventDefault();
 };

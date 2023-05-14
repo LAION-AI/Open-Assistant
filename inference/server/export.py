@@ -1,12 +1,13 @@
 import argparse
 import asyncio
 import contextlib
+import datetime as dt
 import gzip
 import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 import sqlalchemy
 import sqlmodel
@@ -163,13 +164,14 @@ def write_messages_to_file(
                     f.write("\n")
 
 
-async def fetch_eligible_chats(session_generator) -> list[DbChat]:
-    """Fetch chats which are not opted out of data collection."""
+async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[DbChat]:
+    """Fetch chats which are not opted out of data collection and match the given filters."""
     session: AsyncSession
+    filters.append(DbChat.allow_data_use)
     async with session_generator() as session:
         query = (
             sqlmodel.select(DbChat)
-            .filter(DbChat.allow_data_use)
+            .filter(*filters)
             .options(
                 sqlalchemy.orm.joinedload("*"),
             )
@@ -181,11 +183,12 @@ async def fetch_eligible_chats(session_generator) -> list[DbChat]:
 def export_chats(
     session_generator,
     export_path: Path,
+    filters: list[Any],
     use_compression: bool = True,
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
 ) -> None:
-    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator))
+    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator, filters))
     anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
@@ -195,6 +198,10 @@ def export_chats(
         use_compression=use_compression,
         anonymizer=anonymizer,
     )
+
+
+def parse_date(date_str: str) -> dt.date:
+    return dt.datetime.strptime(date_str, "%Y-%m-%d").date()
 
 
 def parse_args() -> argparse.Namespace:
@@ -219,19 +226,68 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="Seed for the anonymizer. If not specified, no anonymization will be performed.",
     )
-    # TODO: filters: reported, score, user ID, chat ID, etc
-    # TODO: date range?
+    parser.add_argument(
+        "--from-date",
+        type=parse_date,
+        help="Only export chats created on or after this date. Format: YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--to-date",
+        type=parse_date,
+        help="Only export chats created on or before this date. Format: YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--user-id",
+        type=str,
+        help="Only export chats created by this user.",
+    )
+    parser.add_argument(
+        "--chat-id",
+        type=str,
+        help="Only export this chat.",
+    )
+    parser.add_argument(
+        "--scored",
+        action="store_true",
+        help="Only export chats with at least one assistant message with score != 0.",
+    ),
+    parser.add_argument(
+        "--reported",
+        action="store_true",
+        help="Only export chats with at least one reported message.",
+    )
     return parser.parse_args()
+
+
+def create_filters(args: argparse.Namespace) -> list[Any]:
+    filters = []
+
+    if args.from_date:
+        filters.append(DbChat.created_at >= args.from_date)
+    if args.to_date:
+        filters.append(DbChat.created_at <= args.to_date)
+    if args.user_id:
+        filters.append(DbChat.user_id == args.user_id)
+    if args.chat_id:
+        filters.append(DbChat.id == args.chat_id)
+    if args.scored:
+        filters.append(DbChat.messages.any((DbMessage.role == "assistant") & (DbMessage.score != 0)))
+    if args.reported:
+        filters.append(DbChat.messages.any(DbMessage.reports.any()))
+
+    return filters
 
 
 def main():
     args = parse_args()
 
     export_path = Path(args.export_file) if args.export_file else None
+    filters = create_filters(args)
 
     export_chats(
         deps.manual_create_session,
         export_path,
+        filters,
         use_compression=not args.no_compression,
         write_trees=not args.write_flat,
         anonymizer_seed=args.anonymizer_seed,

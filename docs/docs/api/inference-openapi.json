@@ -1,0 +1,1180 @@
+{
+  "openapi": "3.0.2",
+  "info": { "title": "open-assistant inference server", "version": "0.1.0" },
+  "paths": {
+    "/account/": {
+      "delete": {
+        "tags": ["account"],
+        "summary": "Handle Account Deletion",
+        "operationId": "handle_account_deletion_account__delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/auth/check": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Check User Auth",
+        "operationId": "check_user_auth_auth_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/auth/providers": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Get Available Auth Providers",
+        "operationId": "get_available_auth_providers_auth_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Refresh Token",
+        "operationId": "refresh_token_auth_refresh_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Token" }
+              }
+            }
+          }
+        },
+        "security": [{ "Refresh": [] }]
+      }
+    },
+    "/auth/login/discord": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Login Discord",
+        "operationId": "login_discord_auth_login_discord_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/auth/callback/discord": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Callback Discord",
+        "operationId": "callback_discord_auth_callback_discord_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenPair" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/github": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Login Github",
+        "operationId": "login_github_auth_login_github_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/auth/callback/github": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Callback Github",
+        "operationId": "callback_github_auth_callback_github_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenPair" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/google": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Login Google",
+        "operationId": "login_google_auth_login_google_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/auth/callback/google": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Callback Google",
+        "operationId": "callback_google_auth_callback_google_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenPair" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/debug": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Login Debug",
+        "operationId": "login_debug_auth_login_debug_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Username", "type": "string" },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "State", "type": "string", "default": "{}" },
+            "name": "state",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/callback/debug": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Callback Debug",
+        "description": "Login using a debug username, which the system will accept unconditionally.",
+        "operationId": "callback_debug_auth_callback_debug_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Code", "type": "string" },
+            "name": "code",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenPair" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/trusted": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Login Trusted",
+        "operationId": "login_trusted_auth_trusted_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "TrustedClient": [] }]
+      }
+    },
+    "/admin/workers": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List Workers",
+        "description": "Lists all workers.",
+        "operationId": "list_workers_admin_workers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "Authorization": [] }]
+      },
+      "put": {
+        "tags": ["admin"],
+        "summary": "Create Worker",
+        "description": "Allows a client to register a worker.",
+        "operationId": "create_worker_admin_workers_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWorkerRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }]
+      }
+    },
+    "/admin/workers/{worker_id}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete Worker",
+        "description": "Deletes a worker.",
+        "operationId": "delete_worker_admin_workers__worker_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Worker Id", "type": "string" },
+            "name": "worker_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }]
+      }
+    },
+    "/admin/refresh_tokens/{user_id}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Revoke Refresh Tokens",
+        "description": "Revoke refresh tokens for a user.",
+        "operationId": "revoke_refresh_tokens_admin_refresh_tokens__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "User Id", "type": "string" },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }]
+      }
+    },
+    "/admin/users/{user_id}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete User",
+        "operationId": "delete_user_admin_users__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "User Id", "type": "string" },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }]
+      }
+    },
+    "/chats": {
+      "get": {
+        "tags": ["chats"],
+        "summary": "List Chats",
+        "description": "Lists all chats.",
+        "operationId": "list_chats_chats_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Include Hidden",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "include_hidden",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "maximum": 100.0,
+              "exclusiveMinimum": 0.0,
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "After", "type": "string" },
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Before", "type": "string" },
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      },
+      "post": {
+        "tags": ["chats"],
+        "summary": "Create Chat",
+        "description": "Allows a client to create a new chat.",
+        "operationId": "create_chat_chats_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateChatRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}": {
+      "get": {
+        "tags": ["chats"],
+        "summary": "Get Chat",
+        "description": "Allows a client to get the current state of a chat.",
+        "operationId": "get_chat_chats__chat_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      },
+      "put": {
+        "tags": ["chats"],
+        "summary": "Handle Update Chat",
+        "description": "Allows the client to update a chat.",
+        "operationId": "handle_update_chat_chats__chat_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatUpdateRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      },
+      "delete": {
+        "tags": ["chats"],
+        "summary": "Delete Chat",
+        "operationId": "delete_chat_chats__chat_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/prompter_message": {
+      "post": {
+        "tags": ["chats"],
+        "summary": "Create Prompter Message",
+        "description": "Adds a prompter message to a chat.",
+        "operationId": "create_prompter_message_chats__chat_id__prompter_message_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePrompterMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/assistant_message": {
+      "post": {
+        "tags": ["chats"],
+        "summary": "Create Assistant Message",
+        "description": "Allows the client to stream the results of a request.",
+        "operationId": "create_assistant_message_chats__chat_id__assistant_message_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssistantMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/messages/{message_id}": {
+      "get": {
+        "tags": ["chats"],
+        "summary": "Get Message",
+        "operationId": "get_message_chats__chat_id__messages__message_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": { "title": "Message Id", "type": "string" },
+            "name": "message_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/messages/{message_id}/events": {
+      "get": {
+        "tags": ["chats"],
+        "summary": "Message Events",
+        "operationId": "message_events_chats__chat_id__messages__message_id__events_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "string" },
+            "name": "chat_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": { "title": "Message Id", "type": "string" },
+            "name": "message_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/messages/{message_id}/votes": {
+      "post": {
+        "tags": ["chats"],
+        "summary": "Handle Create Vote",
+        "description": "Allows the client to vote on a message.",
+        "operationId": "handle_create_vote_chats__chat_id__messages__message_id__votes_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Message Id", "type": "string" },
+            "name": "message_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VoteRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/chats/{chat_id}/messages/{message_id}/reports": {
+      "post": {
+        "tags": ["chats"],
+        "summary": "Handle Create Report",
+        "description": "Allows the client to report a message.",
+        "operationId": "handle_create_report_chats__chat_id__messages__message_id__reports_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Message Id", "type": "string" },
+            "name": "message_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReportRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "Authorization": [] }, { "TrustedClient": [] }]
+      }
+    },
+    "/workers/sessions": {
+      "get": {
+        "tags": ["workers"],
+        "summary": "List Worker Sessions",
+        "operationId": "list_worker_sessions_workers_sessions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/configs/model_configs": {
+      "get": {
+        "tags": ["configs"],
+        "summary": "Get Model Configs",
+        "operationId": "get_model_configs_configs_model_configs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/configs/plugin_config": {
+      "post": {
+        "tags": ["configs"],
+        "summary": "Get Plugin Config",
+        "operationId": "get_plugin_config_configs_plugin_config_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PluginEntry" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/configs/builtin_plugins": {
+      "get": {
+        "tags": ["configs"],
+        "summary": "Get Builtin Plugins",
+        "operationId": "get_builtin_plugins_configs_builtin_plugins_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "description": "Endpoint that serves Prometheus metrics.",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatUpdateRequest": {
+        "title": "ChatUpdateRequest",
+        "type": "object",
+        "properties": {
+          "title": { "title": "Title", "maxLength": 100, "type": "string" },
+          "hidden": { "title": "Hidden", "type": "boolean" },
+          "allow_data_use": { "title": "Allow Data Use", "type": "boolean" }
+        }
+      },
+      "CreateAssistantMessageRequest": {
+        "title": "CreateAssistantMessageRequest",
+        "required": ["parent_id", "model_config_name"],
+        "type": "object",
+        "properties": {
+          "parent_id": { "title": "Parent Id", "type": "string" },
+          "model_config_name": {
+            "title": "Model Config Name",
+            "type": "string"
+          },
+          "sampling_parameters": {
+            "$ref": "#/components/schemas/SamplingParameters"
+          },
+          "plugins": {
+            "title": "Plugins",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PluginEntry" }
+          },
+          "used_plugin": { "$ref": "#/components/schemas/PluginUsed" }
+        }
+      },
+      "CreateChatRequest": {
+        "title": "CreateChatRequest",
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePrompterMessageRequest": {
+        "title": "CreatePrompterMessageRequest",
+        "required": ["content"],
+        "type": "object",
+        "properties": {
+          "parent_id": { "title": "Parent Id", "type": "string" },
+          "content": { "title": "Content", "type": "string" }
+        }
+      },
+      "CreateWorkerRequest": {
+        "title": "CreateWorkerRequest",
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "Name", "type": "string" },
+          "trusted": { "title": "Trusted", "type": "boolean", "default": false }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
+          }
+        }
+      },
+      "PluginApiType": {
+        "title": "PluginApiType",
+        "required": ["type", "url"],
+        "type": "object",
+        "properties": {
+          "type": { "title": "Type", "type": "string" },
+          "url": { "title": "Url", "type": "string" },
+          "has_user_authentication": {
+            "title": "Has User Authentication",
+            "type": "boolean",
+            "default": false
+          },
+          "is_user_authenticated": {
+            "title": "Is User Authenticated",
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "PluginAuthType": {
+        "title": "PluginAuthType",
+        "required": ["type"],
+        "type": "object",
+        "properties": { "type": { "title": "Type", "type": "string" } }
+      },
+      "PluginConfig": {
+        "title": "PluginConfig",
+        "required": [
+          "schema_version",
+          "name_for_model",
+          "name_for_human",
+          "description_for_human",
+          "description_for_model",
+          "api",
+          "auth"
+        ],
+        "type": "object",
+        "properties": {
+          "schema_version": { "title": "Schema Version", "type": "string" },
+          "name_for_model": { "title": "Name For Model", "type": "string" },
+          "name_for_human": { "title": "Name For Human", "type": "string" },
+          "description_for_human": {
+            "title": "Description For Human",
+            "type": "string"
+          },
+          "description_for_model": {
+            "title": "Description For Model",
+            "type": "string"
+          },
+          "api": { "$ref": "#/components/schemas/PluginApiType" },
+          "auth": { "$ref": "#/components/schemas/PluginAuthType" },
+          "logo_url": { "title": "Logo Url", "type": "string" },
+          "contact_email": { "title": "Contact Email", "type": "string" },
+          "legal_info_url": { "title": "Legal Info Url", "type": "string" },
+          "endpoints": {
+            "title": "Endpoints",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PluginOpenAPIEndpoint" }
+          }
+        }
+      },
+      "PluginEntry": {
+        "title": "PluginEntry",
+        "required": ["url"],
+        "type": "object",
+        "properties": {
+          "url": { "title": "Url", "type": "string" },
+          "enabled": { "title": "Enabled", "type": "boolean", "default": true },
+          "plugin_config": { "$ref": "#/components/schemas/PluginConfig" },
+          "trusted": { "title": "Trusted", "type": "boolean", "default": false }
+        }
+      },
+      "PluginExecutionDetails": {
+        "title": "PluginExecutionDetails",
+        "required": [
+          "inner_monologue",
+          "final_tool_output",
+          "final_prompt",
+          "final_generation_assisted",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "inner_monologue": {
+            "title": "Inner Monologue",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "final_tool_output": {
+            "title": "Final Tool Output",
+            "type": "string"
+          },
+          "final_prompt": { "title": "Final Prompt", "type": "string" },
+          "final_generation_assisted": {
+            "title": "Final Generation Assisted",
+            "type": "boolean"
+          },
+          "achieved_depth": { "title": "Achieved Depth", "type": "integer" },
+          "error_message": { "title": "Error Message", "type": "string" },
+          "status": {
+            "title": "Status",
+            "enum": ["success", "failure"],
+            "type": "string"
+          }
+        }
+      },
+      "PluginOpenAPIEndpoint": {
+        "title": "PluginOpenAPIEndpoint",
+        "required": [
+          "path",
+          "type",
+          "summary",
+          "operation_id",
+          "url",
+          "params"
+        ],
+        "type": "object",
+        "properties": {
+          "path": { "title": "Path", "type": "string" },
+          "type": { "title": "Type", "type": "string" },
+          "summary": { "title": "Summary", "type": "string" },
+          "operation_id": { "title": "Operation Id", "type": "string" },
+          "url": { "title": "Url", "type": "string" },
+          "params": {
+            "title": "Params",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PluginOpenAPIParameter" }
+          },
+          "payload": { "title": "Payload", "type": "object" }
+        }
+      },
+      "PluginOpenAPIParameter": {
+        "title": "PluginOpenAPIParameter",
+        "required": ["name", "in_", "description", "required"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "Name", "type": "string" },
+          "in_": { "title": "In ", "type": "string" },
+          "description": { "title": "Description", "type": "string" },
+          "required": { "title": "Required", "type": "boolean" },
+          "schema_": { "title": "Schema " }
+        }
+      },
+      "PluginUsed": {
+        "title": "PluginUsed",
+        "required": ["execution_details"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "Name", "type": "string" },
+          "url": { "title": "Url", "type": "string" },
+          "trusted": { "title": "Trusted", "type": "boolean" },
+          "execution_details": {
+            "$ref": "#/components/schemas/PluginExecutionDetails"
+          }
+        }
+      },
+      "ReportRequest": {
+        "title": "ReportRequest",
+        "required": ["report_type", "reason"],
+        "type": "object",
+        "properties": {
+          "report_type": { "$ref": "#/components/schemas/ReportType" },
+          "reason": { "title": "Reason", "type": "string" }
+        }
+      },
+      "ReportType": {
+        "title": "ReportType",
+        "enum": ["spam", "offensive", "feedback"],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "SamplingParameters": {
+        "title": "SamplingParameters",
+        "type": "object",
+        "properties": {
+          "top_k": { "title": "Top K", "type": "integer" },
+          "top_p": { "title": "Top P", "type": "number" },
+          "typical_p": { "title": "Typical P", "type": "number" },
+          "temperature": { "title": "Temperature", "type": "number" },
+          "repetition_penalty": {
+            "title": "Repetition Penalty",
+            "type": "number"
+          },
+          "max_new_tokens": {
+            "title": "Max New Tokens",
+            "type": "integer",
+            "default": 1024
+          }
+        }
+      },
+      "Token": {
+        "title": "Token",
+        "required": ["access_token", "token_type"],
+        "type": "object",
+        "properties": {
+          "access_token": { "title": "Access Token", "type": "string" },
+          "token_type": { "title": "Token Type", "type": "string" }
+        }
+      },
+      "TokenPair": {
+        "title": "TokenPair",
+        "required": ["access_token", "refresh_token"],
+        "type": "object",
+        "properties": {
+          "access_token": { "$ref": "#/components/schemas/Token" },
+          "refresh_token": { "$ref": "#/components/schemas/Token" }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] }
+          },
+          "msg": { "title": "Message", "type": "string" },
+          "type": { "title": "Error Type", "type": "string" }
+        }
+      },
+      "VoteRequest": {
+        "title": "VoteRequest",
+        "required": ["score"],
+        "type": "object",
+        "properties": { "score": { "title": "Score", "type": "integer" } }
+      }
+    },
+    "securitySchemes": {
+      "Authorization": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      },
+      "TrustedClient": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "TrustedClient"
+      },
+      "Refresh": { "type": "apiKey", "in": "header", "name": "Refresh" }
+    }
+  }
+}

@@ -4,10 +4,10 @@ import time
 
 import torch
 import transformers
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
-from models import get_specific_model
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
+from model_training.models import get_specific_model
+from model_training.utils.utils import _strtobool
 from tokenizers import pre_tokenizers
-from utils.utils import _strtobool
 
 if __name__ == "__main__":
     import warnings
@@ -55,9 +55,12 @@ if __name__ == "__main__":
         else:
             model = get_specific_model(args.model_path, cache_dir=args.cache_dir, torch_dtype=torch.float16)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     model.gradient_checkpointing_enable()  # reduce number of stored activations
-    # tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
-    tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
+    tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
+    # tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
     if args.per_digit_tokens:
         tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 

@@ -1,6 +1,5 @@
 import { CursorPaginationState } from "src/components/DataTable/useCursorPagination";
 import { TaskType } from "src/types/Task";
-import { PluginEntry } from "src/types/Chat";
 
 export type RouteQuery = Record<string, string | number | boolean | undefined>;
 
@@ -54,6 +53,7 @@ export const API_ROUTES = {
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
   LIST_CHAT: "/api/chat",
+  LIST_CHAT_WITH_PARMS: (params: RouteQuery) => createRoute(API_ROUTES.LIST_CHAT, params),
   GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
   CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
   CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
@@ -61,8 +61,7 @@ export const API_ROUTES = {
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",
-  UPDATE_CHAT: (id: string) => `/api/chat`,
-  UPDATE_CHAT_TITLE: (id: string) => `/api/chat/title`,
-  HIDE_CHAT: (id: string) => `/api/chat/hide`,
+  UPDATE_CHAT: () => `/api/chat`,
   GET_PLUGIN_CONFIG: `/api/chat/plugin_config`,
+  DELETE_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
 };
