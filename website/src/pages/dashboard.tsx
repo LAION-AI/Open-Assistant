@@ -61,7 +61,7 @@ const Dashboard = () => {
         <title>{`${t("dashboard")} - ${t("common:title")}`}</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
       </Head>
-      <Flex direction="column" gap="10">
+      <Flex direction="column" gap="10" align="flex-start">
         <WelcomeCard />
         {ENABLE_CHAT && (
           <Flex direction="column" gap={4}>
