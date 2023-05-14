@@ -99,11 +99,15 @@ class DatasetEntry(BaseModel):
     pass
 
 
-class DatasetEntryPretrain(DatasetEntry):
+class DatasetEntryLm(DatasetEntry):
+    """Language modelling dataset entry"""
+
     text: str | None = None
 
 
 class DatasetEntrySft(DatasetEntry):
+    """Supervised fine-tuning conversation dataset entry"""
+
     conversation: list[Utterance]
 
     def get_formatted(
@@ -135,6 +139,8 @@ class DatasetEntrySft(DatasetEntry):
 
 
 class DatasetEntryRm(DatasetEntry):
+    """Reward model dataset entry (conversation history + ranked replies)"""
+
     messages: list[Utterance] | None  # conversation history
     replies: list[Utterance]  # ordered reply variants, best first
 
@@ -200,6 +206,8 @@ def create_dataset_entry_qa(
     context: Optional[str] = None,
     lang: Optional[str] = None,
 ) -> DatasetEntry:
+    """Helper function to create DatasetEntry objects (DatasetEntrySft or DatasetEntryRm) for simple
+    Q&A datasets."""
     if mode == Mode.sft:
         messages: list[Utterance] = []
 
