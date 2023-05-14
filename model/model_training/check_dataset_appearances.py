@@ -155,9 +155,6 @@ if __name__ == "__main__":
         val_dct = {k: len(v) for k, v in matched_val.items()}
         unified_keys = list(set(train_dct.keys()).union(set(val_dct.keys())))
         unified_counts = {k: train_dct.get(k, 0) + val_dct.get(k, 0) for k in unified_keys}
-        import pdb
-
-        pdb.set_trace()
         if len(unified_counts):
             overview_dct[dataset_name] = unified_counts
             print(f"\nFOUND THE FOLLOWING APPEARANCES FOR DATASET {dataset_name}:")
