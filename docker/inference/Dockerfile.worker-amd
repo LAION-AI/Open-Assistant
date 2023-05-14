@@ -1,0 +1,38 @@
+# for now we use evshirons rocm_lab, as it already supports RDNA3. in future in might make sense to use official images from AMD
+FROM ghcr.io/evshiron/rocm_lab:rocm5.5-ub22.04-torch2.0.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG MODULE="inference"
+ARG SERVICE="worker"
+
+ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
+
+WORKDIR /worker
+
+RUN python3 -m venv /opt/venv
+
+COPY ./oasst-shared /tmp/oasst-shared
+RUN /opt/venv/bin/pip install /tmp/oasst-shared
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt .
+COPY ./${APP_RELATIVE_PATH}/requirements-hf.txt .
+RUN /opt/venv/bin/pip install /root/torch-*-linux_x86_64.whl /root/torchvision-*-linux_x86_64.whl
+RUN /opt/venv/bin/pip install -r requirements.txt
+RUN /opt/venv/bin/pip install -r requirements-hf.txt
+
+COPY ./${APP_RELATIVE_PATH}/*.py .
+COPY ./${APP_RELATIVE_PATH}/worker_amd_main.sh /entrypoint.sh
+
+ENV MODEL_CONFIG_NAME="distilgpt2"
+ENV NUM_SHARDS="1"
+
+# These are upper bounds for the inference server.
+ENV MAX_INPUT_LENGTH="4096"
+ENV MAX_TOTAL_TOKENS="8192"
+
+ENV BACKEND_URL="ws://localhost:8000"
+
+ENTRYPOINT ["/entrypoint.sh"]
