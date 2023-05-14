@@ -25,13 +25,13 @@ export interface ChatItem {
   // those are not available when you first create a chat
   title?: string;
   hidden?: boolean;
+  active_message_id?: string;
 }
 
 export interface InferenceMessage {
   id: string;
   chat_id: string;
   parent_id: string | null;
-  active_sibling: boolean | null;
   created_at: string; //timestamp
   content: string | null;
   state: "manual" | "pending" | "in_progress" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";
@@ -127,6 +127,7 @@ export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
+  active_message_id?: string;
 }
 
 export interface PluginEntry {

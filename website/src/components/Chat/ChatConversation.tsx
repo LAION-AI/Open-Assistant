@@ -38,6 +38,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
 
   const [streamedDrafts, setStreamedDrafts] = useState<string[]>([]);
   const [draftMessages, setDraftMessages] = useState<InferenceMessage[][]>([]);
@@ -53,6 +54,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
+      setActiveMessageId(data.active_message_id);
     },
     onError: (err) => {
       if (err instanceof OasstError && err.httpStatusCode === 404) {
@@ -115,13 +117,14 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }
       if (message) {
         setMessages((messages) => [...messages, message!]);
+        setActiveMessageId(message.id);
       }
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
       setShowEncourageMessage.on();
     },
-    [getConfigValues, setIsSending, setShowEncourageMessage, toast]
+    [getConfigValues, setIsSending, setShowEncourageMessage, toast, setActiveMessageId]
   );
   const createAssistantDrafts = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
@@ -346,7 +349,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       const dummyMessage: InferenceMessage = {
         id: "__dummy__",
         ...prompter_arg,
-        active_sibling: false,
         created_at: new Date().toISOString(),
         role: "prompter",
         state: "complete",
@@ -397,30 +399,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         });
       }
 
-      const draftsWithSelection = [...draftMessages];
-      draftsWithSelection[regen_index][index].active_sibling = true;
-
-      const messagesWithoutSelection = messages.map((message) => {
-        if (message.parent_id === draftsWithSelection[regen_index][index].parent_id && message.active_sibling) {
-          post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: { chat_id, message_id: message.id, active: false } });
-          return { ...message, active_sibling: false };
-        } else {
-          return message;
-        }
-      });
-
-      const selected_draft_id = draftMessages[regen_index][index].id;
-      await post(API_ROUTES.CHAT_SET_INFERIOR_DRAFTS, {
-        arg: {
-          chat_id,
-          message_id: selected_draft_id,
-          inferior_message_ids: draftMessages[regen_index]
-            .filter((draft) => draft.id !== selected_draft_id)
-            .map((draft) => draft.id),
-        },
-      });
-
-      setMessages([...messagesWithoutSelection, ...draftsWithSelection[regen_index]]);
+      setMessages([...messages, ...draftMessages[regen_index]]);
+      setActiveMessageId(draftMessages[regen_index][index].id);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
       setDraftMessages([]);
@@ -437,6 +417,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setDraftMessages,
       setReytryingParentId,
       setShowEncourageMessage,
+      setActiveMessageId,
     ]
   );
 
@@ -482,6 +463,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onRetry={handleOnRetry}
             isSending={isSending}
             retryingParentId={retryingParentId}
+            activeMessageId={activeMessageId}
             onEditPromtp={handleEditPrompt}
             showEncourageMessage={showEncourageMessage}
             onEncourageMessageClose={setShowEncourageMessage.off}

@@ -19,7 +19,6 @@ class DbMessage(SQLModel, table=True):
     reports: list["DbReport"] = Relationship(back_populates="message")
 
     parent_id: str | None = Field(None)
-    active_sibling: bool | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     content: str | None = Field(None)
     error: str | None = Field(None)
@@ -60,7 +59,6 @@ class DbMessage(SQLModel, table=True):
         return inference.MessageRead(
             id=self.id,
             parent_id=self.parent_id,
-            active_sibling=self.active_sibling,
             chat_id=self.chat_id,
             content=self.content,
             created_at=self.created_at,
@@ -88,6 +86,7 @@ class DbChat(SQLModel, table=True):
     title: str | None = Field(None)
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
+    active_message_id: str | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
@@ -112,6 +111,7 @@ class DbChat(SQLModel, table=True):
             messages=[m.to_read() for m in self.messages],
             hidden=self.hidden,
             allow_data_use=self.allow_data_use,
+            active_message_id=self.active_message_id,
         )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:

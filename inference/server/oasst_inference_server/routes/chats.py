@@ -308,21 +308,6 @@ async def handle_add_inferior_drafts(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/messages/{message_id}/sibling_active")
-async def handle_set_sibling_activation(
-    chat_id: str,
-    message_id: str,
-    sibling_active_request: chat_schema.SiblingActivationRequest,
-    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
-) -> fastapi.Response:
-    try:
-        await ucr.set_sibling_active(chat_id=chat_id, message_id=message_id, active=sibling_active_request.active)
-        return fastapi.Response(status_code=200)
-    except Exception:
-        logger.exception("Error setting sibling activity")
-        return fastapi.Response(status_code=500)
-
-
 @router.post("/{chat_id}/messages/{message_id}/reports")
 async def handle_create_report(
     message_id: str,
@@ -353,6 +338,7 @@ async def handle_update_chat(
             title=request.title,
             hidden=request.hidden,
             allow_data_use=request.allow_data_use,
+            active_message_id=request.active_message_id,
         )
     except Exception:
         logger.exception("Error when updating chat")

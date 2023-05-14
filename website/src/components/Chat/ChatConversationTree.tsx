@@ -1,27 +1,30 @@
 import { Box } from "@chakra-ui/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { InferenceMessage } from "src/types/Chat";
 import { buildTree, Tree } from "src/utils/buildTree";
 import { StrictOmit } from "ts-essentials";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
+import useSWRMutation from "swr/mutation";
 
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { ChatMessageEntry, ChatMessageEntryProps } from "./ChatMessageEntry";
-import { post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
+import { put } from "src/lib/api";
 
-type ChatConversationTreeProps = { messages: InferenceMessage[]; retryingParentId: string | null } & StrictOmit<
-  ChatMessageEntryProps,
-  "message"
->;
+type ChatConversationTreeProps = {
+  messages: InferenceMessage[];
+  retryingParentId: string | null;
+  activeMessageId: string | null;
+} & StrictOmit<ChatMessageEntryProps, "message">;
 
 export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
 
 export const ChatConversationTree = memo(function ChatConversationTree({
   messages,
   retryingParentId,
+  activeMessageId,
   ...props
 }: ChatConversationTreeProps) {
   const tree = useMemo(() => buildTree(messages), [messages]);
@@ -31,7 +34,12 @@ export const ChatConversationTree = memo(function ChatConversationTree({
     <>
       <ChatMessageEntry message={tree} {...props}></ChatMessageEntry>
       {tree.children.length > 0 && (
-        <TreeChildren trees={tree.children} {...props} retryingParentId={retryingParentId} />
+        <TreeChildren
+          trees={tree.children}
+          {...props}
+          retryingParentId={retryingParentId}
+          activeMessageId={activeMessageId}
+        />
       )}
     </>
   );
@@ -40,63 +48,53 @@ export const ChatConversationTree = memo(function ChatConversationTree({
 const TreeChildren = ({
   trees,
   retryingParentId,
+  activeMessageId,
   ...props
-}: { trees: Tree<InferenceMessage>[]; retryingParentId: string | null } & StrictOmit<
-  ChatMessageEntryProps,
-  "message" | "canRetry"
->) => {
-  const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
+}: {
+  trees: Tree<InferenceMessage>[];
+  retryingParentId: string | null;
+  activeMessageId: string | null;
+} & StrictOmit<ChatMessageEntryProps, "message" | "canRetry">) => {
+  const { trigger: triggerActiveMessageId } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
 
-  const [index, setIndex] = useState(() => {
-    const activeSibling = trees.findIndex((tree) => tree.active_sibling === true);
-    return activeSibling !== -1 ? activeSibling : trees.length - 1;
-  });
-  useIsomorphicLayoutEffect(() => {
-    const activeSibling = trees.findIndex((tree) => tree.active_sibling === true);
-    setIndex(activeSibling !== -1 ? activeSibling : trees.length - 1);
-  }, [trees.length]);
+  const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
+  const [index, setIndex] = useState(() => 0);
 
   const actualIndex = Math.min(index, trees.length - 1); // index sometimes out of bounds because useIsomorphicLayoutEffect only reset the index on the next render
-
   const currentTree = sortedTrees[actualIndex];
-  const length = trees.length;
 
+  const length = trees.length;
   const hasSibling = length > 1;
 
+  useIsomorphicLayoutEffect(() => {
+    const activeIndex = trees.findIndex((tree) => {
+      const searchInChildren = (children) => {
+        return children.some((child) => {
+          if (child.id === activeMessageId) {
+            return true;
+          }
+          return searchInChildren(child.children);
+        });
+      };
+      return tree.children.length === 0 ? tree.id === activeMessageId : searchInChildren(tree.children);
+    });
+
+    setIndex(activeIndex === -1 ? trees.length - 1 : activeIndex);
+  }, [trees.length, activeMessageId]);
+
+  useEffect(() => {
+    if (currentTree.children.length === 0) {
+      triggerActiveMessageId({ chat_id: currentTree.chat_id, active_message_id: currentTree.id });
+    }
+  }),
+    [currentTree];
+
   const handlePrevious = useCallback(() => {
-    const oldSiblingArgs: { chat_id: string; message_id: string; active: boolean } = {
-      chat_id: currentTree.chat_id,
-      message_id: currentTree.id,
-      active: false,
-    };
-    const newSiblingArgs: { chat_id: string; message_id: string; active: boolean } = {
-      chat_id: currentTree.chat_id,
-      message_id: sortedTrees[actualIndex > 0 ? actualIndex - 1 : actualIndex].id,
-      active: true,
-    };
-
     setIndex((i) => (i > 0 ? i - 1 : i));
-
-    post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: oldSiblingArgs });
-    post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: newSiblingArgs });
-  }, [currentTree, sortedTrees, actualIndex]);
+  }, [setIndex]);
   const handleNext = useCallback(() => {
-    const oldSiblingArgs: { chat_id: string; message_id: string; active: boolean } = {
-      chat_id: currentTree.chat_id,
-      message_id: currentTree.id,
-      active: false,
-    };
-    const newSiblingArgs: { chat_id: string; message_id: string; active: boolean } = {
-      chat_id: currentTree.chat_id,
-      message_id: sortedTrees[actualIndex < length - 1 ? actualIndex + 1 : actualIndex].id,
-      active: true,
-    };
-
     setIndex((i) => (i < length - 1 ? i + 1 : i));
-
-    post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: oldSiblingArgs });
-    post(API_ROUTES.CHAT_SIBLING_SET_ACTIVE, { arg: newSiblingArgs });
-  }, [length, currentTree, sortedTrees, actualIndex]);
+  }, [length, setIndex]);
 
   const isRegenerating = retryingParentId !== null && trees.findIndex((t) => t.parent_id === retryingParentId) !== -1;
 
@@ -145,7 +143,12 @@ const TreeChildren = ({
     <>
       {node}
       {currentTree.children.length > 0 && (
-        <TreeChildren retryingParentId={retryingParentId} trees={currentTree.children} {...props} />
+        <TreeChildren
+          retryingParentId={retryingParentId}
+          trees={currentTree.children}
+          activeMessageId={activeMessageId}
+          {...props}
+        />
       )}
     </>
   );

@@ -60,10 +60,6 @@ class InferiorDraftsRequest(pydantic.BaseModel):
     inferior_message_ids: list[str]
 
 
-class SiblingActivationRequest(pydantic.BaseModel):
-    active: bool
-
-
 class ReportRequest(pydantic.BaseModel):
     report_type: inference.ReportType
     reason: str
@@ -80,6 +76,7 @@ class ChatListRead(pydantic.BaseModel):
     title: str | None
     hidden: bool = False
     allow_data_use: bool = True
+    active_message_id: str | None
 
 
 class ChatRead(ChatListRead):
@@ -108,3 +105,4 @@ class ChatUpdateRequest(pydantic.BaseModel):
     title: pydantic.constr(max_length=100) | None = None
     hidden: bool | None = None
     allow_data_use: bool | None = None
+    active_message_id: str | None = None
