@@ -27,18 +27,23 @@ TEXT_SEARCH_LANGUAGE_MAPPING: dict[str, str] = {
     "fr": "french",
     "de": "german",
     "el": "greek",
+    "ga": "irish",
     "hi": "hindi",
     "hu": "hungarian",
     "id": "indonesian",
     "it": "italian",
     "lt": "lithuanian",
+    "ne": "nepali",
     "no": "norwegian",
+    "pt": "portuguese",
     "ro": "romanian",
     "ru": "russian",
     "sr": "serbian",
+    "ta": "tamil",
     "es": "spanish",
     "sv": "swedish",
     "tr": "turkish",
+    "yi": "yiddish",
 }
 
 
