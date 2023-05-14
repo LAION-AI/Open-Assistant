@@ -291,16 +291,15 @@ async def handle_create_vote(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/messages/{message_id}/inferior_drafts")
-async def handle_add_inferior_drafts(
-    chat_id: str,
+@router.post("/{chat_id}/messages/{message_id}/message_evals")
+async def handle_create_message_eval(
     message_id: str,
-    inferior_drafts_request: chat_schema.InferiorDraftsRequest,
+    inferior_message_request: chat_schema.MessageEvalRequest,
     ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
 ) -> fastapi.Response:
     try:
-        await ucr.add_inferior_drafts(
-            chat_id=chat_id, message_id=message_id, inferior_message_ids=inferior_drafts_request.inferior_message_ids
+        await ucr.add_message_eval(
+            message_id=message_id, inferior_message_ids=inferior_message_request.inferior_message_ids
         )
         return fastapi.Response(status_code=200)
     except Exception:

@@ -56,7 +56,7 @@ class VoteRequest(pydantic.BaseModel):
     score: int
 
 
-class InferiorDraftsRequest(pydantic.BaseModel):
+class MessageEvalRequest(pydantic.BaseModel):
     inferior_message_ids: list[str]
 
 

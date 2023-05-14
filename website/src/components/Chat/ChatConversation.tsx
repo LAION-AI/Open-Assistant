@@ -399,6 +399,16 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         });
       }
 
+      await post(API_ROUTES.CHAT_MESSAGE_EVAL, {
+        arg: {
+          chat_id: chat_id,
+          message_id: draftMessages[regen_index][index].id,
+          inferior_message_ids: draftMessages[regen_index]
+            .filter((draft) => draft.id !== draftMessages[regen_index][index].id)
+            .map((draft) => draft.id),
+        },
+      });
+
       setMessages([...messages, ...draftMessages[regen_index]]);
       setActiveMessageId(draftMessages[regen_index][index].id);
       setIsAwaitingMessageSelect.off();

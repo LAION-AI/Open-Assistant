@@ -39,7 +39,6 @@ class DbMessage(SQLModel, table=True):
     worker_config: inference.WorkerConfig | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     score: int = Field(0)
-    inferior_drafts: list[str] | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
     @property
     def has_finished(self) -> bool:
@@ -129,3 +128,13 @@ class DbReport(SQLModel, table=True):
 
     def to_read(self) -> inference.Report:
         return inference.Report(id=self.id, report_type=self.report_type, reason=self.reason)
+
+
+class DbMessageEval(SQLModel, table=True):
+    __tablename__ = "message_evaluation"
+
+    id: str = Field(default_factory=uuid7str, primary_key=True)
+    chat_id: str = Field(..., foreign_key="chat.id", index=True)
+    user_id: str = Field(..., foreign_key="user.id", index=True)
+    selected_message_id: str = Field(..., foreign_key="message.id")
+    inferior_message_ids: list[str] = Field(default_factory=list, sa_column=sa.Column(pg.JSONB))

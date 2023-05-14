@@ -13,6 +13,6 @@ export default withoutRole("banned", async (req, res, token) => {
     inferior_message_ids: string[];
   };
 
-  const data = await client.set_inferior_drafts({ chat_id, message_id, inferior_message_ids });
+  const data = await client.message_eval({ chat_id, message_id, inferior_message_ids });
   return res.status(200).json(data);
 });

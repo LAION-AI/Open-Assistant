@@ -252,20 +252,23 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         return message
 
-    async def add_inferior_drafts(self, chat_id: str, message_id: str, inferior_message_ids: list[str]):
-        logger.info(f"Setting draft messages {inferior_message_ids=} as inferior to {message_id=}")
+    async def add_message_eval(self, message_id: str, inferior_message_ids: list[str]):
+        logger.info(f"Adding message evaluation to {message_id=}: {inferior_message_ids=}")
         query = (
             sqlmodel.select(models.DbMessage)
             .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
-            .where(models.DbMessage.chat_id == chat_id, models.DbMessage.id == message_id)
+            .where(models.DbMessage.id == message_id)
         )
         message: models.DbMessage = (await self.session.exec(query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
-        if message.inferior_drafts is None:
-            message.inferior_drafts = inferior_message_ids
-        else:
-            message.inferior_drafts.append(inferior_message_ids)
+        message_eval = models.DbMessageEval(
+            chat_id=message.chat_id,
+            user_id=message.chat.user_id,
+            selected_message_id=message.id,
+            inferior_message_ids=inferior_message_ids,
+        )
+        self.session.add(message_eval)
         await self.session.commit()
 
     async def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
