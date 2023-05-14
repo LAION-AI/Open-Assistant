@@ -74,14 +74,20 @@ def update_search_vectors(batch_size: int) -> None:
     logger.info("update_search_vectors start...")
     try:
         with default_session_factory() as session:
-            to_update: list[Message] = session.query(Message).filter(Message.search_vector.is_(None)).all()
-            for idx, message in enumerate(to_update):
-                message_payload: MessagePayload = message.payload.payload
-                message_lang: str = db_lang_to_postgres_ts_lang(message.lang)
-                message.search_vector = func.to_tsvector(message_lang, message_payload.text)
-                if (idx + 1) % batch_size == 0:
-                    session.commit()
-            session.commit()
+            while True:
+                to_update: list[Message] = (
+                    session.query(Message).filter(Message.search_vector.is_(None)).limit(batch_size).all()
+                )
+
+                if not to_update:
+                    break
+
+                for message in to_update:
+                    message_payload: MessagePayload = message.payload.payload
+                    message_lang: str = db_lang_to_postgres_ts_lang(message.lang)
+                    message.search_vector = func.to_tsvector(message_lang, message_payload.text)
+
+                session.commit()
     except Exception as e:
         logger.error(f"update_search_vectors failed with error: {str(e)}")
 
