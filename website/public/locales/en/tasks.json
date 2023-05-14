@@ -12,6 +12,15 @@
     "label": "I'm feeling lucky",
     "desc": "Help us improve Open Assistant by starting a random task."
   },
+  "create_prompt_reply": {
+    "label": "Create Prompt Reply",
+    "desc": "Help Open Assistant reply to diverse messages and improve its responses to conversations with other users.",
+    "overview": "Write initial prompt and provide an adequate reply",
+    "instruction": "Provide the assistant's reply",
+    "prompt_placeholder": "Write your prompt here...",
+    "response_placeholder": "Write your reply here...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
+  },
   "create_initial_prompt": {
     "label": "Create Initial Prompts",
     "desc": "Write initial prompts to help Open Assistant to try replying to diverse messages. (enter into lottery)",

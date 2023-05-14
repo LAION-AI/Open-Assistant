@@ -2,6 +2,7 @@ export enum TaskType {
   initial_prompt = "initial_prompt",
   assistant_reply = "assistant_reply",
   prompter_reply = "prompter_reply",
+  create_prompt_reply = "create_prompt_reply",
 
   rank_initial_prompts = "rank_initial_prompts",
   rank_assistant_replies = "rank_assistant_replies",
