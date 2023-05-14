@@ -21,7 +21,7 @@ from collections import defaultdict
 
 from model_training.check_dataset_counts import Mode
 from model_training.custom_datasets import get_one_dataset
-from model_training.custom_datasets.formatting import DatasetEntrySft, PretrainDatasetEntry
+from model_training.custom_datasets.formatting import DatasetEntrySft, DatasetEntryPretrain
 
 # from model_training.custom_datasets.qa_datasets import (
 #     re_reference_remove,
@@ -124,7 +124,7 @@ def check_in_dataset_row(row: str | list[str] | tuple[str], matched=dict[str, li
             matched = _check_single_string(
                 r.replace("<|assistant|>", "").replace("<|prompter|>", "").replace("</s>", ""), matched
             )
-    elif isinstance(row, PretrainDatasetEntry):
+    elif isinstance(row, DatasetEntryPretrain):
         matched = _check_single_string(row.text, matched)
     else:
         raise ValueError(f"Received unexpected type: {type(row)}.")

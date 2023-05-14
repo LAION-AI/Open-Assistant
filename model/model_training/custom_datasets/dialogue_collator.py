@@ -7,7 +7,7 @@ import torch
 from model_training.custom_datasets.formatting import (
     QA_SPECIAL_TOKENS,
     DatasetEntrySft,
-    PretrainDatasetEntry,
+    DatasetEntryPretrain,
     format_pairs,
     format_system_prefix,
 )
@@ -50,7 +50,7 @@ class DialogueDataCollator:
 
     def process_one(self, messages, return_length=False):
         total_short_context_one = 0
-        if random.random() < self.random_offset_probability and not isinstance(messages, PretrainDatasetEntry):
+        if random.random() < self.random_offset_probability and not isinstance(messages, DatasetEntryPretrain):
             truncation = TruncationStrategy.DO_NOT_TRUNCATE
             max_length = None
         else:
@@ -65,7 +65,7 @@ class DialogueDataCollator:
                 system_property_dropout=self.system_property_dropout,
                 system_add_length=self.system_add_length,
             )
-        elif isinstance(messages, PretrainDatasetEntry):
+        elif isinstance(messages, DatasetEntryPretrain):
             messages = messages.text
             pretrain_dataset = True
         else:

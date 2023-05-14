@@ -99,7 +99,7 @@ class DatasetEntry(BaseModel):
     pass
 
 
-class PretrainDatasetEntry(DatasetEntry):
+class DatasetEntryPretrain(DatasetEntry):
     text: str | None = None
 
 
