@@ -1,6 +1,7 @@
 {
   "blurb": "We believe we can create a revolution.",
   "blurb1": "In the same way that Stable Diffusion helped the world make art and images in new ways, we want to improve the world by providing amazing conversational AI.",
+  "chat_with_our_assistant": "Chat with our assistant",
   "description": "Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world.",
   "faq_items": {
     "q0": "How far along is this project?",

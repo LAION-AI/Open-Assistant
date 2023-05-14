@@ -20,8 +20,9 @@ import {
   useBoolean,
   useDisclosure,
   useOutsideClick,
+  useToast,
 } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X, FolderX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -162,6 +163,7 @@ export const ChatListItem = ({
                 <Portal>
                   {/* higher z-index so that it is displayed over the mobile sidebar */}
                   <MenuList zIndex="var(--chakra-zIndices-popover)">
+                    <OptOutDataButton chatId={chat.id} />
                     <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
                   </MenuList>
                 </Portal>
@@ -238,8 +240,55 @@ const DeleteChatButton = ({
   );
   return (
     <>
-      <MenuItem onClick={onOpen} icon={<Trash />}>
+      <MenuItem onClick={onOpen} icon={<Trash size={16} />}>
         {t("common:delete")}
+      </MenuItem>
+      {alert}
+    </>
+  );
+};
+
+const OptOutDataButton = ({ chatId }: { chatId: string }) => {
+  const { t } = useTranslation(["chat", "common"]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const { trigger: updateChat, isMutating: isUpdating } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
+  const toast = useToast();
+
+  const handleOptOut = useCallback(async () => {
+    await updateChat({ chat_id: chatId, allow_data_use: false });
+    onClose();
+    toast({
+      title: t("chat:opt_out.success_message"),
+      status: "success",
+      position: "top",
+    });
+  }, [chatId, onClose, updateChat]);
+
+  const alert = (
+    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize="lg" fontWeight="bold">
+            {t("chat:opt_out.dialog.title")}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              {t("common:cancel")}
+            </Button>
+            <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
+              {t("common:confirm")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  );
+
+  return (
+    <>
+      <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
+        {t("chat:opt_out.button")}
       </MenuItem>
       {alert}
     </>
