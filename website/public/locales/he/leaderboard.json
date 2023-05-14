@@ -9,6 +9,7 @@
   "labels_simple": "תוויות (פשוטות)",
   "last_updated_at": "עודכן לאחרונה ב: {{val, datetime}}",
   "leaderboard": "לוח ניהול",
+  "level_progress_message": "עם סך נקודות של {{score}}, אתה הגעת לרמה {{level,number,integer}}!",
   "month": "חודש",
   "monthly": "חודשי",
   "next": "הבא",
