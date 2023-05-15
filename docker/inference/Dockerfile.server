@@ -56,6 +56,7 @@ COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alemb
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alembic.ini .
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/oasst_inference_server oasst_inference_server
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/main.py .
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/export.py .
 
 
 
