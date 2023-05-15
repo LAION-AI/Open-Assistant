@@ -91,7 +91,7 @@
     "@faker-js/faker": "^7.6.0",
     "@stardazed/streams-text-encoding": "^1.0.2",
     "@storybook/addon-actions": "^7.0.5",
-    "@storybook/addon-essentials": "^7.0.9",
+    "@storybook/addon-essentials": "^7.0.12",
     "@storybook/addon-interactions": "^7.0.9",
     "@storybook/addon-links": "^7.0.9",
     "@storybook/nextjs": "^7.0.9",
