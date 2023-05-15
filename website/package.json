@@ -26,6 +26,9 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@bytemd/plugin-gfm": "^1.21.0",
+    "@bytemd/plugin-math": "^1.21.0",
+    "@bytemd/react": "^1.21.0",
     "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.6.1",
     "@dnd-kit/core": "^6.0.8",
@@ -38,7 +41,6 @@
     "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.6",
     "@next/bundle-analyzer": "^13.4.1",
-    "@next/font": "^13.4.1",
     "@nikolovlazar/chakra-ui-prose": "^1.2.1",
     "@prisma/client": "^4.13.0",
     "@tailwindcss/forms": "^0.5.3",

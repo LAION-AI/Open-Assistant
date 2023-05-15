@@ -14,6 +14,13 @@
   "model": "Model",
   "more_actions": "More Actions",
   "only_visible": "Only visible",
+  "opt_out": {
+    "button": "Opt out of training data",
+    "success_message": "You have opted out of training data.",
+    "dialog": {
+      "title": "Confirm opting of training data"
+    }
+  },
   "parameter_description": {
     "max_new_tokens": "Max new tokens: This parameter tells the model how many new tokens it should generate at most for the response.",
     "repetition_penalty": "Repetition Penalty: This parameter reduces the probability of repeating the same tokens again and again by making repeated tokens less likely than the model would ordinarily predict.",
@@ -46,5 +53,7 @@
   "save_preset": "Save this preset",
   "preset_exists_error": "A preset with this name already exists",
   "preset_name_placeholder": "Enter name",
-  "feedback_message": "Thoughts? Let us know!"
+  "feedback_message": "How did I do? Your feedback will make me better!",
+  "feedback_action_great": "Good",
+  "feedback_action_poor": "Could be better"
 }
