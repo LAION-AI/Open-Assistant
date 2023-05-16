@@ -174,7 +174,7 @@ class FlaggedMessageResponse(pydantic.BaseModel):
 
 
 class FlaggedMessagePage(PageResult):
-    messages: list[FlaggedMessageResponse]
+    items: list[FlaggedMessageResponse]
 
 
 @router.get("/flagged_messages/cursor", response_model=FlaggedMessagePage)
@@ -182,14 +182,8 @@ def get_flagged_messages_cursor(
     *,
     before: Optional[str] = None,
     after: Optional[str] = None,
-    auth_method: Optional[str] = None,
-    username: Optional[str] = None,
-    api_client_id: Optional[str] = None,
-    only_roots: Optional[bool] = False,
-    include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
-    lang: Optional[str] = None,
     session: deps.Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> str:
@@ -222,21 +216,37 @@ def get_flagged_messages_cursor(
 
     pr = PromptRepository(session, api_client)
     items = pr.fetch_flagged_messages_by_created_date(
-        auth_method=auth_method,
-        username=username,
-        api_client_id=api_client_id,
         gte_created_date=gte_created_date,
         gt_id=gt_id,
         lte_created_date=lte_created_date,
         lt_id=lt_id,
-        only_roots=only_roots,
-        deleted=None if include_deleted else False,
         desc=query_desc,
         limit=qry_max_count,
-        lang=lang,
     )
-    # resp = [FlaggedMessageResponse(**msg.__dict__) for msg in flagged_messages]
-    # return FlaggedMessagePage(messages=resp, cursor=flagged_messages.cursor)
+
+    num_rows = len(items)
+    if qry_max_count > max_count and num_rows == qry_max_count:
+        assert not (before and after)
+        items = items[:-1]
+
+    if desc != query_desc:
+        items.reverse()
+
+    n, p = None, None
+    if len(items) > 0:
+        if (num_rows > max_count and before) or after:
+            p = str(items[0].message_id) + "$" + items[0].created_date.isoformat()
+        if num_rows > max_count or before:
+            n = str(items[-1].message_id) + "$" + items[-1].created_date.isoformat()
+    else:
+        if after:
+            p = lte_created_date.isoformat() if desc else gte_created_date.isoformat()
+        if before:
+            n = gte_created_date.isoformat() if desc else lte_created_date.isoformat()
+
+    order = "desc" if desc else "asc"
+    print(p, n, items, order)
+    return FlaggedMessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)
 
 
 @router.get("/flagged_messages", response_model=list[FlaggedMessageResponse])

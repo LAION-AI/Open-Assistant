@@ -1268,14 +1268,12 @@ WHERE message.id = cc.id;
 
     def fetch_flagged_messages_by_created_date(
         self,
-        api_client_id: Optional[UUID] = None,
         gte_created_date: Optional[datetime] = None,
         gt_id: Optional[UUID] = None,
         lte_created_date: Optional[datetime] = None,
         lt_id: Optional[UUID] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
-        lang: Optional[str] = None,
     ) -> list[FlaggedMessage]:
         qry = self.db.query(FlaggedMessage)
 
@@ -1306,9 +1304,9 @@ WHERE message.id = cc.id;
             raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
 
         if desc:
-            qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
+            qry = qry.order_by(FlaggedMessage.created_date.desc(), FlaggedMessage.message_id.desc())
         else:
-            qry = qry.order_by(Message.created_date.asc(), Message.id.asc())
+            qry = qry.order_by(FlaggedMessage.created_date.asc(), FlaggedMessage.message_id.asc())
 
         if limit is not None:
             qry = qry.limit(limit)
