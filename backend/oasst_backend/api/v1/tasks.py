@@ -8,6 +8,7 @@ from oasst_backend.api import deps
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.scheduled_tasks import complete_ai_task
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -81,6 +82,7 @@ def request_task(
         responder = TreeManager.choose_responder(request, db)
         if responder is not None:
             pr = PromptRepository(db, api_client, user_id=responder.id)
+            tm = TreeManager(db, prompt_repository=pr)
             pr.ensure_user_is_enabled()
             automated_task, message_tree_id, parent_message_id = tm.next_task(
                 desired_task_type=request.type, lang=request.lang
@@ -88,6 +90,13 @@ def request_task(
             pr.task_repository.store_task(
                 automated_task, message_tree_id, parent_message_id, request.collective, request.lang
             )
+            try:
+                complete_ai_task.delay(automated_task.id, responder.id, pr.api_client.dict())
+                logger.debug("Extract Embedding")
+            except OasstError:
+                logger.error(
+                    f"Could not complete AI task for user {responder.id} with task {automated_task.id}."
+                )
     except Exception as e:
         # don't raise an error here, as the primary task has already been generated
         logger.exception(f"Failed to generate automated task: {e}")

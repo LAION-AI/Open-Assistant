@@ -19,21 +19,9 @@ logger.info(f"celery.conf.broker_url {app.conf.broker_url}, app.conf.result_back
 
 # see https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html
 app.conf.beat_schedule = {
-    "hf-feature-extraction": {
-        "task": "hf_feature_extraction",
-        "schedule": 60.0,  # seconds
-    },
-    "toxicity": {
-        "task": "toxicity",
-        "schedule": 60.0,  # seconds
-    },
     "update-user-streak": {
         "task": "update_user_streak",
         "schedule": 60.0 * 60.0 * 4,  # seconds
-    },
-    "complete-pending-ai-tasks": {
-        "task": "complete_pending_ai_tasks",
-        "schedule": 60.0 * 10,  # seconds
     },
 }
 app.conf.timezone = "UTC"

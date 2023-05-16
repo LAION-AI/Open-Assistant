@@ -9,11 +9,10 @@ from uuid import UUID
 import numpy as np
 import pydantic
 import sqlalchemy as sa
-from asgiref.sync import async_to_sync
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
-from oasst_backend.realtime_tasks import hf_feature_extraction, toxicity
+from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.models import (
     Message,
     MessageEmoji,
@@ -1855,11 +1854,11 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             if rand < cumulative_split:
                 return db.query(User).filter(User.ai_model == responder.model).one()
 
-    def complete_task(self, request: protocol_schema.TaskRequest, user: User) -> None:
+    def complete_task(self, task: Task, user: User) -> None:
         if user.ai_model is None:
             raise ValueError("Cannot complete task for user without AI model")
         responder = self.task_responders[user.ai_model]
-        return responder.complete(request, user)
+        return responder.complete(task, user)
 
 
 if __name__ == "__main__":

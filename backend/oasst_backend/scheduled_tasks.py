@@ -2,21 +2,75 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime, timedelta
 import uuid
+from typing import Any, Dict, List
 
-from fastapi import deps
+from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from sqlmodel import select
+from oasst_backend.celery_worker import app
+from oasst_backend.api import deps
 from oasst_backend.task_repository import TaskRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.models import ApiClient
 from oasst_backend.user_repository import User, UserRepository
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import User
 from oasst_backend.utils.database_utils import default_session_factory
+from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import utcnow
 from oasst_shared.schemas import protocol as protocol_schema
 
 startup_time: datetime = utcnow()
+
+
+async def useHFApi(text, url, model_name):
+    hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
+    result = await hugging_face_api.post(text)
+    return result
+
+
+@app.task(name="toxicity")
+def toxicity(text, message_id, api_client):
+    try:
+        logger.info(f"checking toxicity : {api_client}")
+
+        with default_session_factory() as session:
+            model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
+            url: str = HfUrl.HUGGINGFACE_TOXIC_CLASSIFICATION.value
+            toxicity: List[List[Dict[str, Any]]] = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
+            toxicity = toxicity[0][0]
+            logger.info(f"toxicity from HF {toxicity}")
+            api_client_m = ApiClient(**api_client)
+            if toxicity is not None:
+                pr = PromptRepository(db=session, api_client=api_client_m)
+                pr.insert_toxicity(
+                    message_id=message_id, model=model_name, score=toxicity["score"], label=toxicity["label"]
+                )
+            session.commit()
+
+    except Exception as e:
+        logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
+
+
+@app.task(name="hf_feature_extraction")
+def hf_feature_extraction(text, message_id, api_client):
+    try:
+        with default_session_factory() as session:
+            model_name: str = HfEmbeddingModel.MINILM.value
+            url: str = HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value
+            embedding = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
+            api_client_m = ApiClient(**api_client)
+            if embedding is not None:
+                logger.info(f"emmbedding from HF {len(embedding)}")
+                pr = PromptRepository(db=session, api_client=api_client_m)
+                pr.insert_message_embedding(
+                    message_id=message_id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
+                )
+                session.commit()
+
+    except Exception as e:
+        logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
 @shared_task(name="update_user_streak")
@@ -65,39 +119,35 @@ def update_user_streak() -> None:
     return
 
 
-@shared_task(name="complete_pending_ai_tasks")
-def complete_pending_ai_tasks() -> None:
-    logger.info("complete_pending_ai_tasks start...")
+@shared_task(name="complete_ai_task")
+def complete_ai_task(task_id, user_id, api_client):
+    logger.info(f"complete_ai_task start... {task_id=} {user_id=}")
     with default_session_factory() as session:
-        db = session
         try:
-            api_key = deps.get_api_key()
-            api_client = deps.api_auth(api_key, db)
             ur = UserRepository(session, api_client)
-            users = ur.get_ai_users()
-            for user in users:
-                tr = TaskRepository(db, api_client, user, ur)
-                tasks = tr.fetch_pending_tasks_of_user(user.id, timedelta(hours=1))
-                for task in tasks:
-                    pr = PromptRepository(db, api_client, client_user=user)
-                    pr.ensure_user_is_enabled()
+            user = ur.get_user_by_id(user_id)
+            pr = PromptRepository(session, api_client, client_user=user)
+            pr.ensure_user_is_enabled()
+            tr = TaskRepository(session, api_client)
+            tm = TreeManager(session, pr)
 
-                    tm = TreeManager(db, pr)
-                    output = tm.complete_task(task, user)
-                    interaction = protocol_schema.AnyInteraction(
-                        **{
-                            "user": user,
-                            "task_id": task.id,
-                            "message_id": task.frontend_message_id,
-                            "update_type": "automated",
-                            "content": output,
-                            "user_message_id": str(uuid.uuid4()),
-                            "lang": task.lang,
-                        }
-                    )
-                    _task = tm.handle_interaction(interaction)
-                    if type(_task) is protocol_schema.TaskDone:
-                        ur.update_user_last_activity(user=pr.user)
-            logger.info("complete_ai_pending_tasks end...")
+            task = tr.get_task_by_id(task_id)
+
+            output = tm.complete_task(task, user)
+            interaction = protocol_schema.AnyInteraction(
+                **{
+                    "user": user,
+                    "task_id": task.id,
+                    "message_id": task.frontend_message_id,
+                    "update_type": "automated",
+                    "content": output,
+                    "user_message_id": str(uuid.uuid4()),
+                    "lang": task.lang,
+                }
+            )
+            resp = tm.handle_interaction(interaction)
+            if type(resp) is protocol_schema.TaskDone:
+                ur.update_user_last_activity(user=user)
+            logger.info(f"complete_ai_task end... {task_id=} {user_id=}")
         except Exception as e:
             logger.error(str(e))
