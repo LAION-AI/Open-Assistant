@@ -154,11 +154,10 @@ class TreeManagerConfiguration(BaseModel):
     """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
     is exceeded no new initial prompt tasks for that language are generated."""
 
-    task_responders: list[TaskResponderConfiguration] = [
-        TaskResponderConfiguration(ratio=1, model="mock-ai"),
-    ]
-    """Define which responders to select from and how they are weighted.
-    Ratios must sum to < 1."""
+    # task_responders: list[TaskResponderConfiguration] = [
+    #     TaskResponderConfiguration(ratio=1, model="mock-ai"),
+    # ]
+    """Define which responders to select from and how they are weighted. Ratios must sum to < 1."""
 
     init_prompt_disabled_langs: str = ""
 
