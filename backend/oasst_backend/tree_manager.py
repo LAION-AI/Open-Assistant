@@ -13,6 +13,7 @@ from asgiref.sync import async_to_sync
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
+from oasst_backend.realtime_tasks import hf_feature_extraction, toxicity
 from oasst_backend.models import (
     Message,
     MessageEmoji,
@@ -790,6 +791,23 @@ class TreeManager:
                     )
                     self._insert_default_state(message.id, lang=message.lang)
 
+                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+                    try:
+                        hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
+                        logger.debug("Extract Embedding")
+                    except OasstError:
+                        logger.error(
+                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                        )
+                if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
+                    try:
+                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                        logger.debug("Sent Toxicity")
+                    except OasstError:
+                        logger.error(
+                            f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                        )
+
             case protocol_schema.MessageRating:
                 logger.info(
                     f"Frontend reports rating of message_id={interaction.message_id} by user={interaction.user}."
@@ -853,45 +871,6 @@ class TreeManager:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
         return protocol_schema.TaskDone()
-
-    def hf_feature_extraction(self, text, message_id):
-        try:
-            session = self.db
-            api_client = self.pr.api_client
-            model_name: str = HfEmbeddingModel.MINILM.value
-            url: str = HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value
-            embedding = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
-            if embedding is not None:
-                logger.info(f"emmbedding from HF {len(embedding)}")
-                pr = PromptRepository(db=session, api_client=api_client)
-                pr.insert_message_embedding(
-                    message_id=message_id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
-                )
-                session.commit()
-
-        except Exception as e:
-            logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
-
-    def toxicity(self, text: str, message_id: int):
-        try:
-            api_client = self.pr.api_client
-            logger.info(f"checking toxicity : {api_client}")
-
-            session = self.db
-            model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
-            url: str = HfUrl.HUGGINGFACE_TOXIC_CLASSIFICATION.value
-            toxicity: List[List[Dict[str, Any]]] = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
-            toxicity = toxicity[0][0]
-            logger.info(f"toxicity from HF {toxicity}")
-            if toxicity is not None:
-                pr = PromptRepository(db=session, api_client=self.api_client)
-                pr.insert_toxicity(
-                    message_id=message_id, model=model_name, score=toxicity["score"], label=toxicity["label"]
-                )
-            session.commit()
-
-        except Exception as e:
-            logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
 
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts
