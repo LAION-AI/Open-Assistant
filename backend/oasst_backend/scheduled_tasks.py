@@ -1,25 +1,23 @@
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime, timedelta
 import uuid
+from datetime import datetime
 from typing import Any, Dict, List
 
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
-from sqlmodel import select
 from oasst_backend.celery_worker import app
-from oasst_backend.api import deps
+from oasst_backend.models import ApiClient
+from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.task_repository import TaskRepository
 from oasst_backend.tree_manager import TreeManager
-from oasst_backend.models import ApiClient
 from oasst_backend.user_repository import User, UserRepository
-from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.user_repository import User
 from oasst_backend.utils.database_utils import default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
-from oasst_shared.utils import utcnow
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
+from sqlmodel import select
 
 startup_time: datetime = utcnow()
 

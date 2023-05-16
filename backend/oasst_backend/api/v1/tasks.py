@@ -7,8 +7,8 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
+from oasst_backend.scheduled_tasks import complete_ai_task, hf_feature_extraction, toxicity
 from oasst_backend.tree_manager import TreeManager
-from oasst_backend.scheduled_tasks import complete_ai_task
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -94,9 +94,7 @@ def request_task(
                 complete_ai_task.delay(automated_task.id, responder.id, pr.api_client.dict())
                 logger.debug("Extract Embedding")
             except OasstError:
-                logger.error(
-                    f"Could not complete AI task for user {responder.id} with task {automated_task.id}."
-                )
+                logger.error(f"Could not complete AI task for user {responder.id} with task {automated_task.id}.")
     except Exception as e:
         # don't raise an error here, as the primary task has already been generated
         logger.exception(f"Failed to generate automated task: {e}")
@@ -195,9 +193,27 @@ async def tasks_interaction(
         pr = PromptRepository(session, api_client, client_user=interaction.user)
         tm = TreeManager(session, pr)
         ur = UserRepository(session, api_client)
-        task = await tm.handle_interaction(interaction)
+        message, task = await tm.handle_interaction(interaction)
         if type(task) is protocol_schema.TaskDone:
             ur.update_user_last_activity(user=pr.user)
+
+        if message is not None:
+            if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+                try:
+                    hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
+                    logger.debug("Extract Embedding")
+                except OasstError:
+                    logger.error(
+                        f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                    )
+            if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
+                try:
+                    toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                    logger.debug("Sent Toxicity")
+                except OasstError:
+                    logger.error(
+                        f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                    )
         return task
 
     try:

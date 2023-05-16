@@ -3,7 +3,7 @@ from abc import abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import UUID
 
 import numpy as np
@@ -12,7 +12,6 @@ import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.models import (
     Message,
     MessageEmoji,
@@ -32,19 +31,13 @@ from oasst_backend.utils.database_utils import (
     managed_tx_function,
     managed_tx_method,
 )
-from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
 from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, and_, func, not_, or_, text, update
-
-
-async def useHFApi(text, url, model_name):
-    hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
-    result = await hugging_face_api.post(text)
-    return result
 
 
 class TaskType(Enum):
@@ -168,6 +161,14 @@ class TaskResponder:
         """Return the output of a model given a task and user."""
 
 
+class MockTaskResponder(TaskResponder):
+    def complete(self, task: Task, user: User) -> str:
+        logger.info(f"MockTaskResponder: completing task {task.id} for user {user.id}")
+        prompt = task.message_tree_id
+        logger.info(f"MockTaskResponder: {prompt}")
+        return f"Mock output for task {task.id}."
+
+
 class HuggingFaceResponder(TaskResponder):
     def __init__(self, model="gpt2"):
         self.model = model
@@ -193,7 +194,7 @@ class TreeManager:
 
         if len(self.cfg.task_responders) != 0:
             supported_responders = {
-                "human": TaskResponder,
+                "mock-ai": MockTaskResponder,
                 "gpt2": HuggingFaceResponder,
                 "OpenAssistant/oasst-sft-6-llama-30b-xor": HuggingFaceResponder,
             }
@@ -790,23 +791,6 @@ class TreeManager:
                     )
                     self._insert_default_state(message.id, lang=message.lang)
 
-                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
-                    try:
-                        hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Extract Embedding")
-                    except OasstError:
-                        logger.error(
-                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
-                if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
-                    try:
-                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Sent Toxicity")
-                    except OasstError:
-                        logger.error(
-                            f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
-
             case protocol_schema.MessageRating:
                 logger.info(
                     f"Frontend reports rating of message_id={interaction.message_id} by user={interaction.user}."
@@ -869,7 +853,7 @@ class TreeManager:
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
-        return protocol_schema.TaskDone()
+        return message, protocol_schema.TaskDone()
 
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts

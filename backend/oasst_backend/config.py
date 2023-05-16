@@ -155,7 +155,7 @@ class TreeManagerConfiguration(BaseModel):
     is exceeded no new initial prompt tasks for that language are generated."""
 
     task_responders: list[TaskResponderConfiguration] = [
-        TaskResponderConfiguration(ratio=1, model="gpt2"),
+        TaskResponderConfiguration(ratio=1, model="mock-ai"),
     ]
     """Define which responders to select from and how they are weighted.
     Ratios must sum to < 1."""
