@@ -157,16 +157,14 @@ class TaskResponder:
         self.model = model
 
     @abstractmethod
-    def complete(self, task: Task, user: User) -> str:
+    def complete(self, prompt: Message, replies: list[Message] = None) -> str:
         """Return the output of a model given a task and user."""
 
 
 class MockTaskResponder(TaskResponder):
-    def complete(self, task: Task, user: User) -> str:
-        logger.info(f"MockTaskResponder: completing task {task.id} for user {user.id}")
-        prompt = task.message_tree_id
-        logger.info(f"MockTaskResponder: {prompt}")
-        return f"Mock output for task {task.id}."
+    def complete(self, prompt: Message, replies: list[Message] = None) -> str:
+        logger.info(f"MockTaskResponder: {prompt}: {replies}")
+        return ""
 
 
 class HuggingFaceResponder(TaskResponder):
@@ -174,8 +172,10 @@ class HuggingFaceResponder(TaskResponder):
         self.model = model
         self.hf_api = HuggingFaceAPI(f"{HfUrl.HUGGINGFACE_MODELS.value}/{model}")
 
-    async def complete(self, task: Task, user: User) -> str:
-        output = await self.hf_api.post(task.prompt)
+    async def complete(self, prompt: Message, replies: list[Message] = None) -> str:
+        input = prompt.text
+        input += "\n".join([f"{r.user.display_name}: {r.text}" for r in replies])
+        output = await self.hf_api.post(input)
         return output
 
 
@@ -1842,7 +1842,10 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         if user.ai_model is None:
             raise ValueError("Cannot complete task for user without AI model")
         responder = self.task_responders[user.ai_model]
-        return responder.complete(task, user)
+        messages, prompts = self.get_user_messages_by_tree(user.id)
+        prompt = next(p for p in prompts if p.id == task.message_tree_id)
+        replies = messages[task.message_tree_id]
+        return responder.complete(prompt, replies)
 
 
 if __name__ == "__main__":
