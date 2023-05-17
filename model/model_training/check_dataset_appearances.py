@@ -22,56 +22,10 @@ from collections import defaultdict
 from model_training.check_dataset_counts import Mode
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import DatasetEntryLm, DatasetEntrySft
-
-# from model_training.custom_datasets.qa_datasets import (
-#     re_reference_remove,
-#     re_single_reference_remove,
-#     re_whitespace_newline_match,
-# )
-# from model_training.custom_datasets.utils import FILTER_BY_WORDS
+from model_training.custom_datasets.utils import FILTER_BY_WORDS
 
 RE_TO_CHECK = []  # [re_whitespace_newline_match, re_reference_remove, re_single_reference_remove]
-# STRINGS_TO_CHECK = [*FILTER_BY_WORDS]
-STRINGS_TO_CHECK = [
-    "as a language model",
-    "as an AI language model",
-    "As a large language model",
-    "As an AI ",
-    "an AI language model you don't have",
-    "As an AI language model, I cannot",
-    "As an AI language model, I do not",
-    "As an AI language model, I am not able",
-    "As an AI language model, I don't have personal",
-    "I am an AI language model and do not",
-    "As an AI language model, I don't have",
-    "As an AI language model, I am only able",
-    "AI language model and I do not",
-    "As an AI language model, I cannot modify",
-    "As an AI language model, I do not",
-    "I know as an AI language model you don't have",
-    "as an AI language model, you cannot",
-    "I'm sorry, but as an AI language model",
-    "As an AI language model, I don't have",
-    "I'm an AI ",
-    "I am an AI ",
-    "my name is OpenAI",
-    "trained by OpenAI",
-    "as an OpenAI language model",
-    "As your dedicated AI language model",
-    "As a hypothetical AI",
-    "As a neutral AI",
-    "my knowledge cutoff",
-    "my knowledge cut off",
-    "As a machine",
-    "I cannot assist",
-    "I do not have personal preferences",
-    "I don't have personal preferences",
-    "Unfortunately, I cannot provide",
-    "I'm sorry, I cannot",
-    "I'm sorry, I cannot generate",
-    "AI cannot create or program",
-    "I'm afraid I cannot create",
-]
+STRINGS_TO_CHECK = list(set(FILTER_BY_WORDS + []))
 
 
 def argument_parsing():
@@ -92,6 +46,7 @@ def argument_parsing():
     )
     parser.add_argument("--mode", dest="mode", type=Mode, choices=list(Mode))
     parser.add_argument("--cache_dir", dest="cache_dir", type=str)
+    parser.add_argument("--verbose", dest="verbose", type=str, default=False)
 
     args, _ = parser.parse_known_args()
 
@@ -159,12 +114,13 @@ if __name__ == "__main__":
             overview_dct[dataset_name] = unified_counts
             print(f"\nFOUND THE FOLLOWING APPEARANCES FOR DATASET {dataset_name}:")
             pp.pprint(unified_counts)
-        # if len(matched_train) != 0:
-        #     pp.pprint(f"Found the following occurances in TRAIN {dataset_name}:")
-        #     pp.pprint(dict(matched_train))
-        # if len(matched_val) != 0:
-        #     pp.pprint(f"Found the following occurances in VAL {dataset_name}:")
-        #     pp.pprint(dict(matched_val))
+        if args.verbose:
+            if len(matched_train) != 0:
+                pp.pprint(f"Found the following occurances in TRAIN {dataset_name}:")
+                pp.pprint(dict(matched_train))
+            if len(matched_val) != 0:
+                pp.pprint(f"Found the following occurances in VAL {dataset_name}:")
+                pp.pprint(dict(matched_val))
         if len(matched_train) + len(matched_val) == 0:
             print(
                 f"\nNON OF THE SPECIFIED REGULAR EXPRESSIONS OR FILTER WORDS WAS FOUND FOR THE DATASET {dataset_name}"

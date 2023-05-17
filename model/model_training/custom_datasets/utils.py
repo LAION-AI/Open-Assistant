@@ -23,9 +23,6 @@ FILTER_BY_WORDS = [
     "As an AI language model, I don't have",
     "I'm an AI ",
     "I am an AI ",
-    "my name is OpenAI",
-    "trained by OpenAI",
-    "as an OpenAI language model",
     "As your dedicated AI language model",
     "As a hypothetical AI",
     "As a neutral AI",
@@ -40,6 +37,7 @@ FILTER_BY_WORDS = [
     "I'm sorry, I cannot generate",
     "AI cannot create or program",
     "I'm afraid I cannot create",
+    "OpenAI",
 ]
 
 
