@@ -7,6 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
+
+# from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.efficiency_utils import fuse_gelu
 from model_training.utils.utils import (
@@ -243,9 +245,17 @@ def tokenizer_sanity_check(tokenizer):
     print(f"bos_token='{tokenizer.bos_token}', bos_token_id={tokenizer.bos_token_id}")
     print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
 
-    from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
+    from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, create_dataset_entry_qa
 
-    in_text = format_pairs(["Q1", "A1", "Q2", "A2"], tokenizer.eos_token)
+    ds_entry = create_dataset_entry_qa(
+        mode="sft", questions=["Q1", "Q2"], answers=["A1", "A2"], lang="en", context="ctx"
+    )
+    in_text = ds_entry.get_formatted(
+        tokenizer.eos_token,
+        use_system_tag=True,
+        system_property_dropout=0,
+        system_add_length=True,
+    )
     in_text = "".join(in_text)
 
     prompter_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
@@ -329,6 +339,9 @@ def main():
         pad_to_multiple_of=16,
         use_system_prefix=training_conf.use_system_prefix,
         system_prefix=training_conf.system_prefix,
+        use_system_tag=training_conf.use_system_tag,
+        system_property_dropout=training_conf.system_property_dropout,
+        system_add_length=training_conf.system_add_length,
     )
 
     if training_conf.val_max_length is None:
@@ -342,6 +355,9 @@ def main():
         samples_mixing=False,
         use_system_prefix=training_conf.use_system_prefix,
         system_prefix=training_conf.system_prefix,
+        use_system_tag=training_conf.use_system_tag,
+        system_property_dropout=training_conf.system_property_dropout,
+        system_add_length=training_conf.system_add_length,
     )
 
     train, evals = get_dataset(training_conf)
@@ -362,6 +378,12 @@ def main():
                 if hasattr(d, "name"):
                     name += f" ({d.name})"
             print(f"{name}: {len(d)} ({len(d) / total:.2%})")
+
+            # ensure that all entries can be formatted
+            # for x in d:
+            #     if isinstance(x, DatasetEntry):
+            #         x.get_formatted("sft", "<eos>")
+
         print(f"\nTotal train: {total}")
         print("-" * 80)
         print("Evaluation set sizes:")

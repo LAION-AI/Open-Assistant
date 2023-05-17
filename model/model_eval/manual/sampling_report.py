@@ -3,6 +3,7 @@ import gzip
 import json
 import random
 import re
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -25,6 +26,7 @@ QA_SPECIAL_TOKENS_V2_5 = {
 class SamplingConfig(pydantic.BaseModel):
     name: Optional[str]
     generate_args: dict[str, Any] = {}
+    system_profile: Optional[OrderedDict[str, float | int | str]] = None
     pre_text: Optional[str]
     add_prefix_tokens: Optional[bool] = False
 
@@ -70,7 +72,7 @@ def load_jsonl(input_file_path: str | Path) -> list[dict | str]:
     with file_in:
         # read one message tree per line
         for line in file_in:
-            obj = json.loads(line)
+            obj = json.loads(line, object_pairs_hook=OrderedDict)
             items.append(obj)
 
     return items
@@ -100,7 +102,22 @@ def sample(
     if mode == "v2":
         input_text = f"{prefix}{QA_SPECIAL_TOKENS['Question']}{prompt}{QA_SPECIAL_TOKENS['Answer']}"
     elif mode == "v2_5":
-        input_text = f"{prefix}{QA_SPECIAL_TOKENS_V2_5['prompter']}{prompt}{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+        if sampling_config.system_profile and len(sampling_config.system_profile) > 0:
+            system_fragments = [QA_SPECIAL_TOKENS_V2_5["system"]]
+            for k, v in sampling_config.system_profile.items():
+                if isinstance(v, float):
+                    system_fragments.append(f"{k}: {v:0.1f}")
+                elif isinstance(v, str):
+                    system_fragments.append(f"{k}: {v}")
+                else:
+                    system_fragments.append(f"{k}: {v}")
+            system_fragments.append(tokenizer.eos_token)
+            system_tag = "\n".join(system_fragments)
+        else:
+            system_tag = ""
+
+        input_text = f"{prefix}{QA_SPECIAL_TOKENS_V2_5['prompter']}{prompt}{tokenizer.eos_token}{system_tag}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+        print("input_text", input_text)
     else:
         assert sc.human_name and sc.bot_name, "'human_name' and 'bot_name' parameters must be specified in config "
         input_text = f"{prefix}\n{sc.human_name}: {prompt}\n\n{sc.bot_name}: "
@@ -143,6 +160,12 @@ def merge_configs(*configs: tuple[Optional[SamplingConfig]]) -> Optional[Samplin
             if c.generate_args:
                 for k, v in c.generate_args.items():
                     merged.generate_args[k] = v
+            # system profile
+            if c.system_profile:
+                if not merged.system_profile:
+                    merged.system_profile = {}
+                for k, v in c.system_profile.items():
+                    merged.system_profile[k] = v
 
     return merged
 

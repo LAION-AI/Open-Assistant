@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Literal, Optional
 
+from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
 from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -107,9 +108,22 @@ def load_oasst_export(
 
         threads_per_tree.append(threads)
 
-    def process_thread(thread):
+    def process_thread(thread: list[ExportMessageNode]):
         if mode == "sft":
-            return [m.text for m in thread]
+            # ensure roles are strictly alternating between prompter and assistant
+            assert all(m.role == "prompter" for m in thread[0::2]) and all(m.role == "assistant" for m in thread[1::2])
+            conversation: list[Utterance] = [
+                Utterance(
+                    text=m.text,
+                    role=Role.prompter if m.role == "prompter" else Role.assistant,
+                    lang=m.lang,
+                    quality=m.get_label_value("quality"),
+                    humor=m.get_label_value("humor"),
+                    creativity=m.get_label_value("creativity"),
+                )
+                for m in thread
+            ]
+            return DatasetEntrySft(conversation=conversation)
         elif mode == "rm":
             prefix = [m.text for m in thread]
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]
