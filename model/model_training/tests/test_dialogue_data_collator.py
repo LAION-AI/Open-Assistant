@@ -2,7 +2,7 @@ import pytest
 import torch
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
-from model_training.utils import match_tokenizer_name
+from model_training.utils.utils import match_tokenizer_name
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 
