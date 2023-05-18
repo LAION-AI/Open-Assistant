@@ -14,7 +14,8 @@ been used.
 
 **Note**: some summarisation tasks are very easy because the prompt already
 contains a docstring in the function which is then used as the ground truth
-response. It may be useful to filter these in future. (All the docstrings have been removed now)
+response. It may be useful to filter these in future. (All the docstrings have
+been removed now)
 
 ### Summarize_codesearchnet_for_python.ipynb
 
