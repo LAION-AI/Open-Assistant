@@ -243,6 +243,17 @@ async def message_events(
                         ).json(),
                     }
 
+                if response_packet.response_type == "plugin_intermediate_response":
+                    logger.info(f"Received plugin intermediate response {chat_id}")
+                    yield {
+                        "data": chat_schema.PluginIntermediateResponseEvent(
+                            current_plugin_thought=response_packet.current_plugin_thought,
+                            current_plugin_action_taken=response_packet.current_plugin_action_taken,
+                            current_plugin_action_input=response_packet.current_plugin_action_input,
+                            current_plugin_action_response=response_packet.current_plugin_action_response,
+                        ).json(),
+                    }
+
                 if response_packet.response_type == "internal_error":
                     yield {
                         "data": chat_schema.ErrorResponseEvent(
