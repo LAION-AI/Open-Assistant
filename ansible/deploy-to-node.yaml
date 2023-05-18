@@ -191,7 +191,8 @@
     - name: Setup Celery worker
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-celery-worker"
-        image: "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
         state: started
         pull: true
         restart_policy: always
@@ -208,7 +209,8 @@
     - name: Setup Celery worker beat
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-celery-worker-beat"
-        image: "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
         state: started
         pull: true
         restart_policy: always

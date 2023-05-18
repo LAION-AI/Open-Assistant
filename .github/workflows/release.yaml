@@ -106,4 +106,5 @@ jobs:
         'latest' }}
       backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
       website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}
-      inference-server-port: ${{ github.event_name == 'release' && '8185' || '8085' }}
+      inference-server-port:
+        ${{ github.event_name == 'release' && '8185' || '8085' }}
