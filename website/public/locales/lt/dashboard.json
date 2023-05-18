@@ -1,14 +1,14 @@
 {
-  "grab_a_task": "Grab a task!",
-  "create": "Create",
-  "evaluate": "Evaluate",
-  "label": "Label",
-  "dashboard": "Dashboard",
-  "go": "Go",
+  "grab_a_task": "Pasirinkite užuotį",
+  "create": "Sukurti",
+  "evaluate": "Įvertinti",
+  "label": "Anotacija",
+  "dashboard": "Apžvalga",
+  "go": "Pirmyn",
   "welcome_message": {
-    "label": "Welcome, {{username}}!",
-    "contributor": "Contributor",
-    "description": "Open Assistant is an open-source AI assistant that uses and trains advanced language models to understand and respond to humans.",
-    "instruction": "Complete tasks to help train the model and earn points."
+    "label": "Sveiki, {{username}}!",
+    "contributor": "Dalyvis",
+    "description": "Open Assistant yra atviro kodo DI asistentas, kuris yra paremtas ir apmokytas naudojant pažangius kalbos modelius, siekiant apdoroti informaciją ir atsakyti žmonėms.",
+    "instruction": "Atlikite užduotis, kad padėtumėte apmokyti modelį ir užsidirbtumėte taškų."
   }
 }
