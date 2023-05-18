@@ -46,5 +46,10 @@
   "save_preset": "Save this preset",
   "preset_exists_error": "A preset with this name already exists",
   "preset_name_placeholder": "Enter name",
-  "feedback_message": "Thoughts? Let us know!"
+  "feedback_message": "Thoughts? Let us know!",
+  "chrome_scroll_page_down": "Scrolling down...",
+  "chrome_scroll_page_up": "Scrolling up...",
+  "chrome_view_page_content": "Reading content...",
+  "chrome_click_on_link": "Clicking on a link...",
+  "chrome_open_new_tab": "Opening new tab..."
 }

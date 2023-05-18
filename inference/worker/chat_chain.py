@@ -3,6 +3,7 @@ import datetime
 import interface
 import transformers
 import utils
+import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
@@ -12,8 +13,10 @@ from chat_chain_prompts import (
     PREFIX,
     SUFFIX,
     THOUGHT_SEQ,
+    V2_5,
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
+    V2_SYSTEM,
 )
 from chat_chain_utils import compose_tools_from_plugin, extract_tool_and_input, prepare_prompt, use_tool
 from hf_langchain_inference import HFInference
@@ -26,15 +29,25 @@ from oasst_shared.schemas import inference
 from settings import settings
 
 # Max depth of retries for tool usage
-MAX_DEPTH = 6
+MAX_DEPTH = 15
 
 # Exclude tools description from final prompt. Saves ctx space but can hurt output
 # quality especially if truncation kicks in. Dependent on model used
 REMOVE_TOOLS_FROM_FINAL_PROMPT = False
 
+# llm = HFInference(
+# inference_server_url=settings.inference_server_url,
+# max_new_tokens=348,
+# stop_sequences=[],
+# top_k=20,
+# temperature=0.10,
+# seed=43,
+# repetition_penalty=(1 / 0.97),  # Best with > 0.88
+# )
+
 llm = HFInference(
     inference_server_url=settings.inference_server_url,
-    max_new_tokens=512,
+    max_new_tokens=348,
     stop_sequences=[],
     top_k=50,
     temperature=0.20,
@@ -58,6 +71,8 @@ class PromptedLLM:
         tool_names: list[str],
         language: str,
         action_input_format: str,
+        depth: str,
+        llm_memory: str,
     ):
         self.tokenizer = tokenizer
         self.worker_config = worker_config
@@ -68,6 +83,8 @@ class PromptedLLM:
         self.language = language
         self.action_input_format = action_input_format
         self.current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.depth = depth
+        self.llm_memory = llm_memory
 
     def call(self, prompt: str) -> tuple[str, str]:
         """Prepares and truncates prompt, calls LLM, returns used prompt and response."""
@@ -81,6 +98,8 @@ class PromptedLLM:
             self.tokenizer,
             self.worker_config,
             self.action_input_format,
+            self.depth,
+            self.llm_memory,
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
@@ -110,6 +129,8 @@ def handle_plugin_usage(
     parameters: interface.GenerateStreamParameters,
     tools: list[Tool],
     plugin: inference.PluginEntry | None,
+    ws: websocket.WebSocket,
+    work_request_id: str,
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -133,6 +154,7 @@ def handle_plugin_usage(
     assisted = False
     inner_prompt = ""
     inner_monologue = []
+    my_memory = ""
 
     action_input_format = (
         JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
@@ -141,7 +163,27 @@ def handle_plugin_usage(
     tool_names = [tool.name for tool in tools]
 
     chain = PromptedLLM(
-        tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
+        tokenizer,
+        worker_config,
+        parameters,
+        prompt_template,
+        memory,
+        tool_names,
+        language,
+        action_input_format,
+        f"{achieved_depth}/{MAX_DEPTH}",
+        my_memory,
+    )
+
+    utils.send_response(
+        ws,
+        inference.PluginIntermediateResponse(
+            request_id=work_request_id,
+            current_plugin_thought=f"I will try with {plugin.plugin_config.name_for_model}...",
+            current_plugin_action_taken="",
+            current_plugin_action_input="",
+            current_plugin_action_response="",
+        ),
     )
 
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
@@ -150,25 +192,63 @@ def handle_plugin_usage(
     inner_monologue.append("In: " + str(init_prompt))
     inner_monologue.append("Out: " + str(chain_response))
 
+    current_action_thought = ""
+    if THOUGHT_SEQ in chain_response:
+        current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+
     # Tool name/assistant prefix, Tool input/assistant response
     prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
     assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
     while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
+        # check if prefix == "store_in_memory" and if so, store the response in memory
+        if prefix == "store_in_memory":
+            my_memory += f"\n{response}"
+            pass
+
         tool_response = use_tool(prefix, response, tools)
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=response,
+                current_plugin_action_response=tool_response,
+            ),
+        )
 
         # Save previous chain response for use in final prompt
         prev_chain_response = chain_response
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
+
+        chain.depth = f"{achieved_depth}/{MAX_DEPTH}"
+        chain.llm_memory = my_memory
 
         new_prompt, chain_response = chain.call(new_prompt)
 
         inner_monologue.append("In: " + str(new_prompt))
         inner_monologue.append("Out: " + str(chain_response))
 
+        current_action_thought = ""
+        if THOUGHT_SEQ in chain_response:
+            current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+
         prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
         assisted = False if ASSISTANT_PREFIX in prefix else True
+
+        # send action/response
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=response,
+                current_plugin_action_response=tool_response,
+            ),
+        )
 
         # Check if tool response contains ERROR string and force retry
         # Current models sometimes decide to retry on error but sometimes just ignore
@@ -180,8 +260,8 @@ def handle_plugin_usage(
             chain_finished = True
 
             if REMOVE_TOOLS_FROM_FINAL_PROMPT:
-                TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{SUFFIX}"""
-                input_variables = ["input", "chat_history", "language", "current_time"]
+                TEMPLATE = f"""{V2_SYSTEM if V2_5 == True else V2_PROMPTER_PREFIX}{PREFIX}{SUFFIX}"""
+                input_variables = ["input", "chat_history", "language", "current_time", "depth", "memory"]
 
                 prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
                 tool_names = None
@@ -199,6 +279,8 @@ def handle_plugin_usage(
                 tokenizer,
                 worker_config,
                 action_input_format,
+                f"{achieved_depth}/{MAX_DEPTH}",
+                my_memory,
             )
 
             inner_prompt = f"{inner_prompt}\n{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
@@ -253,6 +335,7 @@ def handle_standard_usage(
 ):
     eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    my_memory = ""
 
     # Non-plugin prompt template can include some external data e.g. datetime, language
     action_input_format = (
@@ -260,7 +343,17 @@ def handle_standard_usage(
     )
     input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
     init_prompt = prepare_prompt(
-        input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
+        input,
+        prompt_template,
+        memory,
+        None,
+        current_time,
+        language,
+        tokenizer,
+        worker_config,
+        action_input_format,
+        f"0/{MAX_DEPTH}",
+        my_memory,
     )
     return init_prompt, None
 
@@ -288,6 +381,7 @@ def handle_conversation(
     worker_config: inference.WorkerConfig,
     parameters: interface.GenerateStreamParameters,
     tokenizer: transformers.PreTrainedTokenizer,
+    ws: websocket.WebSocket,
 ) -> tuple[str, inference.PluginUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
@@ -301,13 +395,17 @@ def handle_conversation(
         plugin_enabled = len(tools) > 0
         memory: ConversationBufferMemory = build_memory(work_request)
 
-        TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{tools_instructions_template}{SUFFIX}"""
+        TEMPLATE = (
+            f"""{V2_SYSTEM if V2_5 == True else V2_PROMPTER_PREFIX}{PREFIX}{tools_instructions_template}{SUFFIX}"""
+        )
         input_variables = [
             "input",
             "chat_history",
             "language",
             "current_time",
             "action_input_format",
+            "depth",
+            "memory",
         ] + (["tools_names"] if plugin_enabled else [])
 
         # TODO: Consider passing language from the UI here
@@ -315,7 +413,17 @@ def handle_conversation(
 
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, memory, worker_config, tokenizer, parameters, tools, plugin
+                original_prompt,
+                prompt_template,
+                language,
+                memory,
+                worker_config,
+                tokenizer,
+                parameters,
+                tools,
+                plugin,
+                ws,
+                work_request.id,
             )
 
         return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
