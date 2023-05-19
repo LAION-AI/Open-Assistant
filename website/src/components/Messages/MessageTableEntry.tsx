@@ -19,6 +19,7 @@ import { boolean } from "boolean";
 import {
   ClipboardList,
   Copy,
+  Edit,
   Flag,
   Link,
   MessageSquare,
@@ -54,7 +55,7 @@ import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
 
 interface MessageTableEntryProps {
   message: Message;
-  enabled?: boolean;
+  shouldRedirectToDetailsUponClick?: boolean;
   highlight?: boolean;
   showAuthorBadge?: boolean;
   showCreatedDate?: boolean;
@@ -62,7 +63,7 @@ interface MessageTableEntryProps {
 
 // eslint-disable-next-line react/display-name
 export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryProps>(
-  ({ message, enabled, highlight, showAuthorBadge, showCreatedDate }, ref) => {
+  ({ message, shouldRedirectToDetailsUponClick, highlight, showAuthorBadge, showCreatedDate }, ref) => {
     const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
     useEffect(() => {
       const emojis = { ...message.emojis };
@@ -94,8 +95,8 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     const router = useRouter();
 
     const handleOnClick = useCallback(() => {
-      enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
-    }, [enabled, message.id, router]);
+      shouldRedirectToDetailsUponClick && router.push(ROUTES.MESSAGE_DETAIL(message.id));
+    }, [shouldRedirectToDetailsUponClick, message.id, router]);
 
     return (
       <BaseMessageEntry
@@ -105,7 +106,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
           name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
           src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
         }}
-        cursor={enabled ? "pointer" : undefined}
+        cursor={shouldRedirectToDetailsUponClick ? "pointer" : undefined}
         overflowX="auto"
         onClick={handleOnClick}
         highlight={highlight}
@@ -141,6 +142,9 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
               userEmoji={emojiState.user_emojis}
               onLabel={showLabelPopup}
               onReport={showReportPopup}
+              onEditingDetailsClicked={() => {
+                router.push(ROUTES.MESSAGE_EDITING_DETAILS(message.id));
+              }}
               message={message}
             />
             <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
@@ -223,12 +227,14 @@ const MessageActions = ({
   userEmoji,
   onLabel,
   onReport,
+  onEditingDetailsClicked,
   message,
 }: {
   react: (emoji: string, state: boolean) => void;
   userEmoji: string[];
   onLabel: () => void;
   onReport: () => void;
+  onEditingDetailsClicked: () => void;
   message: Message;
 }) => {
   const toast = useToast();
@@ -292,6 +298,9 @@ const MessageActions = ({
           <MenuItem onClick={onLabel} icon={<ClipboardList />}>
             {t("label_action")}
           </MenuItem>
+          <MenuItem onClick={onEditingDetailsClicked} icon={<Edit />}>
+            {t("editing_details")}
+          </MenuItem>
           <MenuItem onClick={onReport} icon={<Flag />}>
             {t("report_action")}
           </MenuItem>
@@ -303,8 +312,7 @@ const MessageActions = ({
           <MenuItem
             onClick={() =>
               handleCopy(
-                `${window.location.protocol}//${window.location.host}${
-                  locale === "en" ? "" : `/${locale}`
+                `${window.location.protocol}//${window.location.host}${locale === "en" ? "" : `/${locale}`
                 }/messages/${id}`
               )
             }

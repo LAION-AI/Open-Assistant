@@ -2,14 +2,16 @@ import { Avatar, AvatarProps, Box, BoxProps, Flex, useColorModeValue } from "@ch
 import { forwardRef, lazy, Suspense } from "react";
 import { colors } from "src/styles/Theme/colors";
 import { StrictOmit } from "ts-essentials";
+
 import { PluginUsageDetails } from "./PluginUsageDetails";
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 
 export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor"> & {
   content: string;
-  avatarProps: Pick<AvatarProps, "name" | "src">;
+  avatarProps?: Pick<AvatarProps, "name" | "src">;
   bg?: string;
   highlight?: boolean;
+  hideAvatar?: boolean;
   usedPlugin?: object;
   isAssistant?: boolean;
   containerProps?: BoxProps;
@@ -38,7 +40,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       _dark={{ outlineColor: colors.dark.active }}
       {...containerProps}
     >
-      <Avatar
+      {!props.hideAvatar && <Avatar
         borderColor="blackAlpha.200"
         _dark={{
           borderColor: "whiteAlpha.200",
@@ -48,7 +50,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
         mt={{ base: 0, md: `6px` }}
         mb={{ base: 1.5, md: 0 }}
         {...avatarProps}
-      />
+      />}
       <Box
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}

@@ -12,6 +12,7 @@
   "message": "Message",
   "no_messages": "No messages",
   "open_new_tab_action": "Open in new tab",
+  "editing_details": "View edits",
   "parent": "Parent",
   "reactions": "Reactions",
   "recent_messages": "Recent Messages in {{language}}",

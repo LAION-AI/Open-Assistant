@@ -24,7 +24,7 @@ export function MessageConversation({
       ) : (
         messages.map((message, idx) => (
           <MessageTableEntry
-            enabled={enableLink}
+            shouldRedirectToDetailsUponClick={enableLink}
             message={message}
             key={message.id + message.frontend_message_id}
             highlight={highlightLastMessage && idx === messages.length - 1}

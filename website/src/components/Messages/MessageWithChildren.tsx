@@ -52,7 +52,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
               {isFirst ? "Message" : depth === 1 ? "Children" : "Ancestor"}
             </Text>
             <Box width="fit-content" bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base">
-              <MessageTableEntry enabled message={message} />
+              <MessageTableEntry shouldRedirectToDetailsUponClick message={message} />
             </Box>
           </Box>
         </>
@@ -88,7 +88,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
               >
                 {children.map((message, idx) => (
                   <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                    <MessageTableEntry enabled message={message} />
+                    <MessageTableEntry shouldRedirectToDetailsUponClick message={message} />
                   </Box>
                 ))}
               </Box>
