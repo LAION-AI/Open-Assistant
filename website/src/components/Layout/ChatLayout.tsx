@@ -9,7 +9,7 @@ import { SideMenuItem } from "../SideMenu";
 import { ToSWrapper } from "../ToSWrapper";
 
 export const ChatLayout = ({ children }: PropsWithChildren) => (
-  <div className="min-h-screen h-screen max-h-screen flex flex-col overflow-hidden">
+  <div className="min-h-screen-dvh h-screen-dvh max-h-screen-dvh flex flex-col overflow-hidden">
     <Header fixed={false} preLogoSlot={<ChatListMobile />}></Header>
     <ToSWrapper>
       <div className="flex min-h-0 h-full">
