@@ -116,6 +116,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     },
     [getConfigValues, setIsSending, setShowEncourageMessage, toast]
   );
+
+  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll, activateAutoScroll } = useAutoScroll(
+    messages,
+    streamedResponse
+  );
+
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || isSending) {
@@ -166,6 +172,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     setMessages((messages) => [...messages, prompter_message]);
 
     inputRef.current!.value = "";
+    activateAutoScroll();
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
   }, [isSending, setIsSending, setShowEncourageMessage, chatId, messages, createAndFetchAssistantMessage, toast]);
@@ -252,8 +259,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
-  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(messages, streamedResponse);
-
   return (
     <Box
       pt="4"
@@ -321,6 +326,11 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | 
     enableAutoScroll.current = isEnable;
   }, []);
 
+  const activateAutoScroll = useCallback(() => {
+    enableAutoScroll.current = true;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   useEffect(() => {
     if (!enableAutoScroll.current) {
       return;
@@ -345,5 +355,5 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | 
     [updateEnableAutoScroll]
   );
 
-  return { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll };
+  return { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll, activateAutoScroll };
 };
