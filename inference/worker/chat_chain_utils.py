@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Callable
 
 import requests
 import transformers
@@ -15,8 +16,9 @@ from settings import settings
 from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
+DESCRIPTION_FOR_MODEL_MAX_LENGTH = 512
 
-llm_parser = HFInference(
+llm_json_parser = HFInference(
     inference_server_url=settings.inference_server_url,
     max_new_tokens=512,
     stop_sequences=["</s>"],
@@ -26,12 +28,9 @@ llm_parser = HFInference(
 )
 
 
-# NOTE: https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
-# We are using plugin API-s endpoint/paths as tool names,
-# e.g.: /get_weather, /get_news etc... so this algo should be fine
-# possible improvement: try levenshtein or vector distances
-# but best way is to just use better models.
+# This algo should be fine but possible improvements could be levenshtein or vector distance
 def similarity(ts1: str, ts2: str) -> float:
+    """Compute Jaro-Winkler distance between two strings."""
     if ts1 == ts2:
         return 1
 
@@ -68,28 +67,29 @@ def similarity(ts1: str, ts2: str) -> float:
     return (match / len1 + match / len2 + (match - t) / match) / 3.0
 
 
-# TODO: Can be improved, like... try to use another pass trough LLM
-# with custom tuned prompt for fixing the formatting.
-# e.g. "This is malformed text, please fix it: {malformed text} -> FIX magic :)"
 def extract_tool_and_input(llm_output: str, ai_prefix: str) -> tuple[str, str]:
+    """
+    Extract tool name and tool input from LLM output. If LLM chose not to use a tool, `ai_prefix` is returned instead of tool name, and LLM output is returned instead of tool input.
+    """
     llm_output = llm_output.strip().replace("```", "")
     if f"{ai_prefix}:" in llm_output:
+        # No tool used, return LLM prefix and LLM output
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
+
     regex = r"Action: (.*?)[\n]*Action Input:\n?(.*)"
-    # match = re.search(regex, llm_output) # this is for 65B llama :(
     match = re.search(regex, llm_output, re.MULTILINE | re.DOTALL)
     if not match:
         if OBSERVATION_SEQ in llm_output:
             return ai_prefix, llm_output.split(OBSERVATION_SEQ)[-1].strip()
         return ai_prefix, llm_output
+
     action = match.group(1)
     action_input = match.group(2)
     return action.strip().replace("'", ""), action_input.strip().strip(" ")
 
 
-# Truncate string, but append matching bracket if string starts with [ or { or (
-# it helps in a way, that LLM will not try to just continue generating output
-# continuation
+# Truncate, but append closing bracket if string starts with [ or { or (
+# Helps prevent LLM from just generating output continuously
 def truncate_str(output: str, max_length: int = 1024) -> str:
     if len(output) > max_length:
         if output[0] == "(":
@@ -103,7 +103,7 @@ def truncate_str(output: str, max_length: int = 1024) -> str:
     return output
 
 
-# Parse JSON and try to fix it if it's not valid
+# Parse JSON and try to fix it if invalid
 def prepare_json(json_str: str) -> str:
     json_str = json_str.strip()
     fixed_json = json_str
@@ -138,7 +138,7 @@ def prepare_json(json_str: str) -> str:
             json.loads(fixed_json)
         except json.decoder.JSONDecodeError as e:
             logger.warning(f"JSON is still not valid, trying to fix it with LLM {fixed_json}")
-            # if it's still not valid, try with LLM fixer
+            # If still invalid, try using LLM to fix
             prompt = f"""{V2_PROMPTER_PREFIX}Below is malformed JSON object string:
 --------------
 {json_str}
@@ -153,7 +153,7 @@ RULES:
 
 Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
             logger.warning(f"JSON Fix Prompt: {prompt}")
-            out = llm_parser.generate(prompts=[prompt]).generations[0][0].text
+            out = llm_json_parser.generate(prompts=[prompt]).generations[0][0].text
             out = out[: out.find("}") + 1]
             logger.warning(f"JSON Fix Output: {out}")
             return out
@@ -161,20 +161,32 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
     return fixed_json
 
 
-def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
-    best_match, best_similarity = max(
-        ((tool, similarity(tool.name, tool_name)) for tool in tools), key=lambda x: x[1], default=(None, 0)
+def select_tool(tool_name: str, tools: list[Tool]) -> Tool | None:
+    tool = next((t for t in tools if t.name in tool_name), None)
+    if tool:
+        return tool
+    tool, tool_similarity = max(
+        ((t, similarity(t.name, tool_name)) for t in tools),
+        key=lambda x: x[1],
+        default=(None, 0),
     )
-    # This should become stricter and stricter as we get better models
-    if best_match is not None and best_similarity > 0.75:
-        tool_input = prepare_json(tool_input)
-        return best_match.func(tool_input)
-    return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
+    # TODO: make stricter with better models
+    if tool and tool_similarity > 0.75:
+        return tool
+    return None
+
+
+def use_tool(tool_name: str, tool_input: str, tools: list[Tool]) -> str:
+    tool = select_tool(tool_name, tools)
+    if not tool:
+        return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
+    prepared_input = prepare_json(tool_input)
+    tool_output = tool.func(prepared_input)
+    return tool_output
 
 
 # Needs more work for errors, error-prompt tweaks are currently based on
 # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-# TODO: Add other missing methods and Content-Types etc...
 class RequestsForLLM:
     def run(self, params: str, url: str, param_location: str, type: str, payload: str | None = None) -> str:
         return self.run_request(params, url, param_location, type, payload)
@@ -195,7 +207,7 @@ class RequestsForLLM:
                 )
                 res = requests.get(url, params=query_params, headers=headers)
             elif type.lower() == "post":
-                # model didn't generated separate payload object, so we just put params as payload and hope for the best...
+                # if model did not generate payload object, use params as payload
                 data = json.dumps(payload) if payload else json.dumps(params)
                 logger.info(
                     f"Running {type.upper()} request on {url} with\nparams: {params}\nparam_location: {param_location}\npayload: {data}"
@@ -205,11 +217,10 @@ class RequestsForLLM:
                 return f"ERROR! Unsupported request type: {type}. Only GET and POST are supported. Try again!"
 
             return self.process_response(res)
-
         except Exception as e:
             return f"ERROR! That didn't work, try modifying Action Input.\n{e}. Try again!"
 
-    def process_response(self, res):
+    def process_response(self, res: requests.Response) -> str:
         logger.info(f"Request response: {res.text}")
         if res.status_code != 200:
             return f"ERROR! That didn't work, try modifying Action Input.\n{res.text}. Try again!"
@@ -227,15 +238,15 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
     if not plugin:
         return "", []
 
-    llm_plugin = prepare_plugin_for_llm(plugin.url)
+    llm_plugin: inference.PluginConfig = prepare_plugin_for_llm(plugin.url)
     if not llm_plugin:
         return "", []
 
     tools = []
     request_tool = RequestsForLLM()
 
-    def create_tool_func(endpoint, param_location):
-        def func(req):
+    def create_tool_func(endpoint: inference.PluginOpenAPIEndpoint, param_location: str) -> Callable[..., str]:
+        def func(req) -> str:
             try:
                 json_obj = json.loads(req)
                 request = json_obj.get("request", {})
@@ -254,14 +265,9 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
         return func
 
-    # Generate tool for each endpoint of the plugin
-    # NOTE: This approach is a bit weird, but it is a good way to help LLM
-    # to use tools, so LLM does not need to choose api server url
-    # and paramter locations: query, path, body, etc. on its own.
-    # LLM will only, choose what endpoint, what parameters and what values
-    # to use. Modifying this part of the prompt, we can degrade or improve
-    # performance of tool usage.
-    for endpoint in llm_plugin["endpoints"]:
+    # Generate tool for each plugin endpoint. Helps LLM use tools as it does not choose API server URL etc on its own
+    # LLM only chooses endpoint, parameters and values to use. Modifying this can degrade or improve tool usage
+    for endpoint in llm_plugin.endpoints:
         params = "\n\n".join(
             [
                 f""" name: "{param.name}",\n in: "{param.in_}",\n description: "{truncate_str(param.description, 128)}",\n schema: {param.schema_},\n required: {param.required}"""
@@ -269,9 +275,8 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
             ]
         )
 
-        # NOTE: LangChain is using internaly {input_name} for templating
-        # and some OA/ChatGPT plugins of course, can have {some_word} in theirs
-        # descriptions
+        # LangChain uses {input_name} for templating
+        # Some plugins can have {some_word} in their description
         params = params.replace("{", "{{").replace("}", "}}")
         payload_description = ""
         if endpoint.payload:
@@ -293,34 +298,27 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
 
-        # some plugins do not have operation_id, so we use path as fallback
+        # If plugin has no operation_id, use path as fallback
         path = endpoint.path[1:] if endpoint.path and len(endpoint.path) > 0 else endpoint.path
 
         tool = Tool(
             name=endpoint.operation_id if endpoint.operation_id != "" else path,
-            # Could be path, e.g /api/v1/endpoint
-            # but it can lead LLM to makeup some URLs
-            # and problem with EP description is that
-            # it can be too long for some plugins
+            # Could be path, e.g /api/v1/endpoint but can lead LLM to invent URLs
+            # Problem with EP description is that it is too long for some plugins
             func=create_tool_func(endpoint, param_location),
             description=f"{openapi_specification_title}{parameters_description}{payload_description}tool description: {endpoint.summary}\n",
         )
         tools.append(tool)
 
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
-    # NOTE: This can be super long for some plugins, that I tested so far.
-    # and because we don't have 32k CTX size, we need to truncate it.
-    plugin_description_for_model = truncate_str(llm_plugin["description_for_model"], 512)
+    # This can be long for some plugins, we need to truncate due to ctx limitations
+    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, DESCRIPTION_FOR_MODEL_MAX_LENGTH)
     return (
-        f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin['name_for_model']} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
+        f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin.name_for_model} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
         tools,
     )
 
 
-# TODO:
-# here we will not be not truncating per token, but will be deleting messages
-# from the history, and we will leave hard truncation to work.py which if
-# occurs it will degrade quality of the output.
 def prepare_prompt(
     input_prompt: str,
     prompt_template: PromptTemplate,
@@ -331,7 +329,7 @@ def prepare_prompt(
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
     action_input_format: str,
-) -> tuple[ConversationBufferMemory, str]:
+) -> str:
     max_input_length = worker_config.model_config.max_input_length
 
     args = {
@@ -350,7 +348,7 @@ def prepare_prompt(
     with shared_tokenizer_lock:
         ids = tokenizer.encode(out_prompt)
 
-    # soft truncation
+    # soft truncation (delete whole messages)
     while len(ids) > max_input_length and len(memory.chat_memory.messages) > 0:
         memory.chat_memory.messages.pop(0)
         args = {
@@ -370,4 +368,4 @@ def prepare_prompt(
             ids = tokenizer.encode(out_prompt)
         logger.warning(f"Prompt too long, deleting chat history. New length: {len(ids)}")
 
-    return memory, out_prompt
+    return out_prompt

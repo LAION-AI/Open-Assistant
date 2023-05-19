@@ -29,9 +29,7 @@ def make_prompt_and_parameters(
     if settings.oa_protocol_version != "v2":
         raise RuntimeError(f"Unsupported oa protocol version: {settings.oa_protocol_version}")
 
-    eos_token = ""
-    if hasattr(tokenizer, "eos_token"):
-        eos_token = tokenizer.eos_token
+    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
 
     def _prepare_message(message: inference.MessageRead) -> str:
         prefix = V2_ASST_PREFIX if message.is_assistant else V2_PROMPTER_PREFIX
@@ -84,18 +82,15 @@ def handle_work_request(
     prompt = ""
     used_plugin = None
 
-    # Check if any plugin is enabled, if so, use it.
     for plugin in parameters.plugins:
         if plugin.enabled:
             prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
-            # When using plugins, and final prompt being truncated due to the input
-            # length limit, LLaMA llm has tendency to leak internal promptings,
-            # and generate undesirable continuations, so here we will be adding
-            # some plugin keywords/sequences to the stop sequences to try preventing it
-            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, ASSISTANT_PREFIX])
+            # When using plugins and final prompt is truncated due to length limit
+            # LLaMA has tendency to leak internal prompts and generate bad continuations
+            # So we add keywords/sequences to the stop sequences to reduce this
+            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
             break
 
-    # If no plugin was "used", use the default prompt generation.
     if not used_plugin:
         prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
 
@@ -103,7 +98,6 @@ def handle_work_request(
 
     model_config = worker_config.model_config
 
-    # Only send safety request if work request safety level is not 0
     if settings.enable_safety and work_request.safety_parameters.level:
         safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
@@ -181,8 +175,7 @@ def handle_work_request(
 
     if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
-        # NOTE: This is only help for RLHF models using plugin prompts...
-        # Get the generated text up to the first occurrence of any of:
+        # Helps with RLHF models using plugin prompts. Get generated text to first occurrence of:
         # START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ
         end_seq_index = min(
             [
