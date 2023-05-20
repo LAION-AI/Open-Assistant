@@ -322,6 +322,7 @@ async def handle_update_chat(
             hidden=request.hidden,
             allow_data_use=request.allow_data_use,
         )
+        return fastapi.Response(status_code=200)
     except Exception:
         logger.exception("Error when updating chat")
         return fastapi.Response(status_code=500)
