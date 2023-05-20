@@ -8,7 +8,7 @@ class DbPluginOAuthProvider(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
 
-    provider: str = Field(..., nullable=False, index=True)
+    provider: str = Field(..., nullable=False, index=True, unique=True)
 
     client_id: str = Field(..., nullable=False)
     client_secret: str = Field(..., nullable=False)
