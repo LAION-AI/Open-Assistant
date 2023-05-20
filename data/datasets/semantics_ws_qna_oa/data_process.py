@@ -31,13 +31,13 @@ def qna_wrapper():
             response = random_stuff.random_dict_sim_a[lang][2][random_num].format(word1=word1, word2=word2)
         elif score_percent < 3.0 and con_type == "rel":
             response = random_stuff.random_dict_rel_a[lang][2][random_num].format(word1=word1, word2=word2)
-        elif score_percent < 7.86 and con_type == "sim":
+        elif score_percent < 8.25 and con_type == "sim":
             response = random_stuff.random_dict_sim_a[lang][1][random_num].format(word1=word1, word2=word2)
-        elif score_percent < 7.86 and con_type == "rel":
+        elif score_percent < 8.25 and con_type == "rel":
             response = random_stuff.random_dict_rel_a[lang][1][random_num].format(word1=word1, word2=word2)
-        elif score_percent >= 7.86 and con_type == "sim":
+        elif score_percent >= 8.25 and con_type == "sim":
             response = random_stuff.random_dict_sim_a[lang][0][random_num].format(word1=word1, word2=word2)
-        elif score_percent >= 7.86 and con_type == "rel":
+        elif score_percent >= 8.25 and con_type == "rel":
             response = random_stuff.random_dict_rel_a[lang][0][random_num].format(word1=word1, word2=word2)
 
         source = "WordSim353"
