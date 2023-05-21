@@ -1,0 +1,58 @@
+{
+  "default": {
+    "generate_args": {
+      "max_new_tokens": 400,
+      "min_new_tokens": 1,
+      "do_sample": true,
+      "temperature": 1.0,
+      "repetition_penalty": 1.2,
+      "top_k": 50,
+      "top_p": 0.95
+    },
+    "bot_name": "Assistant",
+    "human_name": "User",
+    "add_prefix_tokens": false
+  },
+  "configurations": [
+    {
+      "name": "humor_0.1",
+      "system_profile": {
+        "humor": 0.1
+      }
+    },
+    {
+      "name": "humor_0.9",
+      "system_profile": {
+        "humor": 0.9
+      }
+    },
+    {
+      "name": "quality_0.1_humor_0.9",
+      "system_profile": {
+        "quality": 0.1,
+        "humor": 0.9
+      }
+    },
+    {
+      "name": "quality_0.9_humor_0.1",
+      "system_profile": {
+        "quality": 0.9,
+        "humor": 0.1
+      }
+    },
+    {
+      "name": "length_2_lang_de",
+      "system_profile": {
+        "lang": "de",
+        "length": 2
+      }
+    },
+    {
+      "name": "length_15_lang_de",
+      "system_profile": {
+        "lang": "de",
+        "length": 15
+      }
+    }
+  ]
+}

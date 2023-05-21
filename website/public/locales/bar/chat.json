@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Zi do Chatlischte zrugg ",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Chatkonfiguration",
+  "empty": "(laare)",
+  "login_message": "Um des Feature hernemm zi kenn musche di noumo unmeldn.",
+  "max_new_tokens": "Mehr Tokens gian et",
+  "model": "Model",
+  "preset": "Vorlouge",
+  "preset_custom": "Oagna Inschtellungn",
+  "queue_info": "Deina Nouchricht isch in do Worteschlonge, du bisch grot af {{ queuePosition, number, integer }}. Schtelle in do Worteschlonge.",
+  "repetition_penalty": "Widdoholungs-Schtroufe",
+  "temperature": "Temperatur",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typischis P",
+  "you_are_logged_in": "Du bisch ungimeldn",
+  "your_chats": "Deina Chats"
+}

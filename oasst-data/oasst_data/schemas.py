@@ -82,6 +82,11 @@ class ExportMessageNode(BaseModel):
     message_tree_id: str | None
     tree_state: str | None
 
+    def get_label_value(self, name: str) -> float | None:
+        if self.labels and (avg_val := self.labels.get(name)):
+            return avg_val.value
+        return None
+
 
 class ExportMessageTree(BaseModel):
     message_tree_id: str

@@ -21,8 +21,8 @@ import { InferenceMessage } from "src/types/Chat";
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
-import { WorkParametersDisplay } from "./WorkParameters";
 import { EncourageMessage } from "./EncourageMessage";
+import { WorkParametersDisplay } from "./WorkParameters";
 
 export type EditPromptParams = { parentId: string; chatId: string; content: string };
 
@@ -36,6 +36,8 @@ export type ChatMessageEntryProps = {
   canRetry?: boolean;
   id?: string;
   "data-id"?: string;
+  showEncourageMessage: boolean;
+  onEncourageMessageClose: () => void;
 };
 
 export const ChatMessageEntry = memo(function ChatMessageEntry({
@@ -46,6 +48,8 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   pagingSlot,
   onEditPromtp,
   canRetry,
+  showEncourageMessage,
+  onEncourageMessageClose,
   ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
@@ -63,8 +67,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
       onVote({ newScore, chatId, messageId, oldScore: score });
+      if (showEncourageMessage) {
+        onEncourageMessageClose();
+      }
     },
-    [chatId, messageId, onVote, score]
+    [chatId, messageId, onEncourageMessageClose, onVote, score, showEncourageMessage]
   );
 
   const handleThumbsUp = useCallback(() => {
@@ -114,74 +121,82 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   const { onCopy, hasCopied } = useClipboard(message.content);
 
   return (
-    <PendingMessageEntry
-      ref={ref}
-      {...props}
-      isAssistant={isAssistant}
-      usedPlugin={used_plugin}
-      content={isEditing ? "" : content!}
-    >
-      {!isAssistant && parentId !== null && (
-        <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
-          {isEditing ? (
-            <MessageInlineEmojiRow spacing="0">
-              <BaseMessageEmojiButton emoji={Check} onClick={handleEditSubmit}></BaseMessageEmojiButton>
-              <BaseMessageEmojiButton emoji={X} onClick={setIsEditing.off}></BaseMessageEmojiButton>
-            </MessageInlineEmojiRow>
-          ) : (
-            <BaseMessageEmojiButton emoji={Edit} onClick={setIsEditing.on}></BaseMessageEmojiButton>
-          )}
-        </Box>
+    <>
+      <PendingMessageEntry
+        ref={ref}
+        {...props}
+        isAssistant={isAssistant}
+        usedPlugin={used_plugin}
+        content={isEditing ? "" : content!}
+      >
+        {!isAssistant && parentId !== null && (
+          <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
+            {isEditing ? (
+              <MessageInlineEmojiRow spacing="0">
+                <BaseMessageEmojiButton emoji={Check} onClick={handleEditSubmit}></BaseMessageEmojiButton>
+                <BaseMessageEmojiButton emoji={X} onClick={setIsEditing.off}></BaseMessageEmojiButton>
+              </MessageInlineEmojiRow>
+            ) : (
+              <BaseMessageEmojiButton emoji={Edit} onClick={setIsEditing.on}></BaseMessageEmojiButton>
+            )}
+          </Box>
+        )}
+        {isEditing && (
+          <Box mx={{ md: "-15px" }} mt={{ md: 2 }}>
+            <Textarea
+              defaultValue={content || ""}
+              ref={inputRef}
+              onKeyDown={handleKeydown}
+              bg="gray.100"
+              borderRadius="xl"
+              _dark={{
+                bg: "gray.800",
+              }}
+              autoFocus
+            ></Textarea>
+          </Box>
+        )}
+        {!isEditing && (
+          <Flex justifyContent={pagingSlot ? "space-between" : "end"} mt="1">
+            {pagingSlot}
+            {isAssistant && (
+              <MessageInlineEmojiRow>
+                {(state === "pending" || state === "in_progress") && (
+                  <CircularProgress isIndeterminate size="20px" title={state} />
+                )}
+                {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
+                  <>
+                    <Icon as={XCircle} color="red" />
+                    <Text color="red">{`Error: ${state}`}</Text>
+                    {onRetry && !isSending && <Button onClick={handleRetry}>{t("retry")}</Button>}
+                  </>
+                )}
+                {state === "complete" && (
+                  <>
+                    {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} label={t("retry")} />}
+                    {!hasCopied ? (
+                      <BaseMessageEmojiButton emoji={Copy} onClick={onCopy} label={t("copy")} />
+                    ) : (
+                      <BaseMessageEmojiButton emoji={Check} />
+                    )}
+                    <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
+                    <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
+                  </>
+                )}
+              </MessageInlineEmojiRow>
+            )}
+          </Flex>
+        )}
+        {work_parameters && <WorkParametersDisplay parameters={work_parameters} />}
+      </PendingMessageEntry>
+      {state === "complete" && isAssistant && showEncourageMessage && (
+        <EncourageMessage
+          onThumbsUp={handleThumbsUp}
+          onThumbsDown={handleThumbsDown}
+          onClose={onEncourageMessageClose}
+        />
       )}
-      {isEditing && (
-        <Box mx={{ md: "-15px" }} mt={{ md: 2 }}>
-          <Textarea
-            defaultValue={content || ""}
-            ref={inputRef}
-            onKeyDown={handleKeydown}
-            bg="gray.100"
-            borderRadius="xl"
-            _dark={{
-              bg: "gray.800",
-            }}
-            autoFocus
-          ></Textarea>
-        </Box>
-      )}
-      {!isEditing && (
-        <Flex justifyContent={pagingSlot ? "space-between" : "end"} mt="1">
-          {pagingSlot}
-          {isAssistant && (
-            <MessageInlineEmojiRow>
-              {(state === "pending" || state === "in_progress") && (
-                <CircularProgress isIndeterminate size="20px" title={state} />
-              )}
-              {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
-                <>
-                  <Icon as={XCircle} color="red" />
-                  <Text color="red">{`Error: ${state}`}</Text>
-                  {onRetry && !isSending && <Button onClick={handleRetry}>{t("retry")}</Button>}
-                </>
-              )}
-              {state === "complete" && (
-                <>
-                  <EncourageMessage />
-                  {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} label={t("retry")} />}
-                  {!hasCopied ? (
-                    <BaseMessageEmojiButton emoji={Copy} onClick={onCopy} label={t("copy")} />
-                  ) : (
-                    <BaseMessageEmojiButton emoji={Check} />
-                  )}
-                  <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
-                  <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
-                </>
-              )}
-            </MessageInlineEmojiRow>
-          )}
-        </Flex>
-      )}
-      {work_parameters && <WorkParametersDisplay parameters={work_parameters} />}
-    </PendingMessageEntry>
+    </>
   );
 });
 
@@ -194,7 +209,7 @@ type PendingMessageEntryProps = {
   usedPlugin?: object;
 };
 
-const messageEntryContainerProps = {
+export const messageEntryContainerProps = {
   maxWidth: { base: "3xl", "2xl": "4xl" },
   w: "full",
 };

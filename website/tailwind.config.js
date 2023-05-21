@@ -1,4 +1,5 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
+const plugin = require("tailwindcss/plugin");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -77,5 +78,21 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [
+    require("@tailwindcss/forms"),
+    plugin(function ({ addUtilities, }) {
+      addUtilities({
+        // keeping '100vh' as a fallback for non supporting browsers
+        '.h-screen-dvh': {
+          height: ['100vh', '100dvh'],
+        },
+        '.min-h-screen-dvh': {
+          height: ['100vh', '100dvh'],
+        },
+        '.max-h-screen-dvh': {
+          height: ['100vh', '100dvh'],
+        },
+      })
+    }),
+  ],
 };
