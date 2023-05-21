@@ -52,7 +52,7 @@ def prepare_export_events(
     message: DbMessage,
     anonymizer: Anonymizer | None = None,
 ) -> dict[str, list[ExportMessageEvent]]:
-    export_events: dict[str, list[ExportMessageEvent]] = []
+    export_events: dict[str, list[ExportMessageEvent]] = {}
 
     if message.reports:
         export_events["report"] = [
