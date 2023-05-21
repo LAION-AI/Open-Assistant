@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from datasets import load_dataset
-from oasst_data import ExportMessageNode, read_message_trees, read_oasst_hugging_face, visit_threads_depth_first
+from oasst_data import ExportMessageNode, read_message_trees, read_oasst_dict_tree_hf_dataset, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
 
@@ -44,7 +44,7 @@ def load_oasst_export(
 
     if use_hf_dataset and hf_dataset_name:
         dataset_or_file_path = load_dataset(hf_dataset_name, split="train+validation")
-        read_trees_function = read_oasst_hugging_face
+        read_trees_function = read_oasst_dict_tree_hf_dataset
     else:
         if not isinstance(input_file_path, Path):
             dataset_or_file_path = Path(input_file_path)
@@ -143,6 +143,8 @@ def load_oasst_export(
     train = flatten(splits[0])
     val = flatten(splits[1])
 
-    print(f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}")
+    print(f"OASST huggingface data {str(hf_dataset_name)}: {len(train)=}, {len(val)=}") if use_hf_dataset else print(
+        f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}"
+    )
 
     return train, val

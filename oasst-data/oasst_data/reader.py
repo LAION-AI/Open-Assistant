@@ -1,7 +1,7 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Callable, Iterable, Optional, TextIO
+from typing import Callable, Dict, Iterable, Optional, TextIO
 
 import pydantic
 from datasets import Dataset
@@ -36,13 +36,8 @@ def read_oasst_jsonl(input_file_path: str | Path) -> Iterable[ExportMessageTree 
             yield read_oasst_obj(dict_tree)
 
 
-def read_oasst_hugging_face_row(dataset: Dataset) -> Iterable[ExportMessageTree | ExportMessageNode]:
-    for data_row in dataset:
-        yield read_oasst_obj(data_row)
-
-
-def read_oasst_hugging_face(dataset: Dataset) -> Iterable[ExportMessageTree]:
-    for x in read_oasst_hugging_face_row(dataset):
+def read_oasst_dict_tree_hf_dataset(hf_dataset: Dataset) -> Iterable[ExportMessageTree]:
+    for x in rebuild_trees_from_hf_dataset(hf_dataset):
         assert isinstance(x, ExportMessageTree)
         yield x
 
@@ -69,3 +64,35 @@ def read_message_list(
     input_file_path: str | Path, filter: Optional[Callable[[ExportMessageNode], bool]] = None
 ) -> list[ExportMessageNode]:
     return [t for t in read_messages(input_file_path) if not filter or filter(t)]
+
+
+def rebuild_trees_from_hf_dataset(hf_dataset: Dataset):
+    for row in hf_dataset.filter(lambda x: x["parent_id"] is None):
+        new_dict_tree = {}
+        dict_tree = rebuild_trees_recursively(hf_dataset, row)
+
+        new_dict_tree["message_tree_id"] = dict_tree["message_tree_id"]
+        new_dict_tree["tree_state"] = dict_tree["tree_state"]
+        dict_tree.pop("parent_id", None)
+        dict_tree.pop("message_tree_id", None)
+        dict_tree.pop("tree_state", None)
+
+        new_dict_tree["prompt"] = dict_tree
+
+        yield read_oasst_obj(new_dict_tree)
+
+
+def rebuild_trees_recursively(hf_dataset: Dataset, dict_tree: Dict):
+    if dict_tree["parent_id"] is not None:
+        dict_tree.pop("message_tree_id", None)
+        dict_tree.pop("tree_state", None)
+
+    replies = [
+        rebuild_trees_recursively(hf_dataset, data)
+        for data in hf_dataset.filter(lambda x: x["parent_id"] == dict_tree["message_id"])
+    ]
+
+    if len(replies) > 0:
+        dict_tree["replies"] = replies
+
+    return dict_tree
