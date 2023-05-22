@@ -116,10 +116,10 @@ if __name__ == "__main__":
             pp.pprint(unified_counts)
         if args.verbose:
             if len(matched_train) != 0:
-                pp.pprint(f"Found the following occurances in TRAIN {dataset_name}:")
+                pp.pprint(f"Found the following occurrences in TRAIN {dataset_name}:")
                 pp.pprint(dict(matched_train))
             if len(matched_val) != 0:
-                pp.pprint(f"Found the following occurances in VAL {dataset_name}:")
+                pp.pprint(f"Found the following occurrences in VAL {dataset_name}:")
                 pp.pprint(dict(matched_val))
         if len(matched_train) + len(matched_val) == 0:
             print(
