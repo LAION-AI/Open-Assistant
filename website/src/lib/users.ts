@@ -23,7 +23,7 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore> =
 };
 
 /**
- * convert a user object to a canoncial representation used for interacting with the backend
+ * convert a user object to a canonical representation used for interacting with the backend
  * @param user frontend user object, from prisma db
  */
 export const convertToBackendUserCore = <T extends { accounts: Account[]; id: string; name: string }>(
