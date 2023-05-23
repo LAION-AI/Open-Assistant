@@ -45,7 +45,7 @@ Detoxify was tested on 4 different types of inputs
 
 |  Model name  |                                      Not obviously toxic                                       |                         Not obviously non-toxic                         |                         Obviously toxic                         | Obviously non-toxic |
 | :----------: | :--------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------: | :-------------------------------------------------------------: | :-----------------: |
-|   original   | failed at all, easily accepted racist, sexist overally toxic prompts that were well formulated |       Very sensitive on swear words, failed to recognize context        |                         good performance                        |  good performance   |
+|   original   | failed at all, easily accepted racist, sexist overally toxic prompts that were well formulated |       Very sensitive on swear words, failed to recognize context        |                        good performance                         |  good performance   |
 |   unbiased   |                 Managed to find some hidden toxicity but not on all sentences                  | Very sensitive explicit language but shown ability to recognize context | Did well but failed to recognize some gender stereotype mockery |  good performance   |
 | multilingual |                 Managed to find some hidden toxicity but not on all sentences                  | Very sensitive explicit language but shown ability to recognize context | Did well but failed to recognize some gender stereotype mockery |  good performance   |
 
