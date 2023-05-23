@@ -1,4 +1,4 @@
-import { Badge, Box, Card, CardBody, Divider, Flex, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useColorModeValue } from "@chakra-ui/react";
+import { Badge, Box, Card, CardBody, Divider, Flex, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import { Change } from "diff";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
@@ -37,7 +37,7 @@ const EditedContentMesageTableEntry: FC<EditedContentMesageTableEntryProps> = ({
   return <BaseMessageEntry
     hideAvatar
     style={{
-      width: '100%'
+      width: '100%',
     }}
     content={edit.content}
   >
@@ -78,36 +78,46 @@ interface EditingTableProps {
   edits: Edit[];
 }
 
-const EditingTable: FC<EditingTableProps> = ({ edits }) => {
-  return <TableContainer>
-    <Table>
-      <Thead>
-        <Tr>
-          <Th rowSpan={3} style={{ textAlign: 'center' }}>Edited content</Th>
-          <Th isNumeric>Deletions</Th>
-          <Th isNumeric>Additions</Th>
+const EditingTable: FC<EditingTableProps> = ({ edits }) => <TableContainer>
+  <Table>
+    <Thead>
+      <Tr>
+        <Th rowSpan={3}>Edited content</Th>
+        <Th textAlign='center'>Deletions</Th>
+        <Th textAlign='center'>Additions</Th>
+      </Tr>
+    </Thead>
+    <Tbody>
+      {edits.map(edit => (
+        <Tr key={edit.id}>
+          <Td rowSpan={3}>
+            <EditedContentMesageTableEntry
+              edit={edit}
+            />
+          </Td>
+          <Td textAlign='center'>
+            <Badge
+              colorScheme='red'
+              marginInline='auto'
+              p={3}
+              variant='outline'
+              fontSize="x-large"
+            > -{edit.deletions} </Badge>
+          </Td>
+          <Td textAlign='center'>
+            <Badge
+              colorScheme='green'
+              p={3}
+              variant='outline'
+              marginInline='auto'
+              fontSize="x-large"
+            > +{edit.additions} </Badge>
+          </Td>
         </Tr>
-      </Thead>
-      <Tbody>
-        {edits.map(edit => (
-          <Tr key={edit.id}>
-            <Td rowSpan={3}>
-              <EditedContentMesageTableEntry
-                edit={edit}
-              />
-            </Td>
-            <Td isNumeric>
-              <Badge variant="subtle" colorScheme="red" fontSize="large"> -{edit.deletions} </Badge>
-            </Td>
-            <Td isNumeric>
-              <Badge variant="subtle" colorScheme="green" fontSize="large"> +{edit.additions} </Badge>
-            </Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
-  </TableContainer>;
-};
+      ))}
+    </Tbody>
+  </Table>
+</TableContainer>;
 
 const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["message", "common"]);
