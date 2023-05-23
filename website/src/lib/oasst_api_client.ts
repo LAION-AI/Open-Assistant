@@ -420,7 +420,7 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  // TODO: add update-able fields eg: enbaled, notes, show_on_leaderboard, etc..
+  // TODO: add update-able fields eg: enabled, notes, show_on_leaderboard, etc..
   upsert_frontend_user(user: BackendUserCore) {
     // the backend does a upsert operation with this call
     return this.post<BackendUser>(`/api/v1/frontend_users/`, user);

@@ -74,7 +74,7 @@ llama_rlhf:
     quantization: false
     seq2seqmodel: false
     freeze_layer: 52
-    num_layers_unfrozen: -1 # we dont use this, trlx has its own implementation
+    num_layers_unfrozen: -1 # we don't use this, trlx has its own implementation
     residual_dropout: 0.0
     use_flash_attention: true
     dtype: fp16

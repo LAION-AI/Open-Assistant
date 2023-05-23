@@ -165,12 +165,12 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
           )}
           {message.deleted && isAdminOrMod && (
             <Badge colorScheme="red" textTransform="capitalize">
-              Deleted {/* dont translate, it's admin only feature */}
+              Deleted {/* don't translate, it's admin only feature */}
             </Badge>
           )}
           {message.review_result === false && isAdminOrMod && (
             <Badge colorScheme="yellow" textTransform="capitalize">
-              Spam {/* dont translate, it's admin only feature */}
+              Spam {/* don't translate, it's admin only feature */}
             </Badge>
           )}
         </Flex>

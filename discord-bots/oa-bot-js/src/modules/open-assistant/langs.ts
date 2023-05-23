@@ -83,7 +83,7 @@ export const getLocaleDisplayName = (
   locale: string,
   displayLocale = undefined
 ) => {
-  // Intl defaults to English for locales that are not oficially translated
+  // Intl defaults to English for locales that are not officially translated
   if (missingDisplayNamesForLocales[locale]) {
     return missingDisplayNamesForLocales[locale];
   }

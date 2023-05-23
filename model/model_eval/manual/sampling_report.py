@@ -243,9 +243,9 @@ def parse_args():
         "--prompts", type=str, help="jsonl string prompts input file name", default="./data/en_100_text.jsonl.gz"
     )
     parser.add_argument("--report", type=str, help="json sampling report output file name")
-    parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
+    parser.add_argument("--seed", type=int, default="42", help="pseudo random number generator seed")
     parser.add_argument("--verbose", action="store_true", default=False)
-    parser.add_argument("-n", type=int, help="number of promtps to use (default: all)")
+    parser.add_argument("-n", type=int, help="number of prompts to use (default: all)")
     parser.add_argument("--num-samples", type=int, default=2, help="number of sampling runs per configuration")
     parser.add_argument("--config", type=str, default="config/default.json", help="configuration file path")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")

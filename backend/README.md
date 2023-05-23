@@ -78,7 +78,7 @@ Note: The api docs should be automatically updated by the
 
 ## Running Celery Worker(s) for API and periodic tasks
 
-Celery workers are used for Huggiface API calls like toxicity and feature
+Celery workers are used for Huggingface API calls like toxicity and feature
 extraction. Celery Beat along with worker is used for periodic tasks like user
 streak update
 

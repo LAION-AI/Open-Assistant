@@ -335,7 +335,7 @@ class JokeExplaination(Dataset):
                 data = json.loads(line)
                 joke = data["joke"]
                 # DO NOT change this
-                # its the data that had syntax error
+                # it's the data that had syntax error
                 explanation = data["explaination"]
                 self.pairs.append(create_dataset_entry_qa(mode="sft", questions=[joke], answers=[explanation]))
 
