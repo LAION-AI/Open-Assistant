@@ -193,6 +193,22 @@ export class OasstApiClient {
     }>(`/api/v1/messages/${message_id}/tree`, options);
   }
 
+  async fetch_message_edits(message_id: string) {
+    return this.get<{
+      id: string;
+      messageId: string;
+
+      content: string;
+      lang: string;
+
+      additions: number;
+      deletions: number;
+
+      positiveReviews: number;
+      negativeReviews: number;
+    }[]>(`/api/v1/messages/${message_id}/edits`);
+  }
+
   /**
    *  Returns the Message's tree state
    */
