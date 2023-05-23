@@ -244,7 +244,7 @@ services:
 
   inference-worker:
     build:
-      dockerfile: docker/inference/Dockerfile.worker-full
+      dockerfile: docker/inference/Dockerfile.worker-gptq
       context: .
     image: oasst-inference-worker:dev
     environment:

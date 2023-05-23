@@ -33,7 +33,11 @@ def main():
     if model_config.is_lorem:
         tokenizer = None
     else:
-        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+        if "gptq" in model_config.model_id:
+            quantized_model_dir = "/data/models--TheBloke--OpenAssistant-SFT-7-Llama-30B-GPTQ"
+            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(quantized_model_dir, use_fast=True)
+        else:
+            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
         logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
 
     inference_http = utils.HttpClient(
