@@ -2,7 +2,7 @@
 
 Here are find some SQL queries to inspect the current OA postgres DB.
 
-# Baics Stats
+# Basic Stats
 
 ```sql
 -- tables row counts

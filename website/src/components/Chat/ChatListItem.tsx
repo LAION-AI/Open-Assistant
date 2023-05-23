@@ -75,7 +75,7 @@ export const ChatListItem = ({
 
   return (
     <Button
-      // @ts-expect-error error due to dynamicly changing as prop
+      // @ts-expect-error error due to dynamically changing as prop
       ref={rootRef}
       {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
       variant={isActive ? "solid" : "ghost"}

@@ -253,7 +253,7 @@ class PromptRepository:
                     )
                 if not ts.active:
                     logger.warning(
-                        f"Received messsage for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
+                        f"Received message for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
                     )
 
             if check_duplicate and not settings.DEBUG_ALLOW_DUPLICATE_TASKS:

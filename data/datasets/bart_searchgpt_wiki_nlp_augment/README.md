@@ -17,11 +17,11 @@ Related to [Issue #2004](https://github.com/LAION-AI/Open-Assistant/issues/2004)
 - OA format data (BART-based):
   https://huggingface.co/datasets/michaelthwan/oa_wiki_qa_bart_10000row
 
-### Syntheic data based on BART
+### Synthetic data based on BART
 
 ![wiki_augment_bart](./img/wiki_augment_bart.png)
 
-### Syntheic data based on SearchGPT
+### Synthetic data based on SearchGPT
 
 ![wiki_augment_searchgpt](./img/wiki_augment_searchgpt.png)
 
