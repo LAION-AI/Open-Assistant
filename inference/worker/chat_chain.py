@@ -110,6 +110,7 @@ def handle_plugin_usage(
     parameters: interface.GenerateStreamParameters,
     tools: list[Tool],
     plugin: inference.PluginEntry | None,
+    plugin_max_depth: int,
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -155,7 +156,7 @@ def handle_plugin_usage(
     assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
-    while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
+    while not chain_finished and assisted and achieved_depth < plugin_max_depth:
         tool_response = use_tool(prefix, response, tools)
 
         # Save previous chain response for use in final prompt
@@ -238,7 +239,7 @@ def handle_plugin_usage(
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
-        plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
+        plugin_used.execution_details.error_message = f"Max depth reached: {plugin_max_depth}"
         init_prompt = f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
 
@@ -315,7 +316,16 @@ def handle_conversation(
 
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, memory, worker_config, tokenizer, parameters, tools, plugin
+                original_prompt,
+                prompt_template,
+                language,
+                memory,
+                worker_config,
+                tokenizer,
+                parameters,
+                tools,
+                plugin,
+                work_request.parameters.plugin_max_depth,
             )
 
         return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
