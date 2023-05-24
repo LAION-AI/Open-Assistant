@@ -19,6 +19,14 @@ jobs:
       context: .
       dockerfile: docker/Dockerfile.backend
       build-args: ""
+  build-backend-worker:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-backend-worker
+      context: .
+      dockerfile: docker/Dockerfile.backend-worker
+      build-args: ""
   build-web:
     uses: ./.github/workflows/docker-build.yaml
     needs: pre-commit
