@@ -25,9 +25,6 @@ from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
 from settings import settings
 
-# Max depth of retries for tool usage
-MAX_DEPTH = 6
-
 # Exclude tools description from final prompt. Saves ctx space but can hurt output
 # quality especially if truncation kicks in. Dependent on model used
 REMOVE_TOOLS_FROM_FINAL_PROMPT = False
