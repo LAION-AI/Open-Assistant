@@ -188,6 +188,9 @@ TOKENIZER_CONFIGS = {
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
     "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
     "deberta": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
+    "redpajama": TokenizerConfig(
+        special_tokens=SpecialTokens(pad_token="<|endoftext|>", sep_token="<|endoftext|>", eos_token="<|endoftext|>")
+    ),
     "bloom": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
     "electra": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
 }
