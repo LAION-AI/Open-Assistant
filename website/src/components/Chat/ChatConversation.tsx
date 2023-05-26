@@ -303,7 +303,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             {t("queue_info", queueInfo)}
           </Badge>
         )}
-        {pluginIntermediateResponse && (
+        {pluginIntermediateResponse && pluginIntermediateResponse.currentPluginThought && (
           <Box
             position="absolute"
             bottom="0"
@@ -328,39 +328,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             >
               {pluginIntermediateResponse.currentPluginThought}
             </Box>
-            {pluginIntermediateResponse.currentPluginAction && (
-              <Box
-                bg="gray.700"
-                color="blue.200"
-                px="2"
-                py="2.5px"
-                borderRadius="8px"
-                maxWidth="50vw"
-                fontSize="11"
-                fontWeight="bold"
-                isTruncated
-              >
-                <Box flexDirection="row" display="flex" alignItems="center" gap="1">
-                  {t(
-                    pluginIntermediateResponse.currentPluginAction
-                      .replaceAll("-", "_")
-                      .replaceAll(":", "_")
-                      .split(",")[0]
-                  )}
-                  {pluginIntermediateResponse.currentPluginAction.replaceAll("-", "_").replaceAll(":", "_").split(",")
-                    .length > 0
-                    ? pluginIntermediateResponse.currentPluginAction
-                        .replaceAll("-", "_")
-                        .replaceAll(":", "_")
-                        .split(",")[1]
-                    : ""}
-                  {pluginIntermediateResponse.currentPluginAction.includes("scroll") && <Scroll size={14} />}
-                  {pluginIntermediateResponse.currentPluginAction.includes("click") && <MousePointerClick size={14} />}
-                  {pluginIntermediateResponse.currentPluginAction.includes("view") && <Eye size={14} />}
-                  {pluginIntermediateResponse.currentPluginAction.includes("new-tab") && <FolderPlus size={14} />}
-                </Box>
-              </Box>
-            )}
           </Box>
         )}
       </Box>

@@ -15,11 +15,12 @@ from openapi_parser import prepare_plugin_for_llm
 from settings import settings
 from utils import shared_tokenizer_lock
 
-RESPONSE_MAX_LENGTH = 4096
+RESPONSE_MAX_LENGTH = 2048
+DESCRIPTION_FOR_MODEL_MAX_LENGTH = 512
 
 llm_json_parser = HFInference(
     inference_server_url=settings.inference_server_url,
-    max_new_tokens=348,
+    max_new_tokens=512,
     stop_sequences=["</s>"],
     top_k=5,
     temperature=0.20,
@@ -155,34 +156,7 @@ Here is the fixed JSON object string:</s>{V2_ASST_PREFIX}"""
             out = llm_json_parser.generate(prompts=[prompt]).generations[0][0].text
             out = out[: out.find("}") + 1]
             logger.warning(f"JSON Fix Output: {out}")
-
-            try:
-                json.loads(out)
-            except json.decoder.JSONDecodeError:
-                # Fix missing quotes around keys and replace Python's True, False, and None
-                fixed_json = re.sub(r"(?<=\{|\,)(\s*)(\w+)(\s*):", r'\1"\2"\3:', out)
-                fixed_json = fixed_json.replace("True", "true").replace("False", "false").replace("None", "null")
-
-                # Remove excessive closing braces/brackets
-                brace_count = bracket_count = 0
-                result = []
-                for c in fixed_json:
-                    if c == "{":
-                        brace_count += 1
-                    elif c == "}":
-                        brace_count -= 1
-                    elif c == "[":
-                        bracket_count += 1
-                    elif c == "]":
-                        bracket_count -= 1
-
-                    if brace_count >= 0 and bracket_count >= 0:
-                        result.append(c)
-                # Add missing closing braces/brackets
-                result.extend(["}"] * brace_count)
-                result.extend(["]"] * bracket_count)
-                fixed_json = "".join(result)
-            return fixed_json
+            return out
 
     return fixed_json
 
@@ -196,6 +170,7 @@ def select_tool(tool_name: str, tools: list[Tool]) -> Tool | None:
         key=lambda x: x[1],
         default=(None, 0),
     )
+    # TODO: make stricter with better models
     if tool and tool_similarity > 0.75:
         return tool
     return None
@@ -206,9 +181,6 @@ def use_tool(tool_name: str, tool_input: str, tools: list[Tool]) -> str:
     if not tool:
         return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
     prepared_input = prepare_json(tool_input)
-    # if prepared input do not contain "request_parameters" report error
-    if "data" not in prepared_input:
-        return "ERROR! Action Input is missing 'data' field. Try again, but follow the Action Input JSON format!"
     tool_output = tool.func(prepared_input)
     return tool_output
 
@@ -278,7 +250,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
             try:
                 json_obj = json.loads(req)
                 request = json_obj.get("request", {})
-                params = request.get("data", {})
+                params = request.get("params", {})
                 payload = request.get("payload", None)
             except json.JSONDecodeError:
                 print("Error: Invalid JSON input")
@@ -309,7 +281,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
         payload_description = ""
         if endpoint.payload:
             try:
-                payload_description = "payload: " + truncate_str(json.dumps(endpoint.payload, indent=4), 512)
+                payload_description = "payload: " + truncate_str(json.dumps(endpoint.payload, indent=4), 256)
                 payload_description = payload_description.replace("{", "{{").replace("}", "}}")
             except Exception as e:
                 logger.warning(f"Failed to convert payload to json string: {e}")
@@ -340,7 +312,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str
 
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
     # This can be long for some plugins, we need to truncate due to ctx limitations
-    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, 512)
+    plugin_description_for_model = truncate_str(llm_plugin.description_for_model, DESCRIPTION_FOR_MODEL_MAX_LENGTH)
     return (
         f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin.name_for_model} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
         tools,
@@ -357,8 +329,6 @@ def prepare_prompt(
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
     action_input_format: str,
-    depth: str,
-    llm_memory: str,
 ) -> str:
     max_input_length = worker_config.model_config.max_input_length
 
@@ -367,8 +337,6 @@ def prepare_prompt(
         "language": language,
         "current_time": current_time,
         "chat_history": memory.buffer,
-        "depth": depth,
-        "memory": llm_memory,
     }
 
     if tools_names:
@@ -388,8 +356,6 @@ def prepare_prompt(
             "language": language,
             "current_time": current_time,
             "chat_history": memory.buffer,
-            "depth": depth,
-            "memory": llm_memory,
         }
 
         if tools_names:
