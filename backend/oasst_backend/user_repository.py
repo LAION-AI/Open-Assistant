@@ -139,6 +139,7 @@ class UserRepository:
         username: str,
         auth_method: str,
         display_name: Optional[str] = None,
+        ai_model: Optional[str] = None,
         create_missing: bool = True,
     ) -> User | None:
         user: User = (
@@ -158,6 +159,7 @@ class UserRepository:
                     display_name=display_name,
                     api_client_id=self.api_client.id,
                     auth_method=auth_method,
+                    ai_model=ai_model,
                 )
                 if auth_method == "system":
                     user.show_on_leaderboard = False  # don't show system users, e.g. import user
@@ -184,6 +186,7 @@ class UserRepository:
                     username=client_user.id,
                     auth_method=client_user.auth_method,
                     display_name=client_user.display_name,
+                    ai_model=client_user.ai_model,
                     create_missing=create_missing,
                 )
             except IntegrityError:

@@ -8,6 +8,7 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
 class HfUrl(str, Enum):
+    HUGGINGFACE_MODELS = "https://api-inference.huggingface.co/models"
     HUGGINGFACE_TOXIC_CLASSIFICATION = "https://api-inference.huggingface.co/models"
     HUGGINGFACE_FEATURE_EXTRACTION = "https://api-inference.huggingface.co/pipeline/feature-extraction"
 

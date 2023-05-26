@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -9,9 +10,12 @@ from loguru import logger
 from oasst_backend.celery_worker import app
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.user_repository import User
+from oasst_backend.task_repository import TaskRepository
+from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import User, UserRepository
 from oasst_backend.utils.database_utils import default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
+from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
 from sqlmodel import select
 
@@ -111,3 +115,37 @@ def update_user_streak() -> None:
     except Exception as e:
         logger.error(str(e))
     return
+
+
+@shared_task(name="complete_ai_task")
+def complete_ai_task(task_id, user_id, api_client):
+    logger.info(f"complete_ai_task start... {task_id=} {user_id=}")
+    with default_session_factory() as session:
+        try:
+            ur = UserRepository(session, api_client)
+            user = ur.get_user_by_id(user_id)
+            pr = PromptRepository(session, api_client, client_user=user)
+            pr.ensure_user_is_enabled()
+            tr = TaskRepository(session, api_client)
+            tm = TreeManager(session, pr)
+
+            task = tr.get_task_by_id(task_id)
+
+            output = tm.complete_task(task, user)
+            interaction = protocol_schema.AnyInteraction(
+                **{
+                    "user": user,
+                    "task_id": task.id,
+                    "message_id": task.frontend_message_id,
+                    "update_type": "automated",
+                    "content": output,
+                    "user_message_id": str(uuid.uuid4()),
+                    "lang": task.lang,
+                }
+            )
+            resp = tm.handle_interaction(interaction)
+            if type(resp) is protocol_schema.TaskDone:
+                ur.update_user_last_activity(user=user)
+            logger.info(f"complete_ai_task end... {task_id=} {user_id=}")
+        except Exception as e:
+            logger.error(str(e))

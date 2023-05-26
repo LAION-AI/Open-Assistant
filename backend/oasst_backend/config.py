@@ -5,6 +5,11 @@ from oasst_shared.schemas.protocol import TextLabel
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn, validator
 
 
+class TaskResponderConfiguration(BaseModel):
+    ratio: float
+    model: str
+
+
 class TreeManagerConfiguration(BaseModel):
     """TreeManager configuration settings"""
 
@@ -149,6 +154,11 @@ class TreeManagerConfiguration(BaseModel):
     """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
     is exceeded no new initial prompt tasks for that language are generated."""
 
+    # task_responders: list[TaskResponderConfiguration] = [
+    #     TaskResponderConfiguration(ratio=1, model="mock-ai"),
+    # ]
+    """Define which responders to select from and how they are weighted. Ratios must sum to < 1."""
+
     init_prompt_disabled_langs: str = ""
 
     @property
@@ -276,6 +286,9 @@ class Settings(BaseSettings):
 
     DISCORD_API_KEY: str | None = None
     DISCORD_CHANNEL_ID: str | None = None
+
+    TOXICITY_BATCH_SIZE: int = 100
+    HF_FEATURE_EXTRACTOR_BATCH_SIZE: int = 100
 
     class Config:
         env_file = ".env"

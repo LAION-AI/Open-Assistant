@@ -27,6 +27,7 @@ class User(BaseModel):
     id: str
     display_name: str
     auth_method: Literal["discord", "google", "local", "system"]
+    ai_model: Optional[str]
 
 
 class Account(BaseModel):

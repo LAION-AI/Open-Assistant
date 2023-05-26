@@ -13,6 +13,7 @@ class User(SQLModel, table=True):
     __table_args__ = (
         Index("ix_user_username", "api_client_id", "username", "auth_method", unique=True),
         Index("ix_user_display_name_id", "display_name", "id", unique=True),
+        Index("ix_ai_model", "ai_model", unique=True),
     )
 
     id: Optional[UUID] = Field(
@@ -28,6 +29,7 @@ class User(SQLModel, table=True):
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    ai_model: Optional[str] = Field(nullable=True, max_length=128)
     notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
     show_on_leaderboard: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))

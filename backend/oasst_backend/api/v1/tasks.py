@@ -7,6 +7,7 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
+from oasst_backend.scheduled_tasks import complete_ai_task, hf_feature_extraction, toxicity
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_function
@@ -61,23 +62,43 @@ def request_task(
     request: protocol_schema.TaskRequest,
 ) -> Any:
     """
-    Create new task.
+    Create new tasks.
     """
     api_client = deps.api_auth(api_key, db)
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
+        tm = TreeManager(db, prompt_repository=pr)
         pr.ensure_user_is_enabled()
-
-        tm = TreeManager(db, pr)
         task, message_tree_id, parent_message_id = tm.next_task(desired_task_type=request.type, lang=request.lang)
-        pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
-
+        pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective, request.lang)
     except OasstError:
         raise
     except Exception:
         logger.exception("Failed to generate task..")
         raise OasstError("Failed to generate task.", OasstErrorCode.TASK_GENERATION_FAILED)
+
+    try:
+        responder = TreeManager.choose_responder(request, db)
+        if responder is not None:
+            pr = PromptRepository(db, api_client, user_id=responder.id)
+            tm = TreeManager(db, prompt_repository=pr)
+            pr.ensure_user_is_enabled()
+            automated_task, message_tree_id, parent_message_id = tm.next_task(
+                desired_task_type=request.type, lang=request.lang
+            )
+            pr.task_repository.store_task(
+                automated_task, message_tree_id, parent_message_id, request.collective, request.lang
+            )
+            try:
+                complete_ai_task.delay(automated_task.id, responder.id, pr.api_client.dict())
+                logger.debug("Extract Embedding")
+            except OasstError:
+                logger.error(f"Could not complete AI task for user {responder.id} with task {automated_task.id}.")
+    except Exception as e:
+        # don't raise an error here, as the primary task has already been generated
+        logger.exception(f"Failed to generate automated task: {e}")
+
     return task
 
 
@@ -172,9 +193,27 @@ async def tasks_interaction(
         pr = PromptRepository(session, api_client, client_user=interaction.user)
         tm = TreeManager(session, pr)
         ur = UserRepository(session, api_client)
-        task = await tm.handle_interaction(interaction)
+        message, task = await tm.handle_interaction(interaction)
         if type(task) is protocol_schema.TaskDone:
             ur.update_user_last_activity(user=pr.user)
+
+        if message is not None:
+            if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+                try:
+                    hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
+                    logger.debug("Extract Embedding")
+                except OasstError:
+                    logger.error(
+                        f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                    )
+            if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
+                try:
+                    toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                    logger.debug("Sent Toxicity")
+                except OasstError:
+                    logger.error(
+                        f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                    )
         return task
 
     try:

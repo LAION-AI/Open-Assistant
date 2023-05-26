@@ -1,4 +1,5 @@
 import random
+from abc import abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
@@ -24,13 +25,13 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,
     managed_tx_function,
     managed_tx_method,
 )
+from oasst_backend.utils.hugging_face import HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -149,16 +150,62 @@ WHERE mts2.message_tree_id = cte.message_tree_id;
         logger.info(f"Halted {r.rowcount} prompts of disabled users.")
 
 
+class TaskResponder:
+    model: str
+
+    def __init__(self, model=None):
+        self.model = model
+
+    @abstractmethod
+    def complete(self, prompt: Message, replies: list[Message] = None) -> str:
+        """Return the output of a model given a task and user."""
+
+
+class MockTaskResponder(TaskResponder):
+    def complete(self, prompt: Message, replies: list[Message] = None) -> str:
+        logger.info(f"MockTaskResponder: {prompt}: {replies}")
+        return ""
+
+
+class HuggingFaceResponder(TaskResponder):
+    def __init__(self, model="gpt2"):
+        self.model = model
+        self.hf_api = HuggingFaceAPI(f"{HfUrl.HUGGINGFACE_MODELS.value}/{model}")
+
+    async def complete(self, prompt: Message, replies: list[Message] = None) -> str:
+        input = prompt.text
+        input += "\n".join([f"{r.user.display_name}: {r.text}" for r in replies])
+        output = await self.hf_api.post(input)
+        return output
+
+
 class TreeManager:
     def __init__(
         self,
         db: Session,
-        prompt_repository: PromptRepository,
+        prompt_repository: PromptRepository = None,
         cfg: Optional[TreeManagerConfiguration] = None,
+        api_key: Optional[str] = None,
     ):
         self.db = db
         self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
+        self.api_key = api_key
+
+        if len(self.cfg.task_responders) != 0:
+            supported_responders = {
+                "mock-ai": MockTaskResponder,
+                "gpt2": HuggingFaceResponder,
+                "OpenAssistant/oasst-sft-6-llama-30b-xor": HuggingFaceResponder,
+            }
+            self.responders = [
+                (r.ratio, supported_responders[r.model](model=r.model))
+                for r in self.cfg.task_responders
+                if r.model in supported_responders.keys()
+            ]
+
+            if sum([r[0] for r in self.responders]) > 1:
+                raise ValueError("Task responder ratios must sum to < 1")
 
     def _random_task_selection(
         self,
@@ -744,23 +791,6 @@ class TreeManager:
                     )
                     self._insert_default_state(message.id, lang=message.lang)
 
-                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
-                    try:
-                        hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Extract Embedding")
-                    except OasstError:
-                        logger.error(
-                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
-                if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
-                    try:
-                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
-                        logger.debug("Sent Toxicity")
-                    except OasstError:
-                        logger.error(
-                            f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
-
             case protocol_schema.MessageRating:
                 logger.info(
                     f"Frontend reports rating of message_id={interaction.message_id} by user={interaction.user}."
@@ -823,7 +853,7 @@ class TreeManager:
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
-        return protocol_schema.TaskDone()
+        return message, protocol_schema.TaskDone()
 
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts
@@ -1793,6 +1823,29 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             self._reactivate_tree(mts)
 
         return mts
+
+    @staticmethod
+    def choose_responder(request: protocol_schema.TaskRequest, db: Session) -> User:
+        responders = settings.tree_manager.task_responders
+        if responders is None:
+            return request.user
+        if len(responders) == 0:
+            return request.user
+        rand = random.random()
+        cumulative_split = 0
+        for responder in responders:
+            cumulative_split += responder.ratio
+            if rand < cumulative_split:
+                return db.query(User).filter(User.ai_model == responder.model).one()
+
+    def complete_task(self, task: Task, user: User) -> None:
+        if user.ai_model is None:
+            raise ValueError("Cannot complete task for user without AI model")
+        responder = self.task_responders[user.ai_model]
+        messages, prompts = self.get_user_messages_by_tree(user.id)
+        prompt = next(p for p in prompts if p.id == task.message_tree_id)
+        replies = messages[task.message_tree_id]
+        return responder.complete(prompt, replies)
 
 
 if __name__ == "__main__":
