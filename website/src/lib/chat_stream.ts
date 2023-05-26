@@ -34,7 +34,6 @@ export async function handleChatEventStream({
     } else if (event === "ping") {
       continue;
     }
-    console.log("Event", event, data);
     try {
       const chunk: InferenceEvent = JSON.parse(data);
       if (chunk.event_type === "pending") {
