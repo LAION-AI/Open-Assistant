@@ -17,7 +17,10 @@ from .payload_column_type import PayloadContainer, payload_column_type
 
 class Message(SQLModel, table=True):
     __tablename__ = "message"
-    __table_args__ = (Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),)
+    __table_args__ = (
+        Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),
+        Index("ix_search_vector", "search_vector", postgresql_using="gin"),
+    )
 
     def __new__(cls, *args: Any, **kwargs: Any):
         new_object = super().__new__(cls, *args, **kwargs)
@@ -51,6 +54,8 @@ class Message(SQLModel, table=True):
     depth: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     children_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
+
+    search_vector: Optional[str] = Field(sa_column=sa.Column(pg.TSVECTOR(), nullable=True))
 
     review_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     review_result: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=True))

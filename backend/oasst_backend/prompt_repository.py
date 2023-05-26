@@ -30,7 +30,7 @@ from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils import discord
-from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
+from oasst_backend.utils.database_utils import CommitMode, db_lang_to_postgres_ts_lang, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
@@ -952,6 +952,7 @@ class PromptRepository:
         review_result: Optional[bool] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
+        search_query: Optional[str] = None,
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
@@ -1018,6 +1019,11 @@ class PromptRepository:
 
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
+
+        if search_query is not None:
+            ts_lang: str = db_lang_to_postgres_ts_lang(lang)
+            ts_query = func.to_tsquery(ts_lang, search_query)
+            qry = qry.filter(ts_query.match(Message.search_vector))
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
