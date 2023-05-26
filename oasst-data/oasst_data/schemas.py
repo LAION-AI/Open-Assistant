@@ -17,6 +17,7 @@ LabelValues = dict[str, LabelAvgValue]
 class ExportMessageEvent(BaseModel):
     type: str
     user_id: str | None
+    score: int | None
 
 
 class ExportMessageEventEmoji(ExportMessageEvent):

@@ -5,7 +5,7 @@ from typing import Callable, Literal, Optional, Union
 
 import datasets
 import torch
-from model_training.custom_datasets.ranking_collator import RankingDataCollator
+from model_training.custom_datasets.ranking_collator import EntailmentClassification, RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
 from model_training.metrics import RewardMetrics
 from model_training.utils.utils import (
@@ -51,7 +51,8 @@ class RMTrainer(Trainer):
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
         ).logits
-
+        if isinstance(cu_lens, torch.Tensor):
+            cu_lens = cu_lens.to(batch["input_ids"].device)
         loss = self.loss_fct(logits, cu_lens)
 
         return (loss, logits) if return_logits else loss
@@ -70,12 +71,17 @@ class RMTrainer(Trainer):
 
         loss = loss.mean().detach()
 
-        labels = []
-        for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
-            labels.extend([i] * (e - s))
-        # make sure labels are same as logits, needed for deepspeed
-        labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
-        return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
+        if isinstance(cu_lens, torch.Tensor):
+            labels = cu_lens.to(logits.device).flatten()
+        else:
+            labels = []
+            for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
+                labels.extend([i] * (e - s))
+            # make sure labels are same as logits, needed for deepspeed
+            labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
+            logits, labels = logits.T, labels.T
+
+        return (loss, logits, labels)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
         """
@@ -191,7 +197,8 @@ def main():
     model = get_model(training_conf, tokenizer)
 
     train, evals = get_dataset(training_conf, mode="rm")
-    train_collate_fn = RankingDataCollator(
+    collator_cls = EntailmentClassification if training_conf.entailment else RankingDataCollator
+    train_collate_fn = collator_cls(
         tokenizer,
         max_length=training_conf.max_length,
         pad_to_multiple_of=16,
@@ -200,7 +207,7 @@ def main():
         system_property_dropout=training_conf.system_property_dropout,
         system_add_length=training_conf.system_add_length,
     )
-    eval_collate_fn = RankingDataCollator(
+    eval_collate_fn = collator_cls(
         tokenizer,
         max_length=training_conf.max_length,
         pad_to_multiple_of=16,

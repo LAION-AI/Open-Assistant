@@ -7,24 +7,42 @@ RM_METRICS = ["accuracy", "kendalltau", "spearmanr"]
 def reward_accuracy(eval_pred):
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
-    pos_scores, neg_scores = [], []
-    for b_logits, b_labels in zip(logits, labels):
-        b_labels = b_labels[b_labels != -100]
-        b_logits = b_logits[b_logits != -100]
-        for i in np.unique(b_labels):
-            logits_batch = b_logits[b_labels == i]
-            pos_scores.append(logits_batch[0])
-            neg_scores.append(logits_batch[-1])
-    pos_scores = np.array(pos_scores).reshape(-1, 1)
-    neg_scores = np.array(neg_scores).reshape(-1, 1)
+    if len(labels.shape) == 1:
+        pos_scores, neg_scores = [], []
+        hit = 0
+        for b_logits, b_label in zip(logits, labels):
+            if b_label == 0:
+                neg_scores.append(b_logits[0])
+            else:
+                pos_scores.append(b_logits[0])
+            pred_logit = 0
+            if b_logits[0] > 0:
+                pred_logit = 1
+            hit += pred_logit == b_label
+        return {
+            "pos_score": np.mean(pos_scores),
+            "neg_score": np.mean(neg_scores),
+            "accuracy": hit / len(labels),
+        }
+    else:
+        pos_scores, neg_scores = [], []
+        for b_logits, b_labels in zip(logits, labels):
+            b_labels = b_labels[b_labels != -100]
+            b_logits = b_logits[b_logits != -100]
+            for i in np.unique(b_labels):
+                logits_batch = b_logits[b_labels == i]
+                pos_scores.append(logits_batch[0])
+                neg_scores.append(logits_batch[-1])
+        pos_scores = np.array(pos_scores).reshape(-1, 1)
+        neg_scores = np.array(neg_scores).reshape(-1, 1)
 
-    metrics = {
-        "pos_score": np.mean(pos_scores),
-        "neg_score": np.mean(neg_scores),
-        "score_diff": np.mean(pos_scores - neg_scores),
-        "accuracy": np.mean(pos_scores > neg_scores),
-    }
-    return metrics
+        metrics = {
+            "pos_score": np.mean(pos_scores),
+            "neg_score": np.mean(neg_scores),
+            "score_diff": np.mean(pos_scores - neg_scores),
+            "accuracy": np.mean(pos_scores > neg_scores),
+        }
+        return metrics
 
 
 def kendall_tau(eval_pred):

@@ -176,3 +176,23 @@ oasst-rm-1-pythia-1.4b:
   num_train_epochs: 2
   eval_steps: 500
   save_steps: 1000
+
+test-entailment:
+  entailment: true
+  loss_fn: BCELoss
+  model_name: EleutherAI/pythia-410m-deduped
+  cache_dir: .cache
+  datasets:
+    - oasst_chat_scoring:
+        input_file_path: 2023-05-19_chats_scored.jsonl.gz
+        val_split: 0.05
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 5
+  num_train_epochs: 2
+  eval_steps: 10
+  save_steps: 1000
+  use_system_tag: false
+  system_property_dropout: 0.5
+  system_add_length: false
+  metrics: ["accuracy"]

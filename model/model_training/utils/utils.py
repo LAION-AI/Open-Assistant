@@ -16,9 +16,10 @@ from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
-from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
+
+from tokenizers import pre_tokenizers
 
 from .losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 
@@ -383,6 +384,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return RMLoss(beta=score_l2_reg)
     elif loss == "RMCLSLoss":
         return RMCLSLoss()
+    elif loss == "BCELoss":
+        return torch.nn.BCEWithLogitsLoss()
     else:
         raise ValueError(f"Loss {loss} not supported")
 

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Union
 
+import torch
 from model_training.custom_datasets.formatting import DatasetEntryRm
 from transformers.tokenization_utils_base import BatchEncoding, PaddingStrategy, PreTrainedTokenizerBase
 
@@ -100,3 +101,29 @@ class RankingDataCollator:
         if "token_type_ids" in batch:
             batch.pop("token_type_ids")
         return batch, cu_lens
+
+
+@dataclass
+class EntailmentClassification(RankingDataCollator):
+    def __call__(
+        self, examples: list[tuple[str | list[str] | None, list[str]]] | list[DatasetEntryRm]
+    ) -> tuple[list[BatchEncoding], list[int]]:
+        flat_tokenized, bin_labels = [], []
+        for prefixes, reply, label in examples:
+            tokenized = self.process_one([prefixes, [reply]])
+            flat_tokenized.extend(tokenized)
+            bin_labels.append(label)
+
+        batch = self.tokenizer.pad(
+            flat_tokenized,
+            padding=self.padding,
+            max_length=self.max_length,
+            pad_to_multiple_of=self.pad_to_multiple_of,
+            return_tensors="pt",
+        )
+        # make B x 1
+        bin_labels = torch.Tensor(bin_labels).unsqueeze(-1)
+
+        if "token_type_ids" in batch:
+            batch.pop("token_type_ids")
+        return batch, bin_labels
