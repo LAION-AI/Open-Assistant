@@ -201,6 +201,7 @@ class WorkParameters(pydantic.BaseModel):
         default_factory=make_seed,
     )
     plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
+    plugin_max_depth: int = 4
 
 
 class ReportType(str, enum.Enum):
