@@ -1,10 +1,13 @@
 import random
 import string
+import sys
+import time
 from pathlib import Path
 
 from locust import HttpUser, between, task
 
-from ..text-client import text_client_utils as utils
+sys.path.append(str(Path(__file__).parent.parent.parent / "text-client"))
+import text_client_utils as utils  # noqa: E402
 
 
 class ChatUser(HttpUser):
@@ -22,11 +25,11 @@ class ChatUser(HttpUser):
     @task
     def chat(self):
         for _ in range(self.conversation_length):
-            self.client.send_message("hello", self.model_config_name)
+            for _ in self.client.send_message("hello", self.model_config_name):
+                pass
             self.wait()
 
     def wait(self):
-        self.client.wait()
-        self.wait_time()
+        time.sleep(self.time_to_respond)
 
 
