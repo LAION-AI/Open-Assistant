@@ -47,7 +47,7 @@ class SafePromptResponseEvent(pydantic.BaseModel):
 
 
 class PluginIntermediateResponseEvent(pydantic.BaseModel):
-    event_type: Literal["plugin_intermediate_response"] = "plugin_intermediate_response"
+    event_type: Literal["plugin_intermediate"] = "plugin_intermediate"
     current_plugin_thought: str
     current_plugin_action_taken: str
     current_plugin_action_input: str

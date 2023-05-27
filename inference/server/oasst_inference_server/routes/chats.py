@@ -244,7 +244,7 @@ async def message_events(
                         ).json(),
                     }
 
-                if response_packet.response_type == "plugin_intermediate_response":
+                if response_packet.response_type == "plugin_intermediate":
                     logger.info(f"Received plugin intermediate response {chat_id}")
                     yield {
                         "data": chat_schema.PluginIntermediateResponseEvent(

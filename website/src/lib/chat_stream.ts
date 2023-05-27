@@ -48,7 +48,7 @@ export async function handleChatEventStream({
         // handle error
         await onError(chunk.error);
         return chunk.message;
-      } else if (chunk.event_type === "plugin_intermediate_response") {
+      } else if (chunk.event_type === "plugin_intermediate") {
         await onPluginIntermediateResponse({
           currentPluginThought: chunk.current_plugin_thought,
           currentPluginAction: chunk.current_plugin_action_taken,

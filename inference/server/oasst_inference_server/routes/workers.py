@@ -218,7 +218,7 @@ async def handle_worker(
                                     response=worker_response,
                                     work_request_map=work_request_map,
                                 )
-                            case "plugin_intermediate_response":
+                            case "plugin_intermediate":
                                 worker_response = cast(inference.PluginIntermediateResponse, worker_response)
                                 await handle_plugin_intermediate_response(
                                     work_request_map=work_request_map,

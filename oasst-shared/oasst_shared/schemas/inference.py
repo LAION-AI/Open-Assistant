@@ -330,7 +330,7 @@ class SafePromptResponse(WorkerResponseBase):
 
 
 class PluginIntermediateResponse(WorkerResponseBase):
-    response_type: Literal["plugin_intermediate_response"] = "plugin_intermediate_response"
+    response_type: Literal["plugin_intermediate"] = "plugin_intermediate"
     text: str = ""
     current_plugin_thought: str
     current_plugin_action_taken: str
