@@ -91,7 +91,6 @@ export const ChatAssistantDraftViewer = ({
 
   return (
     <Flex
-      key="chat-message-select"
       width="full"
       gap={0.5}
       flexDirection={{ base: "column", md: "row" }}
