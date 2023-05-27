@@ -27,7 +27,7 @@ import { isKnownEmoji } from "src/types/Emoji";
 import useSWRImmutable from "swr/immutable";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
-import { DataTable, DataTableColumnDef, DataTableRowPropsCallback, FilterItem } from "../DataTable/DataTable";
+import { DataTable, DataTableRowPropsCallback, FilterItem } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { useCursorPagination } from "../DataTable/useCursorPagination";
 import { UserDisplayNameCell } from "../UserDisplayNameCell";
@@ -98,7 +98,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     if (undeleteMessageId) setUndeleteMessageId(null);
   };
 
-  const columns: DataTableColumnDef<Message>[] = useMemo(() => {
+  const columns = useMemo(() => {
     return [
       columnHelper.accessor("user", {
         cell({ getValue }) {
@@ -115,39 +115,39 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
           );
         },
       }),
-      {
-        filterable: true,
-        ...columnHelper.accessor("text", {
-          cell: ({ getValue, row }) => {
-            const limit = 95;
-            const text = getValue();
-            const isActive = row.original.isActive;
-            const renderText = isActive ? text : text.length > limit ? `${text.slice(0, limit)}...` : text;
+      columnHelper.accessor("text", {
+        meta: {
+          filterable: true,
+        },
+        cell: ({ getValue, row }) => {
+          const limit = 95;
+          const text = getValue();
+          const isActive = row.original.isActive;
+          const renderText = isActive ? text : text.length > limit ? `${text.slice(0, limit)}...` : text;
 
-            return (
-              <Box wordBreak="break-all" whiteSpace="pre-wrap" w="md">
-                <Avatar
-                  size="xs"
-                  mr="2"
-                  src={`${row.original.is_assistant ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-                ></Avatar>
-                {renderText}
-                {!row.original.parent_id && (
-                  <Badge colorScheme="green" ml="1">
-                    Root
-                  </Badge>
-                )}
-                {row.original.deleted && (
-                  <Badge colorScheme="red" ml="1">
-                    Deleted
-                  </Badge>
-                )}
-                {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
-              </Box>
-            );
-          },
-        }),
-      },
+          return (
+            <Box wordBreak="break-all" whiteSpace="pre-wrap" w="md">
+              <Avatar
+                size="xs"
+                mr="2"
+                src={`${row.original.is_assistant ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+              ></Avatar>
+              {renderText}
+              {!row.original.parent_id && (
+                <Badge colorScheme="green" ml="1">
+                  Root
+                </Badge>
+              )}
+              {row.original.deleted && (
+                <Badge colorScheme="red" ml="1">
+                  Deleted
+                </Badge>
+              )}
+              {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
+            </Box>
+          );
+        },
+      }),
       columnHelper.accessor("lang", {
         header: "Language",
         cell: ({ getValue }) => <Badge textTransform="uppercase">{getValue()}</Badge>,
