@@ -185,7 +185,7 @@ def handle_plugin_usage(
             ),
         )
 
-    while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
+    while not chain_finished and assisted and achieved_depth < plugin_max_depth:
         tool_response = use_tool(prefix, response, tools)
 
         # Save previous chain response for use in final prompt
