@@ -9,7 +9,6 @@ import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo, PluginIntermediateResponse } from "src/lib/chat_stream";
 import { OasstError } from "src/lib/oasst_api_client";
-import { Scroll, MousePointerClick, Eye, FolderPlus } from "lucide-react";
 import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,

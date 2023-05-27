@@ -57,9 +57,4 @@
   "feedback_message": "How did I do? Your feedback will make me better!",
   "feedback_action_great": "Good",
   "feedback_action_poor": "Could be better"
-  "chrome_scroll_page_down": "Scrolling down...",
-  "chrome_scroll_page_up": "Scrolling up...",
-  "chrome_view_page_content": "Reading content...",
-  "chrome_click_on_link": "Clicking on a link...",
-  "chrome_open_new_tab": "Opening new tab..."
 }
