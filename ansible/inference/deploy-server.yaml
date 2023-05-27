@@ -161,5 +161,8 @@
           MESSAGE_MAX_LENGTH:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_MESSAGE_MAX_LENGTH') |
             default('', true) }}"
+          PLUGIN_MAX_DEPTH:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_PLUGIN_MAX_DEPTH') |
+            default(4, true) }}"
         ports:
           - "{{ server_port }}:8080"

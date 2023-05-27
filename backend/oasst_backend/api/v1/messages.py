@@ -69,6 +69,7 @@ def get_messages_cursor(
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
+    search_query: Optional[str] = None,
     lang: Optional[str] = None,
     include_user: Optional[bool] = None,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
@@ -115,6 +116,7 @@ def get_messages_cursor(
         deleted=None if include_deleted else False,
         desc=query_desc,
         limit=qry_max_count,
+        search_query=search_query,
         lang=lang,
         include_user=include_user,
     )
