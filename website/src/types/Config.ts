@@ -1,6 +1,7 @@
 export interface BrowserConfig {
   ENABLE_CHAT: boolean;
   ENABLE_DRAFTS_FOR_PLUGINS: boolean;
+  NUM_GENERATED_DRAFTS: number;
   ENABLE_EMAIL_SIGNIN: boolean;
   ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean;
   CLOUDFLARE_CAPTCHA_SITE_KEY: string;

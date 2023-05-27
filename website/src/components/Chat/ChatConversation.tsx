@@ -34,7 +34,7 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const { t } = useTranslation("chat");
-  const { ENABLE_DRAFTS_FOR_PLUGINS } = useBrowserConfig();
+  const { ENABLE_DRAFTS_FOR_PLUGINS, NUM_GENERATED_DRAFTS } = useBrowserConfig();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
@@ -140,11 +140,11 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
       let draft_messages: InferenceMessage[];
       try {
-        draft_messages = await Promise.all([
-          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
-          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
-          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
-        ]);
+        const promises = Array.from({ length: NUM_GENERATED_DRAFTS }, () =>
+          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg })
+        );
+
+        draft_messages = await Promise.all(promises);
       } catch (err) {
         if (err instanceof OasstError) {
           toast({
@@ -156,7 +156,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         return;
       }
 
-      setStreamedDrafts(Array(3).fill(""));
+      setStreamedDrafts(Array(NUM_GENERATED_DRAFTS).fill(""));
       const complete_draft_messages = await Promise.all(
         draft_messages.map(async (draft_message, index) => {
           const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, draft_message.id));
@@ -272,7 +272,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     activateAutoScroll();
     // after creating the prompters message, handle the assistant's case
     const { plugins } = getConfigValues();
-    if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+    if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
       await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
     } else {
       await createAssistantDrafts({ parentId: prompter_message.id, chatId });
@@ -482,6 +482,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           {(ENABLE_DRAFTS_FOR_PLUGINS || plugins.length === 0) &&
+            NUM_GENERATED_DRAFTS > 1 &&
             (isSending || isAwaitingMessageSelect) &&
             streamedDrafts && (
               <ChatAssistantDraftViewer

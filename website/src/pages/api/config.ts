@@ -6,6 +6,7 @@ import { BrowserConfig } from "src/types/Config";
 const config: BrowserConfig = {
   ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
   ENABLE_DRAFTS_FOR_PLUGINS: boolean(process.env.ENABLE_DRAFTS_FOR_PLUGINS),
+  NUM_GENERATED_DRAFTS: Number(process.env.NUM_GENERATED_DRAFTS),
   ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
   ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
   CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
