@@ -1,8 +1,12 @@
 import json
+import uuid
 
 import aiohttp
 import fastapi
 import sqlmodel
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from jose import jwe
 from oasst_inference_server import database, deps, models
 from oasst_inference_server.schemas import plugin as plugin_schema
 from oasst_inference_server.settings import settings
@@ -13,19 +17,37 @@ router = fastapi.APIRouter(
 )
 
 
-async def encrypt_secret(secret: str) -> str:
-    # TODO: implement
+def derive_plugin_key() -> bytes:
+    """Derive a key from the plugin auth secret."""
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.plugin_auth_length,
+        salt=settings.plugin_auth_salt,
+        info=settings.plugin_auth_info,
+    )
+    key = hkdf.derive(settings.plugin_auth_secret)
+    return key
+
+
+def encrypt_secret(secret: str) -> str:
+    payload = json.dumps({"secret": secret}).encode()
+    key = derive_plugin_key()
+    encrypted: bytes = jwe.encrypt(payload, key)
+    return encrypted.decode()
+
+
+def decrypt_secret(encrypted_secret: str) -> str:
+    key = derive_plugin_key()
+    decrypted = jwe.decrypt(encrypted_secret, key)
+    payload: dict = json.loads(decrypted.decode())
+    secret = payload["secret"]
     return secret
 
 
-async def decrypt_secret(secret: str) -> str:
-    # TODO: implement
-    return secret
-
-
-async def generate_verification_token() -> str:
-    # TODO: implement
-    return ""
+def generate_verification_token() -> str:
+    # TODO: check how verification tokens should be generated and possibly replace this
+    # TODO: possibly store this in DB
+    return uuid.uuid4()
 
 
 async def get_provider(session: database.AsyncSession, provider: str) -> models.DbPluginOAuthProvider:
@@ -75,7 +97,7 @@ async def create_provider(
     create_request: plugin_schema.CreateOAuthProviderRequest,
 ) -> plugin_schema.CreateOAuthProviderResponse:
     # TODO: outsource logic to a PluginRepository or something
-    encrypted_secret = await encrypt_secret(create_request.client_secret)
+    encrypted_secret = encrypt_secret(create_request.client_secret)
 
     async with deps.manual_create_session() as session:
         db_provider = models.DbPluginOAuthProvider(

@@ -115,6 +115,11 @@ class Settings(pydantic.BaseSettings):
     # sent as a work parameter, higher values increase load on workers
     plugin_max_depth: int = 4
 
+    plugin_auth_secret: bytes = b""
+    plugin_auth_salt: bytes = b""
+    plugin_auth_length: int = 32
+    plugin_auth_info: bytes = b"NextAuth.js Generated Encryption Key"
+
     @property
     def inference_cors_origins_list(self) -> list[str]:
         return self.inference_cors_origins.split(",")
