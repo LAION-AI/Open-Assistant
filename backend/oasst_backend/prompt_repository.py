@@ -956,6 +956,8 @@ class PromptRepository:
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
+        logger.info(search_query)
+
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own messages without api_client_id being set
@@ -1020,10 +1022,13 @@ class PromptRepository:
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
 
-        if search_query is not None:
-            ts_lang: str = db_lang_to_postgres_ts_lang(lang)
-            ts_query = func.to_tsquery(ts_lang, search_query)
-            qry = qry.filter(ts_query.match(Message.search_vector))
+            if search_query is not None:
+                qry = qry.filter(
+                    Message.search_vector.match(
+                        search_query,
+                        postgresql_regconfig=db_lang_to_postgres_ts_lang(lang),
+                    ),
+                )
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
