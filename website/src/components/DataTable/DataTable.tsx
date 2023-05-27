@@ -149,7 +149,7 @@ export const DataTable = <T,>({
                   <Th key={header.id}>
                     <Box display="flex" alignItems="center">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.columnDef.meta.filterable && (
+                      {header.column.columnDef.meta?.filterable && (
                         <FilterModal
                           value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
                           onChange={(value) => handleFilterChange({ id: header.id, value })}
