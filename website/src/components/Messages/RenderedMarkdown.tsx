@@ -36,6 +36,13 @@ const sx: SystemStyleObject = {
     width: "100%",
     bg: "transparent",
   },
+  a: {
+    color: "#3182ce",
+    textDecoration: "none",
+    _hover: {
+      textDecoration: "underline",
+    },
+  },
   code: {
     before: {
       content: `""`, // charka prose come with "`" by default
@@ -143,7 +150,7 @@ const RenderedMarkdown = ({ markdown, disallowedElements = ["img"] }: RenderedMa
           <ModalCloseButton />
           <ModalBody>
             <div>{t("message:confirm_open_link_body")}</div>
-            <Box textDecoration="underline" {...linkProps}>
+            <Box textDecoration="underline" color="#3182ce" {...linkProps}>
               {link}
             </Box>
           </ModalBody>

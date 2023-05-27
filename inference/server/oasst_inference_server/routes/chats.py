@@ -141,6 +141,7 @@ async def create_assistant_message(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
                 plugins=request.plugins,
+                plugin_max_depth=settings.plugin_max_depth,
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,

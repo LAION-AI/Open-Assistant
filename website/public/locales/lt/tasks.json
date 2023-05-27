@@ -1,0 +1,97 @@
+{
+  "any_feedback_on_this_task": "Ar turite atsiliepimų apie šią užduotį?",
+  "available_task_count": "{{count}} prieinamos užduotys",
+  "default": {
+    "unchanged_title": "Jokių pakeitimų",
+    "unchanged_message": "Ar tikrai norite tęsti?",
+    "continue_anyway": "Tęsti bet kokiu atveju",
+    "markdownguide": "Markdown yra prieinamas"
+  },
+  "no_more_tasks": "Jokių užduočių nerasta.",
+  "random": {
+    "label": "Esu sėkmingas",
+    "desc": "Padėkite mums patobulinti Open Assistant pradėdami naują atsitiktinę užduotį."
+  },
+  "create_initial_prompt": {
+    "label": "Sukurkite pradines užklausas",
+    "desc": "Parašykite pradines užklausas, kad padėtumėte Open Assistant atsakyti į įvairias žinutes (dalyvauti loterijoje)",
+    "overview": "Sukurkite pradinę žinutę ir išsiųskite ją atsistentui",
+    "instruction": "Pateikite pradines užklausas",
+    "response_placeholder": "Parašykite savo užklausą čia...",
+    "shotcut_tip": "Patarimas: galite naudotis klaviatūros sparčiaisiais klavišais, kad peržiūrėtumėte ir pateiktumėte atsakymus:"
+  },
+  "reply_as_user": {
+    "label": "Atsakykite kaip naudotojas",
+    "desc": "Pasikalbėkite su Open Assistant ir padėkite pagerinti jo atsakymus, kai bendraujate su juo",
+    "overview": "Atsižvelgdami į šį pokalbį, pateikite tinkamą atsakymą",
+    "instruction": "Pateikite naudotojo atsakymą",
+    "response_placeholder": "Parašykite savo atsakymą čia...",
+    "shotcut_tip": "Patarimas: galite naudotis klaviatūros sparčiaisiais klavišais, kad peržiūrėtumėte ir pateiktumėte atsakymus:"
+  },
+  "reply_as_assistant": {
+    "label": "Atsakykite kaip atsistentas",
+    "desc": "Padėkite Open Assistant pagerinti jo atsakymus pokalbiuose su kitais naudotojais.",
+    "overview": "Atsižvelgdami į šį pokalbį, pateikite tinkamą atsakymą",
+    "response_placeholder": "Parašykite savo atsakymą čia...",
+    "shotcut_tip": "Patarimas: galite naudotis klaviatūros sparčiaisiais klavišais, kad peržiūrėtumėte ir pateiktumėte atsakymus:"
+  },
+  "rank_user_replies": {
+    "label": "Reitinguokite naudotojo atsakymus",
+    "desc": "Padėkite Open Assistant pagerinti jo atsakymus pokalbiuose su kitais naudotojais.",
+    "overview": "Atsižvelgdami į šiuos naudotojo atsakymus, surūšiuokite juos nuo geriausio iki blogiausio, geriausias turėtų būti pirmas, blogiausias turėtų būti paskutinis.",
+    "unchanged_title": "Eiliškumas nepakeistas",
+    "unchanged_message": "Jūs nepakeitėte užklausų eiliškumo. Ar tikrai norite tęsti?",
+    "continue_anyway": "Tęsti bet kokiu atveju"
+  },
+  "rank_assistant_replies": {
+    "label": "Reitinguokite asistento atsakymus",
+    "desc": "Įvertinkite Open Assistant užklausas, atsižvelgdami į jų tikslumą ir suprantamumą.",
+    "overview": "Atsižvegdami į šiuos asistento atsakymus, surūšiuokite juos nuo geriausio iki blogiausio, geriausias turėtų būti pirmas, blogiausias turėtų būti paskutinis.",
+    "unchanged_title": "Eiliškumas nepakeistas",
+    "unchanged_message": "Jūs nepakeitėte užklausų eiliškumo. Ar tikrai norite tęsti?",
+    "continue_anyway": "Tęsti bet kokiu atveju"
+  },
+  "rank_initial_prompts": {
+    "label": "Reitinguokite pradines užklausas",
+    "desc": "Įvertinkite Open Assistant užklausas, atsižvelgdami į jų tikslumą ir suprantamumą.",
+    "overview": "Atsižvelgdami į šias pradines užklausas, surūšiuokite jas nuo geriausios iki blogiausios, geriausia turėtų būti pirma, blogiausia turėtų būti paskutinė.",
+    "unchanged_title": "Eiliškumas nepakeistas",
+    "unchanged_message": "Jūs nepakeitėte užklausų eiliškumo. Ar tikrai norite tęsti?",
+    "continue_anyway": "Tęsti bet kokiu atveju"
+  },
+  "label_initial_prompt": {
+    "label": "Anotuokite pradinę užklausą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Pateikite anotacijas šiai užklausai"
+  },
+  "label_prompter_reply": {
+    "label": "Anotuokite suflerio atsakymą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Atsižvelgdami į šią diskusiją, pateikite anotacijas galutinei užklausai."
+  },
+  "label_assistant_reply": {
+    "label": "Anotuokite asistento atsakymą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Atsižvelgdami į šią diskusiją, pateikite anotacijas galutinei užklausai."
+  },
+  "classify_initial_prompt": {
+    "label": "Klasifikuokite pradinę užklausą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Perskaitykite šią užklausą ir atsakykite į klausimą apie ją."
+  },
+  "classify_prompter_reply": {
+    "label": "Klasifikuokite suflerio atsakymą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Perskaitykite šį pokalbį ir atsakykite į klausimą apie paskutinį atsakymą diskusijoje."
+  },
+  "classify_assistant_reply": {
+    "label": "Klasifikuokite asistento atsakymą",
+    "desc": "Pateikite anotacijas užklausai.",
+    "overview": "Perskaitykite šį pokalbį ir atsakykite į klausimą apie paskutinį atsakymą diskusijoje."
+  },
+  "submitted_as": "Tai bus pateikta kaip {{submit_lang}}",
+  "tab_write": "Rašyti",
+  "tab_preview": "Peržiūrėti",
+  "writing_wrong_langauge_a_b": "Atrodo, kad rašote {{detected_lang}}, bet tai bus pateikta kaip {{submit_lang}}.",
+  "not_rankable": "Visi atsakymai yra neteisingi ir negali būti reitinguojami"
+}

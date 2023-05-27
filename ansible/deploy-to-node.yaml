@@ -63,6 +63,7 @@
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
         image: ghcr.io/laion-ai/open-assistant/oasst-postgres
+        platform: linux/x86_64
         state: started
         pull: true
         recreate: "{{ (stack_name == 'dev') | bool }}"
@@ -97,6 +98,7 @@
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-backend"
         image: "ghcr.io/laion-ai/open-assistant/oasst-backend:{{ image_tag }}"
+        platform: linux/x86_64
         state: started
         recreate: true
         pull: true
@@ -185,6 +187,42 @@
             "{{ lookup('ansible.builtin.env', 'DISCORD_CHANNEL_ID') }}"
         ports:
           - "{{ backend_port }}:8080"
+
+    - name: Setup Celery worker
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-celery-worker"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
+        state: started
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        env:
+          CELERY_BROKER_URL: "redis://oasst-{{ stack_name }}-redis:6379/0"
+          CELERY_RESULT_BACKEND: "redis://oasst-{{ stack_name }}-redis:6379/0"
+          POSTGRES_HOST: "oasst-{{ stack_name }}-postgres-backend"
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          REDIS_HOST: "oasst-{{ stack_name }}-redis"
+          MAX_WORKERS: "1"
+        command: celery -A oasst_backend.celery_worker worker -l info
+
+    - name: Setup Celery worker beat
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-celery-worker-beat"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-backend-worker:{{ image_tag }}"
+        state: started
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        env:
+          CELERY_BROKER_URL: "redis://oasst-{{ stack_name }}-redis:6379/0"
+          CELERY_RESULT_BACKEND: "redis://oasst-{{ stack_name }}-redis:6379/0"
+          POSTGRES_HOST: "oasst-{{ stack_name }}-postgres-backend"
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          REDIS_HOST: "oasst-{{ stack_name }}-redis"
+          MAX_WORKERS: "1"
+        command: celery -A oasst_backend.celery_worker beat -l INFO
 
     - name: Run the oasst oasst-web frontend
       community.docker.docker_container:

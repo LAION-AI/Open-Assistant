@@ -1,0 +1,16 @@
+{
+  "default": "Kažkas nepavyko!",
+  "err_1000": "Netinkamas užduoties tipas",
+  "err_1001": "Nepavyko atpažinti užduoties",
+  "err_1002": "Nepavyko neatpažinti užduoties",
+  "err_1003": "Netinkamas atsakymo tipas",
+  "err_1004": "Užklausos prašymas atmestas",
+  "err_1005": "Nepavyko sugeneruoti užduoties",
+  "err_1006": "{{task_type}} tipo užduotys šiuo metu nėra pasiekiamos.",
+  "err_1007": "Prieinamų užduočių prašymas atmestas",
+  "err_1008": "Žinutės dydis yra per didelis",
+  "err_1009": "Jūsų naujos žinutės kartojasi",
+  "err_1010": "Žinutės tekstas yra tuščias",
+  "err_1011": "Negalima atsakyti du kartus į tą pačią žinutę",
+  "err_1012": "Turite per daug neatliktų užduočių. Bandykite iš naujo po kelių minučių."
+}
