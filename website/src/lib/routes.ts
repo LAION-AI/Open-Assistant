@@ -49,7 +49,7 @@ export const API_ROUTES = {
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
   ADMIN_MESSAGE_LIST: (
-    query: CursorPaginationState & { user_id?: string; include_user?: boolean; search_query?: string }
+    query: CursorPaginationState & { user_id?: string; include_user?: boolean; search_query?: string; lang?: string }
   ) => createRoute("/api/admin/messages", query),
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
