@@ -1,5 +1,5 @@
 import { Card, CardBody, IconButton } from "@chakra-ui/react";
-import { createColumnHelper, Cell } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";

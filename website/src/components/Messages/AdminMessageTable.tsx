@@ -27,7 +27,7 @@ import { isKnownEmoji } from "src/types/Emoji";
 import useSWRImmutable from "swr/immutable";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
-import { DataTable, DataTableRowPropsCallback } from "../DataTable/DataTable";
+import { DataTable, DataTableColumnDef, DataTableRowPropsCallback, FilterItem } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { useCursorPagination } from "../DataTable/useCursorPagination";
 import { UserDisplayNameCell } from "../UserDisplayNameCell";
@@ -54,7 +54,12 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null);
   const [undeleteMessageId, setUndeleteMessageId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string>();
-  const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
+  const { pagination, toNextPage, toPreviousPage, resetCursor } = useCursorPagination();
+  const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+  const handleFilterValuesChange = (values: FilterItem[]) => {
+    setFilterValues(values);
+    resetCursor();
+  };
   const {
     data: res,
     isLoading,
@@ -65,6 +70,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
       direction: pagination.direction,
       user_id: userId,
       include_user: includeUser,
+      search_query: filterValues.find((f) => f.id === "text")?.value,
     }),
     get,
     {
@@ -92,7 +98,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     if (undeleteMessageId) setUndeleteMessageId(null);
   };
 
-  const columns = useMemo(() => {
+  const columns: DataTableColumnDef<Message>[] = useMemo(() => {
     return [
       columnHelper.accessor("user", {
         cell({ getValue }) {
@@ -109,37 +115,39 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
           );
         },
       }),
-      columnHelper.accessor("text", {
-        cell: ({ getValue, row }) => {
-          const limit = 95;
-          const text = getValue();
-          const isActive = row.original.isActive;
-          const renderText = isActive ? text : text.length > limit ? `${text.slice(0, limit)}...` : text;
+      {
+        filterable: true,
+        ...columnHelper.accessor("text", {
+          cell: ({ getValue, row }) => {
+            const limit = 95;
+            const text = getValue();
+            const isActive = row.original.isActive;
+            const renderText = isActive ? text : text.length > limit ? `${text.slice(0, limit)}...` : text;
 
-          return (
-            <Box display="-webkit-box" wordBreak="break-all" whiteSpace="pre-wrap" w="md">
-              <Avatar
-                size="xs"
-                mr="2"
-                src={`${row.original.is_assistant ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-              ></Avatar>
-              {renderText}
-              {!row.original.parent_id && (
-                <Badge colorScheme="green" ml="1">
-                  Root
-                </Badge>
-              )}
-              {row.original.deleted && (
-                <Badge colorScheme="red" ml="1">
-                  Deleted
-                </Badge>
-              )}
-              {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
-            </Box>
-          );
-        },
-      }),
-
+            return (
+              <Box wordBreak="break-all" whiteSpace="pre-wrap" w="md">
+                <Avatar
+                  size="xs"
+                  mr="2"
+                  src={`${row.original.is_assistant ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+                ></Avatar>
+                {renderText}
+                {!row.original.parent_id && (
+                  <Badge colorScheme="green" ml="1">
+                    Root
+                  </Badge>
+                )}
+                {row.original.deleted && (
+                  <Badge colorScheme="red" ml="1">
+                    Deleted
+                  </Badge>
+                )}
+                {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
+              </Box>
+            );
+          },
+        }),
+      },
       columnHelper.accessor("lang", {
         header: "Language",
         cell: ({ getValue }) => <Badge textTransform="uppercase">{getValue()}</Badge>,
@@ -238,6 +246,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     [setActiveMessageId]
   );
   const columnVisibility = useMemo(() => ({ user: !!includeUser }), [includeUser]);
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -280,6 +289,8 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
         onPreviousClick={() => toPreviousPage(res)}
         columnVisibility={columnVisibility}
         isLoading={isLoading}
+        filterValues={filterValues}
+        onFilterChange={handleFilterValuesChange}
       ></DataTable>
     </>
   );
