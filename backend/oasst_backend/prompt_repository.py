@@ -956,8 +956,6 @@ class PromptRepository:
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
-        logger.info(search_query)
-
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own messages without api_client_id being set
