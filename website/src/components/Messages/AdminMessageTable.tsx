@@ -19,6 +19,7 @@ import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
 import { useCallback } from "react";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { get } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
@@ -60,6 +61,11 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     setFilterValues(values);
     resetCursor();
   };
+
+  const currentLang = useCurrentLocale();
+  const search_query = filterValues.find((f) => f.id === "text")?.value || undefined; // avoid empty search
+  const lang = search_query ? currentLang : undefined;
+
   const {
     data: res,
     isLoading,
@@ -70,7 +76,8 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
       direction: pagination.direction,
       user_id: userId,
       include_user: includeUser,
-      search_query: filterValues.find((f) => f.id === "text")?.value,
+      search_query,
+      lang,
     }),
     get,
     {
