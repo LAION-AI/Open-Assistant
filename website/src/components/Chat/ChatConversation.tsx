@@ -7,8 +7,9 @@ import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
-import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
+import { handleChatEventStream, QueueInfo, PluginIntermediateResponse } from "src/lib/chat_stream";
 import { OasstError } from "src/lib/oasst_api_client";
+import { Scroll, MousePointerClick, Eye, FolderPlus } from "lucide-react";
 import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,
@@ -38,6 +39,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
+  const [pluginIntermediateResponse, setPluginIntermediateResponse] = useState<PluginIntermediateResponse | null>(null);
   const [isSending, setIsSending] = useBoolean();
   const [showEncourageMessage, setShowEncourageMessage] = useBoolean(false);
 
@@ -98,9 +100,16 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         message = await handleChatEventStream({
           stream: body!,
           onError: console.error,
-          onPending: setQueueInfo,
+          onPending: (data) => {
+            setQueueInfo(data);
+            setPluginIntermediateResponse(null);
+          },
+          onPluginIntermediateResponse: setPluginIntermediateResponse,
           onToken: async (text) => {
             setQueueInfo(null);
+            if (text != "") {
+              setPluginIntermediateResponse(null);
+            }
             setResponse(text);
             await new Promise(requestAnimationFrame);
           },
@@ -304,6 +313,33 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           <Badge position="absolute" bottom="0" left="50%" transform="translate(-50%)">
             {t("queue_info", queueInfo)}
           </Badge>
+        )}
+        {pluginIntermediateResponse && pluginIntermediateResponse.currentPluginThought && (
+          <Box
+            position="absolute"
+            bottom="0"
+            left="50%"
+            transform="translate(-50%)"
+            display="flex"
+            flexDirection="row"
+            gap="1"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Box
+              bg="purple.700"
+              color="white"
+              px="2"
+              py="2.5px"
+              borderRadius="8px"
+              maxWidth="50vw"
+              fontSize="11"
+              fontWeight="bold"
+              isTruncated
+            >
+              {pluginIntermediateResponse.currentPluginThought}
+            </Box>
+          </Box>
         )}
       </Box>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage}></ChatForm>
