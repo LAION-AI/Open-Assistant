@@ -205,7 +205,7 @@ def get_inference_server_stream_events(request: interface.GenerateStreamRequest)
         bearer_token=settings.bearer_token,
     )
     response = http.post(
-        "/generate_stream",
+        settings.inference_server_route,
         json=request.dict(),
         stream=True,
         headers={"Accept": "text/event-stream"},

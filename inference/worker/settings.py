@@ -5,6 +5,7 @@ class Settings(pydantic.BaseSettings):
     backend_url: str = "ws://localhost:8000"
     model_config_name: str = "distilgpt2"
     inference_server_url: str = "http://localhost:8001"
+    inference_server_route: str = "/generate_stream"
     safety_server_url: str = "http://localhost:8002"
     api_key: str = "0000"
 
