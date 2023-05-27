@@ -86,7 +86,6 @@ defaults:
   residual_dropout_lima: false
   deepspeed_config: configs/zero_config.json
 
-
 use_system_tag:
   use_system_tag: True
   system_property_dropout: 0.5
@@ -257,8 +256,6 @@ falcon-7b:
   use_flash_attention: false
   residual_dropout: 0.3
   residual_dropout_lima: true
-  peft_model: false
-  peft_type: "lora"
 
 llama-7b:
   dtype: fp16

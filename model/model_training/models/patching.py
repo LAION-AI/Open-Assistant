@@ -105,7 +105,10 @@ or run with:
     if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
         return
 
-    if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS) and model.__class__.__name__ != "RWForCausalLM":
+    if (
+        not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS)
+        and model.__class__.__name__ != "RWForCausalLM"
+    ):
         if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
             return  # nothing to patch
 
