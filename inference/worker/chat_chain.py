@@ -147,11 +147,12 @@ def handle_plugin_usage(
         tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
     )
 
+    # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
     utils.send_response(
         ws,
         inference.PluginIntermediateResponse(
             request_id=work_request_id,
-            current_plugin_thought=f"Checking if I need to use {plugin.plugin_config.name_for_human}...",
+            current_plugin_thought="thinking...",
             current_plugin_action_taken="",
             current_plugin_action_input="",
             current_plugin_action_response="",
@@ -174,6 +175,7 @@ def handle_plugin_usage(
     chain_finished = not assisted
 
     if assisted:
+        # model decided to use a tool, so send that thought to the client
         utils.send_response(
             ws,
             inference.PluginIntermediateResponse(
@@ -201,6 +203,7 @@ def handle_plugin_usage(
         if THOUGHT_SEQ in chain_response:
             current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
 
+        # Send deep plugin intermediate steps to UI
         utils.send_response(
             ws,
             inference.PluginIntermediateResponse(
