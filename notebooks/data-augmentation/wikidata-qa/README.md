@@ -9,7 +9,7 @@ answer pair is necessary!
 
 A step-by-step guide:
 
-1. Create a WikiGraph crawler instance and define a cache file to avoide
+1. Create a WikiGraph crawler instance and define a cache file to avoid
    redownloading nodes (only English is supported at the moment)
 
 ```Python

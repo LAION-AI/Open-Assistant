@@ -9,7 +9,7 @@ dataset to be uploaded to huggingface.
 Takes this Kaggle dataset 'Recipes from Tasty'
 https://www.kaggle.com/datasets/zeeenb/recipes-from-tasty?select=ingredient_and_instructions.json,
 filters for the top 1,000 highest rated recipes, and turns them into basic
-dialogue using a preset list of user prompt tempaltes.
+dialogue using a preset list of user prompt templates.
 
 ### Some ideas for extending this dataset
 
@@ -17,4 +17,4 @@ This dataset is nicely structured, and the ingredients section includes the
 quantities and units separated out. Some, but not all already include a
 primary_unit (US) and metric_unit. We could find all recipes with both units and
 generate dialogue for the prompt 'convert the ingredients into metric', 'what
-are the ingredients in UK measurments'? etc..
+are the ingredients in UK measurements'? etc..

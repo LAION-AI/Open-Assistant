@@ -17,7 +17,8 @@ from trlx.data.configs import TRLConfig
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
-from utils.utils import _strtobool, get_dataset, get_model, init_rng, prepare_tensor, read_yamls
+from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls
+from utils.utils_rl import prepare_tensor
 
 
 def argument_parsing(notebook=False, notebook_args=None, **kwargs):

@@ -3,7 +3,7 @@
   "dashboard": "Главная",
   "evaluate": "Ранжировать",
   "go": "Начать",
-  "grab_a_task": "Взять задание!",
+  "grab_a_task": "Помочь со сбором данных",
   "label": "Классифицировать",
   "welcome_message": {
     "label": "Приветствуем, {{username}}!",

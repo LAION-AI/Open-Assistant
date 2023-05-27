@@ -3,7 +3,7 @@
   "dashboard": "Panel principal",
   "evaluate": "Evaluar",
   "go": "Ir",
-  "grab_a_task": "¡Toma una tarea!",
+  "grab_a_task": "Ayuda con la recolección de datos",
   "label": "Etiquetar",
   "welcome_message": {
     "label": "Bienvenido, {{username}}!",
