@@ -168,7 +168,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             inference_message = await handleChatEventStream({
               stream: body!,
               onError: console.error,
-              onPending: setQueueInfo,
+              onPending:
+                draft_messages.every((message) => message.state === "pending") && index === 0 ? setQueueInfo : null,
               onToken: async (text) => {
                 setQueueInfo(null);
                 setStreamedDrafts((drafts) => [...drafts.slice(0, index), text, ...drafts.slice(index + 1)]);
