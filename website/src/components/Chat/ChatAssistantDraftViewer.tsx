@@ -62,6 +62,7 @@ export const ChatAssistantDraftViewer = ({
         width={"full"}
         padding={{ base: 0, md: 4 }}
         flexDirection={"column"}
+        overflowX={"auto"}
       >
         {(isComplete && draftMessages.length !== 0
           ? (draftMessages.map((message) => ({ content: message.content, used_plugin: message.used_plugin })) as {
