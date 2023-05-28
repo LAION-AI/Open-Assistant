@@ -8,8 +8,7 @@ export const useDeleteMessage = (messageId: string, onSuccess?: () => void) => {
     onSuccess: async () => {
       onSuccess?.();
       await mutate(
-        (key) =>
-          typeof key === "string" && (key.startsWith("/api/messages") || key.startsWith("/api/admin/user_messages")),
+        (key) => typeof key === "string" && (key.startsWith("/api/messages") || key.startsWith("/api/admin/messages")),
         undefined,
         { revalidate: true }
       );

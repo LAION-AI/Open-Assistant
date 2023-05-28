@@ -450,6 +450,7 @@ export class OasstApiClient {
     desc?: boolean;
     lang?: string;
     include_user?: boolean;
+    search_query?: string;
   }) {
     return this.get<FetchMessagesCursorResponse>("/api/v1/messages/cursor", {
       ...rest,

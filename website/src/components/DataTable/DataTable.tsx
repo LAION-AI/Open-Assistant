@@ -47,12 +47,12 @@ declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     cellProps?: DataTableCellPropsCallback<TData>;
+    filterable?: boolean;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DataTableColumnDef<T> = ColumnDef<T, any> & {
-  filterable?: boolean;
   span?: number | ((cell: Cell<T, unknown>) => number | undefined); // TODO: move to meta
 };
 
@@ -149,7 +149,7 @@ export const DataTable = <T,>({
                   <Th key={header.id}>
                     <Box display="flex" alignItems="center">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
+                      {header.column.columnDef.meta?.filterable && (
                         <FilterModal
                           value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
                           onChange={(value) => handleFilterChange({ id: header.id, value })}
