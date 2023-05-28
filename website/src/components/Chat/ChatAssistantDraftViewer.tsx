@@ -75,7 +75,7 @@ export const ChatAssistantDraftViewer = ({
         ).map(({ content, used_plugin }, index) => (
           <>
             <Box
-              key={`message-$index`}
+              key={`draft-message-${index}`}
               borderRadius={"md"}
               padding={2}
               gap={2}
