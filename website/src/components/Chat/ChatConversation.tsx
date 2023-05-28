@@ -21,7 +21,7 @@ import {
 import { mutate } from "swr";
 import useSWR from "swr";
 
-import { ChatAssistantDraftViewer } from "./ChatAssistantDraftViewer";
+import { ChatAssistantDraftPager, DraftPickedParams } from "./ChatAssistantDraftPager";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
@@ -199,9 +199,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setIsSending,
       setStreamedDrafts,
       setDraftMessages,
-      draftMessages,
       setQueueInfo,
       setIsAwaitingMessageSelect,
+      NUM_GENERATED_DRAFTS,
+      toast,
     ]
   );
 
@@ -280,6 +281,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   }, [
     getConfigValues,
     ENABLE_DRAFTS_FOR_PLUGINS,
+    NUM_GENERATED_DRAFTS,
     setIsSending,
     chatId,
     messages,
@@ -289,6 +291,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     isSending,
     isAwaitingMessageSelect,
     setShowEncourageMessage,
+    activateAutoScroll,
   ]);
 
   const sendVote = useMessageVote();
@@ -308,14 +311,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         await createAssistantDrafts(params);
       }
     },
-    [
-      createAssistantDrafts,
-      setIsSending,
-      isAwaitingMessageSelect,
-      getConfigValues,
-      ENABLE_DRAFTS_FOR_PLUGINS,
-      createAndFetchAssistantMessage,
-    ]
+    [createAssistantDrafts, setIsSending, getConfigValues, ENABLE_DRAFTS_FOR_PLUGINS, createAndFetchAssistantMessage]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -401,7 +397,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 
   const handleDraftPicked = useCallback(
-    async (chat_id, regen_index, index) => {
+    async ({ chatId, regenIndex, messageIndex }: DraftPickedParams) => {
       if (!isAwaitingMessageSelect) {
         return toast({
           title: "Draft messages are still generating.",
@@ -410,16 +406,16 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
       await post(API_ROUTES.CHAT_MESSAGE_EVAL, {
         arg: {
-          chat_id: chat_id,
-          message_id: draftMessages[regen_index][index].id,
-          inferior_message_ids: draftMessages[regen_index]
-            .filter((draft) => draft.id !== draftMessages[regen_index][index].id)
+          chat_id: chatId,
+          message_id: draftMessages[regenIndex][messageIndex].id,
+          inferior_message_ids: draftMessages[regenIndex]
+            .filter((draft) => draft.id !== draftMessages[regenIndex][messageIndex].id)
             .map((draft) => draft.id),
         },
       });
 
-      setMessages([...messages, ...draftMessages[regen_index]]);
-      setActiveMessageId(draftMessages[regen_index][index].id);
+      setMessages([...messages, ...draftMessages[regenIndex]]);
+      setActiveMessageId(draftMessages[regenIndex][messageIndex].id);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
       setDraftMessages([]);
@@ -437,6 +433,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setReytryingParentId,
       setShowEncourageMessage,
       setActiveMessageId,
+      toast,
     ]
   );
 
@@ -485,10 +482,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             NUM_GENERATED_DRAFTS > 1 &&
             (isSending || isAwaitingMessageSelect) &&
             streamedDrafts && (
-              <ChatAssistantDraftViewer
+              <ChatAssistantDraftPager
                 chatId={chatId}
                 streamedDrafts={streamedDrafts}
-                draftMessages={draftMessages}
+                draftMessageRegens={draftMessages}
                 onDraftPicked={handleDraftPicked}
                 onRetry={handleOnRetry}
               />

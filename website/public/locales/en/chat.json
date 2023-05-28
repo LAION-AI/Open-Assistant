@@ -37,8 +37,6 @@
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "remove_plugin": "Remove Plugin",
   "repetition_penalty": "Repetition penalty",
-  "show_less": "Show Less",
-  "show_more": "Show More",
   "sponsored_by": "Sponsored By",
   "temperature": "Temperature",
   "top_k": "Top K",

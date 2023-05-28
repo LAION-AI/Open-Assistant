@@ -1,17 +1,17 @@
 import { Box } from "@chakra-ui/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { put } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { InferenceMessage } from "src/types/Chat";
 import { buildTree, Tree } from "src/utils/buildTree";
+import useSWRMutation from "swr/mutation";
 import { StrictOmit } from "ts-essentials";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
-import useSWRMutation from "swr/mutation";
 
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { ChatMessageEntry, ChatMessageEntryProps } from "./ChatMessageEntry";
-import { API_ROUTES } from "src/lib/routes";
-import { put } from "src/lib/api";
 
 type ChatConversationTreeProps = {
   messages: InferenceMessage[];
