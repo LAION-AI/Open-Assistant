@@ -5,7 +5,6 @@ import { put } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 import { InferenceMessage } from "src/types/Chat";
 import { buildTree, Tree } from "src/utils/buildTree";
-import useSWRMutation from "swr/mutation";
 import { StrictOmit } from "ts-essentials";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
@@ -55,13 +54,9 @@ const TreeChildren = ({
   retryingParentId: string | null;
   activeMessageId: string | null;
 } & StrictOmit<ChatMessageEntryProps, "message" | "canRetry">) => {
-  const { trigger: triggerActiveMessageId } = useSWRMutation(API_ROUTES.UPDATE_CHAT(), put);
-
   const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
-  const [index, setIndex] = useState(() => 0);
-
-  const actualIndex = Math.min(index, trees.length - 1); // index sometimes out of bounds because useIsomorphicLayoutEffect only reset the index on the next render
-  const currentTree = sortedTrees[actualIndex];
+  const [index, setIndex] = useState(0);
+  const currentTree = sortedTrees[index];
 
   const length = trees.length;
   const hasSibling = length > 1;
@@ -83,8 +78,12 @@ const TreeChildren = ({
   }, [trees.length, activeMessageId]);
 
   useEffect(() => {
+    const updateActiveMessage = async () => {
+      await put(API_ROUTES.UPDATE_CHAT(), { arg: { chat_id: currentTree.chat_id, active_message_id: currentTree.id } });
+    };
+
     if (currentTree.children.length === 0) {
-      triggerActiveMessageId({ chat_id: currentTree.chat_id, active_message_id: currentTree.id });
+      updateActiveMessage().catch(console.error);
     }
   }),
     [currentTree];
@@ -120,13 +119,13 @@ const TreeChildren = ({
               <BaseMessageEmojiButton
                 emoji={ChevronLeft}
                 onClick={handlePrevious}
-                isDisabled={actualIndex === 0}
+                isDisabled={index === 0}
               ></BaseMessageEmojiButton>
-              <Box fontSize="xs">{`${actualIndex + 1}/${length}`}</Box>
+              <Box fontSize="xs">{`${index + 1}/${length}`}</Box>
               <BaseMessageEmojiButton
                 emoji={ChevronRight}
                 onClick={handleNext}
-                isDisabled={actualIndex === length - 1}
+                isDisabled={index === length - 1}
               ></BaseMessageEmojiButton>
             </MessageInlineEmojiRow>
           </>
