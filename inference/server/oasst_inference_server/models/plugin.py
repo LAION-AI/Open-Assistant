@@ -10,5 +10,9 @@ class DbPluginOAuthProvider(SQLModel, table=True):
 
     provider: str = Field(..., nullable=False, index=True, unique=True)
 
+    plugin_config_url: str = Field(..., nullable=False)
+
     client_id: str = Field(..., nullable=False)
     client_secret: str = Field(..., nullable=False)
+
+    verification_token: str = Field(..., nullable=False)
