@@ -4,6 +4,7 @@ from pathlib import Path
 import polars as pl
 from tqdm import tqdm
 
+
 # Sets up paths
 # TODO: Source paths from env file
 path_string = "PUT THE PATH HERE TO WHERE YOU STORED THE PARQUET FILES"
@@ -11,7 +12,7 @@ folder_path = Path(path_string)
 processed_folder_path = folder_path / "processed"
 output_path = folder_path / "twitter-conv-trees.jsonl"
 
-# Get parq files
+# Get parquet files
 parq_files = sorted(processed_folder_path.rglob("*.parquet"))
 
 wanted_cols = [
@@ -36,13 +37,10 @@ wanted_cols = [
     "user_statuses_count",
 ]
 
-# Load parqs into list. Using Polars for performance reasons.
-df_list = []
-for p in parq_files:
-    df_list.append(pl.read_parquet(p, columns=wanted_cols))
+# Load parquet files into a list using list comprehension
+df_list = [pl.read_parquet(p, columns=wanted_cols) for p in parq_files]
 
-# Create major dataframe.
-# This can be done incrementally if RAM is constrained by modifying the above code.
+# Create major dataframe by concatenating the list of dataframes
 p_df = pl.concat(df_list)
 
 # Clean up the reference just in case to help with memory if needed.
@@ -51,7 +49,7 @@ del df_list
 # Get tweets that are replies to other tweets
 p_df_replies_only = p_df.filter(pl.col("in_reply_to_status_id").is_null().is_not())
 
-# Group by replied to status id to see the most replied to statuses. This can take some time.
+# Group by replied to status id to see the most replied to statuses
 p_df_group_reply_to_status = p_df_replies_only.groupby("in_reply_to_status_id").count().sort("count", reverse=True)
 
 # Save output of grouping the top replied to statuses
@@ -70,7 +68,7 @@ tweets_that_are_replies_path = folder_path / "tweets_that_are_replies.parquet"
 p_df_replies_only.write_parquet(tweets_that_are_replies_path)
 
 # Filter the tweets that have replies to ones that aren't replies to others.
-# Also filter for only english for now.
+# Also filter for only English for now.
 # This gives the root tweets that have replies but are the start of a conversation.
 origin_tweets = p_join.filter((pl.col("in_reply_to_status_id").is_null()) & (pl.col("lang") == "en"))
 
@@ -90,7 +88,7 @@ class ConversationTreeNode:
         if metadata:
             self.metadata = metadata
         else:
-            self.metadata = from_df.filter(pl.col("id") == tweet_id).to_dicts()[0]
+            self.metadata = from_df.filter(pl.col("id") == tweet_id).to_pandas().to_dict(orient="records")[0]
 
         self.metadata["prompt_user"] = prompt_user
         self.role = role_decide(self.metadata["user_id"], prompt_user)
@@ -100,7 +98,7 @@ class ConversationTreeNode:
         self.get_children(tweet_id=tweet_id, children_df=children_df)
 
     def get_children(self, tweet_id, children_df):
-        children_dicts = children_df.filter(pl.col("in_reply_to_status_id") == tweet_id).to_dicts()
+        children_dicts = children_df.filter(pl.col("in_reply_to_status_id") == tweet_id).to_pandas().to_dict(orient="records")
         if len(children_dicts) > 0:
             children = [
                 ConversationTreeNode(
@@ -123,17 +121,24 @@ class ConversationTree:
         self.metadata = None
 
 
+class ConversationTreeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ConversationTree):
+            return obj.__dict__
+        return super().default(obj)
+
+
 # Create conversation trees
 conv_tree_list = [
     ConversationTree(
         tweet_id=r["id"], prompt_user=r["user_id"], from_df=origin_tweets, children_df=p_df_replies_only, r_metadata=r
     )
-    for r in tqdm(origin_tweets.to_dicts())
+    for r in tqdm(origin_tweets.to_pandas().to_dict(orient="records"))
 ]
 
-# Write conversation trees to jsonl file.
+# Write conversation trees to jsonl file using the custom encoder.
 # Might need to clean up the last newline.
 with open(output_path, "w") as output:
     for t in tqdm(conv_tree_list):
-        json.dump(obj=t, fp=output, default=lambda x: x.__dict__)
+        json.dump(obj=t, fp=output, cls=ConversationTreeEncoder)
         output.write("\n")
