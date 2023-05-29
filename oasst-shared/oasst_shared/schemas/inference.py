@@ -329,6 +329,15 @@ class SafePromptResponse(WorkerResponseBase):
     safety_rots: str
 
 
+class PluginIntermediateResponse(WorkerResponseBase):
+    response_type: Literal["plugin_intermediate"] = "plugin_intermediate"
+    text: str = ""
+    current_plugin_thought: str
+    current_plugin_action_taken: str
+    current_plugin_action_input: str
+    current_plugin_action_response: str
+
+
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
@@ -389,6 +398,7 @@ WorkerResponse = Annotated[
         InternalFinishedMessageResponse,
         InternalErrorResponse,
         SafePromptResponse,
+        PluginIntermediateResponse,
     ],
     pydantic.Field(discriminator="response_type"),
 ]
