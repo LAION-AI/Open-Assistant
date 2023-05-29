@@ -100,7 +100,11 @@ class ConversationTreeNode:
         self.get_children(tweet_id=tweet_id, children_df=children_df)
 
     def get_children(self, tweet_id, children_df):
-        children_dicts = children_df.filter(pl.col("in_reply_to_status_id") == tweet_id).to_dicts()
+        children_dicts = (
+            children_df.filter(pl.col("in_reply_to_status_id") == tweet_id)
+            .to_pandas()
+            .to_dict(orient="records")
+        )
         if len(children_dicts) > 0:
             children = [
                 ConversationTreeNode(
@@ -113,6 +117,7 @@ class ConversationTreeNode:
                 for c in children_dicts
             ]
             self.children = children
+
 
 
 class ConversationTree:
