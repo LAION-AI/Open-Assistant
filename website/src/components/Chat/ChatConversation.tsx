@@ -222,7 +222,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
     if (isAwaitingMessageSelect) {
       return toast({
-        title: "Please select a draft to continue.",
+        title: t("select_chat_notify"),
       });
     }
 
@@ -293,6 +293,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     isAwaitingMessageSelect,
     setShowEncourageMessage,
     activateAutoScroll,
+    t,
   ]);
 
   const sendVote = useMessageVote();
@@ -409,7 +410,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     async ({ chatId, regenIndex, messageIndex }: DraftPickedParams) => {
       if (!isAwaitingMessageSelect) {
         return toast({
-          title: "Draft messages are still generating.",
+          title: t("drafts_generating_notify"),
         });
       }
 
@@ -443,6 +444,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setShowEncourageMessage,
       setActiveMessageId,
       toast,
+      t,
     ]
   );
 
