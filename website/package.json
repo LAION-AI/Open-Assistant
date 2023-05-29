@@ -51,7 +51,7 @@
     "chart.js": "^4.3.0",
     "clsx": "^1.2.1",
     "date-fns": "^2.30.0",
-    "eslint": "^8.40.0",
+    "eslint": "^8.41.0",
     "eslint-config-next": "^13.4.2",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "focus-visible": "^5.2.0",
