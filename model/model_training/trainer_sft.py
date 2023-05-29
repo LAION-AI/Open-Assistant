@@ -32,6 +32,43 @@ from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
 
+## packages i have added
+import wandb
+from pathlib import Path
+import pydantic
+
+
+##pydantic classes to access noprefix2 and the sampling_params
+class SamplingConfig(pydantic.BaseModel):
+    name: Optional[str]
+    generate_args: dict[str, Any] = {}
+    pre_text: Optional[str]
+    add_prefix_tokens: Optional[bool] = False
+
+    # for legacy mode
+    human_name: Optional[str]
+    bot_name: Optional[str]
+
+class Configuration(pydantic.BaseModel):
+    default: Optional[SamplingConfig]
+    configurations: list[SamplingConfig]
+
+class SamplingResult(pydantic.BaseModel):
+    sampling_config: str
+    sampling_params: dict
+    outputs: list[str]
+
+class PromptResults(pydantic.BaseModel):
+    prompt: str
+    results: list[SamplingResult]
+
+class SamplingReport(pydantic.BaseModel):
+    model_name: str
+    date: str
+    args: dict
+    prompts: list[PromptResults]
+
+
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
     out = {}
