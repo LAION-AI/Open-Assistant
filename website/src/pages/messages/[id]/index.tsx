@@ -38,7 +38,7 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
               (data.tree === null ? (
                 "Unable to build tree"
               ) : (
-                <MessageTree tree={data.tree} messageId={data.message?.id} scrollToHighlighted />
+                <MessageTree tree={data.tree} messageId={data.message?.id} />
               ))}
           </CardBody>
         </Card>

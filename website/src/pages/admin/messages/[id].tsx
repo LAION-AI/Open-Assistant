@@ -9,7 +9,6 @@ import {
   TableContainer,
   Tbody,
   Td,
-  Text,
   Th,
   Thead,
   Tr,
@@ -40,7 +39,9 @@ const MessageDetail = () => {
       max_depth: number;
       origin: string;
     };
-  }>(`/api/admin/messages/${messageId}/tree`, get);
+  }>(`/api/admin/messages/${messageId}/tree`, get, {
+    keepPreviousData: true,
+  });
 
   return (
     <>
@@ -48,7 +49,7 @@ const MessageDetail = () => {
         <title>Open Assistant</title>
       </Head>
       <AdminArea>
-        {isLoading && <CircularProgress isIndeterminate></CircularProgress>}
+        {isLoading && !data && <CircularProgress isIndeterminate></CircularProgress>}
         {error && "Unable to load message tree"}
         {data &&
           (data.tree === null ? (
