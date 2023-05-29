@@ -218,6 +218,12 @@ async def handle_worker(
                                     response=worker_response,
                                     work_request_map=work_request_map,
                                 )
+                            case "plugin_intermediate":
+                                worker_response = cast(inference.PluginIntermediateResponse, worker_response)
+                                await handle_plugin_intermediate_response(
+                                    work_request_map=work_request_map,
+                                    response=worker_response,
+                                )
                             case _:
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
@@ -327,6 +333,19 @@ async def initiate_work_for_message(
 
 async def handle_token_response(
     response: inference.TokenResponse,
+    work_request_map: WorkRequestContainerMap,
+):
+    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    message_queue = queueing.message_queue(
+        deps.redis_client,
+        message_id=work_response_container.message_id,
+    )
+    await message_queue.enqueue(response.json())
+    work_response_container.num_responses += 1
+
+
+async def handle_plugin_intermediate_response(
+    response: inference.PluginIntermediateResponse,
     work_request_map: WorkRequestContainerMap,
 ):
     work_response_container = get_work_request_container(work_request_map, response.request_id)

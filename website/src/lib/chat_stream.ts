@@ -5,11 +5,19 @@ export interface QueueInfo {
   queueSize: number;
 }
 
+export interface PluginIntermediateResponse {
+  currentPluginThought: string;
+  currentPluginAction: string;
+  currentPluginActionResponse: string;
+  currentPluginActionInput: string;
+}
+
 export interface ChatStreamHandlerOptions {
   stream: ReadableStream<Uint8Array>;
   onError: (err: unknown) => unknown;
   onPending: (info: QueueInfo) => unknown;
   onToken: (partialMessage: string) => unknown;
+  onPluginIntermediateResponse: (pluginIntermediateResponse: PluginIntermediateResponse) => unknown;
 }
 
 export async function handleChatEventStream({
@@ -17,6 +25,7 @@ export async function handleChatEventStream({
   onError,
   onPending,
   onToken,
+  onPluginIntermediateResponse,
 }: ChatStreamHandlerOptions): Promise<InferenceMessage | null> {
   let tokens = "";
   for await (const { event, data } of iteratorSSE(stream)) {
@@ -39,8 +48,15 @@ export async function handleChatEventStream({
         // handle error
         await onError(chunk.error);
         return chunk.message;
+      } else if (chunk.event_type === "plugin_intermediate") {
+        await onPluginIntermediateResponse({
+          currentPluginThought: chunk.current_plugin_thought,
+          currentPluginAction: chunk.current_plugin_action_taken,
+          currentPluginActionResponse: chunk.current_plugin_action_response,
+          currentPluginActionInput: chunk.current_plugin_action_input,
+        });
       } else {
-        console.error("Unexpected event", chunk);
+        console.log("Unexpected event", chunk);
       }
     } catch (e) {
       console.error(`Error parsing data: ${data}, error: ${e}`);

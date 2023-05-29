@@ -46,8 +46,23 @@ class SafePromptResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
+class PluginIntermediateResponseEvent(pydantic.BaseModel):
+    event_type: Literal["plugin_intermediate"] = "plugin_intermediate"
+    current_plugin_thought: str
+    current_plugin_action_taken: str
+    current_plugin_action_input: str
+    current_plugin_action_response: str
+    message: inference.MessageRead | None = None
+
+
 ResponseEvent = Annotated[
-    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent, SafePromptResponseEvent],
+    Union[
+        TokenResponseEvent,
+        ErrorResponseEvent,
+        MessageResponseEvent,
+        SafePromptResponseEvent,
+        PluginIntermediateResponseEvent,
+    ],
     pydantic.Field(discriminator="event_type"),
 ]
 

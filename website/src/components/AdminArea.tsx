@@ -26,7 +26,7 @@ export const AdminArea = ({ children }: { children: ReactNode }) => {
 
   return (
     <SWRConfig value={swrConfig}>
-      <main>{status === "loading" ? "loading..." : children}</main>;
+      <main>{status === "loading" ? "loading..." : children}</main>
     </SWRConfig>
   );
 };
