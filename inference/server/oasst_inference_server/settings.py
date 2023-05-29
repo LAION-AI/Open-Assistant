@@ -112,6 +112,9 @@ class Settings(pydantic.BaseSettings):
 
     inference_cors_origins: str = "*"
 
+    # sent as a work parameter, higher values increase load on workers
+    plugin_max_depth: int = 4
+
     @property
     def inference_cors_origins_list(self) -> list[str]:
         return self.inference_cors_origins.split(",")

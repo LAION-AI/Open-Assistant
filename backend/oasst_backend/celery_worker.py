@@ -23,5 +23,10 @@ app.conf.beat_schedule = {
         "task": "update_user_streak",
         "schedule": 60.0 * 60.0 * 4,  # seconds
     },
+    "update-search-vectors": {
+        "task": "update_search_vectors",
+        "schedule": 60.0 * 20.0,
+        "args": (1000,),  # (batch_size,)
+    },
 }
 app.conf.timezone = "UTC"

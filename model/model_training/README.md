@@ -212,10 +212,9 @@ deepspeed trainer_sft.py --configs defaults your-model-name --deepspeed
 Here is an uncomplete overview of datasets for sft:
 
 <!-- prettier-ignore -->
+<!-- prettier-ignore-start -->
 dataset_name                    | train_counts | eval_counts | total_counts
-----------------------------------------------------------------
-
-<!-- prettier-ignore -->
+--|--|--|--
 joke                            |       301    |      76     |       377
 webgpt                          |     14251    |    3563     |     17814
 gpt4all                         |    313552    |   78388     |    391940
@@ -233,6 +232,7 @@ prosocial_dialogue              |    157160    |   26983     |    184143
 explain_prosocial               |    360708    |   61248     |    421956
 soda                            |    924102    |  231026     |   1155128
 oa_leet10k                      |     18728    |    4683     |     23411
+<!-- prettier-ignore-end -->
 
 This list can be generated with the following command, but beware that this
 downloads all available datasets (>100GB):

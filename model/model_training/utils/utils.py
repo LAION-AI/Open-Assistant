@@ -14,6 +14,7 @@ from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
+from model_training.models.prefix_llama import LlamaForCausalLM
 from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
@@ -309,15 +310,18 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, check_freeze_la
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
                 conf.model_name, cache_dir=conf.cache_dir, num_labels=1, torch_dtype=dtype
             )
-    else:
-        model = get_specific_model(
-            conf.model_name,
-            cache_dir=conf.cache_dir,
-            quantization=conf.quantization,
-            seq2seqmodel=conf.seq2seqmodel,
-            without_head=conf.is_reward_model,
-            torch_dtype=dtype,
-        )
+    if not conf.is_reward_model:
+        if conf.peft_type is not None and conf.peft_type == "prefix-tuning" and "llama" in conf.model_name:
+            model = LlamaForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
+        else:
+            model = get_specific_model(
+                conf.model_name,
+                cache_dir=conf.cache_dir,
+                quantization=conf.quantization,
+                seq2seqmodel=conf.seq2seqmodel,
+                without_head=conf.is_reward_model,
+                torch_dtype=dtype,
+            )
 
         n_embs = model.get_input_embeddings().num_embeddings
         if len(tokenizer) != n_embs and check_freeze_layer:
