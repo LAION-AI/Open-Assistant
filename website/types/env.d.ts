@@ -10,7 +10,7 @@ declare global {
       MODERATOR_USERS: string;
       INFERENCE_SERVER_HOST: string;
       ENABLE_CHAT: boolean;
-      ENABLE_DRAFTS_FOR_PLUGINS: boolean;
+      ENABLE_DRAFTS_WITH_PLUGINS: boolean;
       NUM_GENERATED_DRAFTS: number;
       CURRENT_ANNOUNCEMENT: string;
     }

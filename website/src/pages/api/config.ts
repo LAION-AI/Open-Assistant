@@ -5,7 +5,7 @@ import { BrowserConfig } from "src/types/Config";
 // don't put sensitive information here
 const config: BrowserConfig = {
   ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
-  ENABLE_DRAFTS_FOR_PLUGINS: boolean(process.env.ENABLE_DRAFTS_FOR_PLUGINS),
+  ENABLE_DRAFTS_WITH_PLUGINS: boolean(process.env.ENABLE_DRAFTS_WITH_PLUGINS),
   NUM_GENERATED_DRAFTS: Number(process.env.NUM_GENERATED_DRAFTS),
   ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
   ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),

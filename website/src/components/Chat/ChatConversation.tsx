@@ -34,7 +34,7 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const { t } = useTranslation("chat");
-  const { ENABLE_DRAFTS_FOR_PLUGINS, NUM_GENERATED_DRAFTS } = useBrowserConfig();
+  const { ENABLE_DRAFTS_WITH_PLUGINS, NUM_GENERATED_DRAFTS } = useBrowserConfig();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
@@ -274,14 +274,14 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     activateAutoScroll();
     // after creating the prompters message, handle the assistant's case
     const { plugins } = getConfigValues();
-    if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
+    if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
       await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
     } else {
       await createAssistantDrafts({ parentId: prompter_message.id, chatId });
     }
   }, [
     getConfigValues,
-    ENABLE_DRAFTS_FOR_PLUGINS,
+    ENABLE_DRAFTS_WITH_PLUGINS,
     NUM_GENERATED_DRAFTS,
     setIsSending,
     chatId,
@@ -305,7 +305,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setReytryingParentId(params.parentId);
 
       const { plugins } = getConfigValues();
-      if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
+      if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
         await createAndFetchAssistantMessage(params);
         setReytryingParentId(null);
       } else {
@@ -316,7 +316,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       createAssistantDrafts,
       setIsSending,
       getConfigValues,
-      ENABLE_DRAFTS_FOR_PLUGINS,
+      ENABLE_DRAFTS_WITH_PLUGINS,
       NUM_GENERATED_DRAFTS,
       createAndFetchAssistantMessage,
     ]
@@ -384,7 +384,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       if (prompter_message) {
         setDraftMessages([]);
         const { plugins } = getConfigValues();
-        if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
+        if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
           await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
         } else {
           await createAssistantDrafts({ parentId: prompter_message.id, chatId });
@@ -400,7 +400,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setIsSending,
       setDraftMessages,
       getConfigValues,
-      ENABLE_DRAFTS_FOR_PLUGINS,
+      ENABLE_DRAFTS_WITH_PLUGINS,
       NUM_GENERATED_DRAFTS,
     ]
   );
@@ -487,7 +487,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-          {(ENABLE_DRAFTS_FOR_PLUGINS || plugins.length === 0) &&
+          {(ENABLE_DRAFTS_WITH_PLUGINS || plugins.length === 0) &&
             NUM_GENERATED_DRAFTS > 1 &&
             (isSending || isAwaitingMessageSelect) &&
             streamedDrafts && (
