@@ -15,7 +15,7 @@ import { ChatMessageEntry, ChatMessageEntryProps } from "./ChatMessageEntry";
 type ChatConversationTreeProps = {
   messages: InferenceMessage[];
   retryingParentId: string | null;
-  activeMessageId: string | null;
+  activeThreadTailMessageId: string | null;
 } & StrictOmit<ChatMessageEntryProps, "message">;
 
 export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
@@ -23,7 +23,7 @@ export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
 export const ChatConversationTree = memo(function ChatConversationTree({
   messages,
   retryingParentId,
-  activeMessageId,
+  activeThreadTailMessageId,
   ...props
 }: ChatConversationTreeProps) {
   const tree = useMemo(() => buildTree(messages), [messages]);
@@ -37,7 +37,7 @@ export const ChatConversationTree = memo(function ChatConversationTree({
           trees={tree.children}
           {...props}
           retryingParentId={retryingParentId}
-          activeMessageId={activeMessageId}
+          activeThreadTailMessageId={activeThreadTailMessageId}
         />
       )}
     </>
@@ -47,12 +47,12 @@ export const ChatConversationTree = memo(function ChatConversationTree({
 const TreeChildren = ({
   trees,
   retryingParentId,
-  activeMessageId,
+  activeThreadTailMessageId,
   ...props
 }: {
   trees: Tree<InferenceMessage>[];
   retryingParentId: string | null;
-  activeMessageId: string | null;
+  activeThreadTailMessageId: string | null;
 } & StrictOmit<ChatMessageEntryProps, "message" | "canRetry">) => {
   const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
   const [index, setIndex] = useState(0);
@@ -65,25 +65,27 @@ const TreeChildren = ({
     const activeIndex = trees.findIndex((tree) => {
       const searchInChildren = (children) => {
         return children.some((child) => {
-          if (child.id === activeMessageId) {
+          if (child.id === activeThreadTailMessageId) {
             return true;
           }
           return searchInChildren(child.children);
         });
       };
-      return tree.children.length === 0 ? tree.id === activeMessageId : searchInChildren(tree.children);
+      return tree.children.length === 0 ? tree.id === activeThreadTailMessageId : searchInChildren(tree.children);
     });
 
     setIndex(activeIndex === -1 ? trees.length - 1 : activeIndex);
-  }, [trees.length, activeMessageId]);
+  }, [trees.length, activeThreadTailMessageId]);
 
   useEffect(() => {
-    const updateActiveMessage = async () => {
-      await put(API_ROUTES.UPDATE_CHAT(), { arg: { chat_id: currentTree.chat_id, active_message_id: currentTree.id } });
+    const updateActiveThread = async () => {
+      await put(API_ROUTES.UPDATE_CHAT(), {
+        arg: { chat_id: currentTree.chat_id, active_thread_tail_message_id: currentTree.id },
+      });
     };
 
     if (currentTree.children.length === 0) {
-      updateActiveMessage().catch(console.error);
+      updateActiveThread().catch(console.error);
     }
   }),
     [currentTree];
@@ -145,7 +147,7 @@ const TreeChildren = ({
         <TreeChildren
           retryingParentId={retryingParentId}
           trees={currentTree.children}
-          activeMessageId={activeMessageId}
+          activeThreadTailMessageId={activeThreadTailMessageId}
           {...props}
         />
       )}

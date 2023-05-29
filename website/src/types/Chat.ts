@@ -25,7 +25,7 @@ export interface ChatItem {
   // those are not available when you first create a chat
   title?: string;
   hidden?: boolean;
-  active_message_id?: string;
+  active_thread_tail_message_id?: string;
 }
 
 export interface InferenceMessage {
@@ -140,7 +140,7 @@ export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
-  active_message_id?: string;
+  active_thread_tail_message_id?: string;
 }
 
 export interface PluginEntry {

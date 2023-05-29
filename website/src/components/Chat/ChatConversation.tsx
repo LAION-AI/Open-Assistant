@@ -38,7 +38,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
-  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [activeThreadTailMessageId, setActiveThreadTailMessageId] = useState<string | null>(null);
 
   const [streamedDrafts, setStreamedDrafts] = useState<string[]>([]);
   const [draftMessages, setDraftMessages] = useState<InferenceMessage[][]>([]);
@@ -55,7 +55,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
-      setActiveMessageId(data.active_message_id);
+      setActiveThreadTailMessageId(data.active_thread_tail_message_id);
     },
     onError: (err) => {
       if (err instanceof OasstError && err.httpStatusCode === 404) {
@@ -125,14 +125,14 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }
       if (message) {
         setMessages((messages) => [...messages, message!]);
-        setActiveMessageId(message.id);
+        setActiveThreadTailMessageId(message.id);
       }
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
       setShowEncourageMessage.on();
     },
-    [getConfigValues, setIsSending, setShowEncourageMessage, toast, setActiveMessageId]
+    [getConfigValues, setIsSending, setShowEncourageMessage, toast, setActiveThreadTailMessageId]
   );
   const createAssistantDrafts = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
@@ -434,7 +434,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       });
 
       setMessages([...messages, ...draftMessages[regenIndex]]);
-      setActiveMessageId(draftMessages[regenIndex][messageIndex].id);
+      setActiveThreadTailMessageId(draftMessages[regenIndex][messageIndex].id);
       setIsAwaitingMessageSelect.off();
       setStreamedDrafts(null);
       setDraftMessages([]);
@@ -451,7 +451,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setDraftMessages,
       setReytryingParentId,
       setShowEncourageMessage,
-      setActiveMessageId,
+      setActiveThreadTailMessageId,
       toast,
       t,
     ]
@@ -492,7 +492,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onRetry={handleOnRetry}
             isSending={isSending}
             retryingParentId={retryingParentId}
-            activeMessageId={activeMessageId}
+            activeThreadTailMessageId={activeThreadTailMessageId}
             onEditPromtp={handleEditPrompt}
             showEncourageMessage={showEncourageMessage}
             onEncourageMessageClose={setShowEncourageMessage.off}

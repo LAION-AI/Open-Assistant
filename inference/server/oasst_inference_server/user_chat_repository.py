@@ -296,9 +296,9 @@ class UserChatRepository(pydantic.BaseModel):
         title: str | None = None,
         hidden: bool | None = None,
         allow_data_use: bool | None = None,
-        active_message_id: str | None = None,
+        active_thread_tail_message_id: str | None = None,
     ) -> None:
-        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=} {active_message_id=}")
+        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=} {active_thread_tail_message_id=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
 
         if title is not None:
@@ -313,8 +313,8 @@ class UserChatRepository(pydantic.BaseModel):
             logger.info(f"Updating allow_data_use of chat {chat_id=}: {allow_data_use=}")
             chat.allow_data_use = allow_data_use
 
-        if active_message_id is not None:
-            logger.info(f"Updating active_message_id of chat {chat_id=}: {active_message_id=}")
-            chat.active_message_id = active_message_id
+        if active_thread_tail_message_id is not None:
+            logger.info(f"Updating active_thread_tail_message_id of chat {chat_id=}: {active_thread_tail_message_id=}")
+            chat.active_thread_tail_message_id = active_thread_tail_message_id
 
         await self.session.commit()

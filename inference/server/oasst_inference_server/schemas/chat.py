@@ -91,7 +91,7 @@ class ChatListRead(pydantic.BaseModel):
     title: str | None
     hidden: bool = False
     allow_data_use: bool = True
-    active_message_id: str | None
+    active_thread_tail_message_id: str | None
 
 
 class ChatRead(ChatListRead):
@@ -120,4 +120,4 @@ class ChatUpdateRequest(pydantic.BaseModel):
     title: pydantic.constr(max_length=100) | None = None
     hidden: bool | None = None
     allow_data_use: bool | None = None
-    active_message_id: str | None = None
+    active_thread_tail_message_id: str | None = None
