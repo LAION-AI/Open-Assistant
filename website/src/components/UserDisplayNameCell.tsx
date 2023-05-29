@@ -1,6 +1,6 @@
 import { Flex, Link, Tooltip } from "@chakra-ui/react";
 import { Discord, Google } from "@icons-pack/react-simple-icons";
-import { Mail } from "lucide-react";
+import { Bot, Mail } from "lucide-react";
 import NextLink from "next/link";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { ROUTES } from "src/lib/routes";
@@ -12,6 +12,7 @@ const AUTH_METHOD_TO_ICON: Record<AuthMethod, JSX.Element> = {
   local: <Mail size="20" />,
   discord: <Discord size="20" />,
   google: <Google size="20" />,
+  system: <Bot size="20" />,
 };
 
 export const UserDisplayNameCell = ({
