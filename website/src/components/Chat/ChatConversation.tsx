@@ -282,20 +282,11 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     inputRef.current!.value = "";
     activateAutoScroll();
     // after creating the prompters message, handle the assistant's case
-    const { plugins } = getConfigValues();
-    if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
-      await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-    } else {
-      await createAssistantDrafts({ parentId: prompter_message.id, chatId });
-    }
+    await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
   }, [
-    getConfigValues,
-    ENABLE_DRAFTS_WITH_PLUGINS,
-    NUM_GENERATED_DRAFTS,
     setIsSending,
     chatId,
     messages,
-    createAssistantDrafts,
     createAndFetchAssistantMessage,
     toast,
     isSending,
@@ -392,27 +383,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }
 
       if (prompter_message) {
-        setDraftMessages([]);
-        const { plugins } = getConfigValues();
-        if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
-          await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-        } else {
-          await createAssistantDrafts({ parentId: prompter_message.id, chatId });
-        }
+        await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
       }
 
       setReytryingParentId(null);
     },
-    [
-      createAssistantDrafts,
-      createAndFetchAssistantMessage,
-      isSending,
-      setIsSending,
-      setDraftMessages,
-      getConfigValues,
-      ENABLE_DRAFTS_WITH_PLUGINS,
-      NUM_GENERATED_DRAFTS,
-    ]
+    [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
   const handleDraftPicked = useCallback(
@@ -457,8 +433,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     ]
   );
 
-  const { plugins } = getConfigValues();
-
   return (
     <Box
       pt="4"
@@ -498,18 +472,17 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-          {(ENABLE_DRAFTS_WITH_PLUGINS || plugins.length === 0) &&
-            NUM_GENERATED_DRAFTS > 1 &&
-            (isSending || isAwaitingMessageSelect) &&
-            streamedDrafts && (
-              <ChatAssistantDraftPager
-                chatId={chatId}
-                streamedDrafts={streamedDrafts}
-                draftMessageRegens={draftMessages}
-                onDraftPicked={handleDraftPicked}
-                onRetry={handleOnRetry}
-              />
-            )}
+          {(isSending || isAwaitingMessageSelect) &&
+          ((Array.isArray(streamedDrafts) && streamedDrafts.length) ||
+            (Array.isArray(draftMessages) && draftMessages.length)) ? (
+            <ChatAssistantDraftPager
+              chatId={chatId}
+              streamedDrafts={streamedDrafts}
+              draftMessageRegens={draftMessages}
+              onDraftPicked={handleDraftPicked}
+              onRetry={handleOnRetry}
+            />
+          ) : null}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>
         </SimpleBar>
 
