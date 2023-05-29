@@ -80,7 +80,20 @@ interface InferenceEventPending {
   queue_size: number;
 }
 
-export type InferenceEvent = InferenceEventMessage | InferenceEventError | InferenceEventToken | InferenceEventPending;
+interface InferenceEventPluginIntermediateStep {
+  event_type: "plugin_intermediate";
+  current_plugin_thought: string;
+  current_plugin_action_taken: string;
+  current_plugin_action_response: string;
+  current_plugin_action_input: string;
+}
+
+export type InferenceEvent =
+  | InferenceEventMessage
+  | InferenceEventError
+  | InferenceEventToken
+  | InferenceEventPending
+  | InferenceEventPluginIntermediateStep;
 
 export type ModelInfo = {
   name: string;
