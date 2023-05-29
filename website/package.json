@@ -38,7 +38,7 @@
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@icons-pack/react-simple-icons": "^5.11.0",
-    "@marsidev/react-turnstile": "^0.0.7",
+    "@marsidev/react-turnstile": "^0.2.1",
     "@next-auth/prisma-adapter": "^1.0.6",
     "@next/bundle-analyzer": "^13.4.1",
     "@nikolovlazar/chakra-ui-prose": "^1.2.1",
