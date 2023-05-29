@@ -305,14 +305,21 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setReytryingParentId(params.parentId);
 
       const { plugins } = getConfigValues();
-      if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+      if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
         await createAndFetchAssistantMessage(params);
         setReytryingParentId(null);
       } else {
         await createAssistantDrafts(params);
       }
     },
-    [createAssistantDrafts, setIsSending, getConfigValues, ENABLE_DRAFTS_FOR_PLUGINS, createAndFetchAssistantMessage]
+    [
+      createAssistantDrafts,
+      setIsSending,
+      getConfigValues,
+      ENABLE_DRAFTS_FOR_PLUGINS,
+      NUM_GENERATED_DRAFTS,
+      createAndFetchAssistantMessage,
+    ]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -377,7 +384,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       if (prompter_message) {
         setDraftMessages([]);
         const { plugins } = getConfigValues();
-        if (!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) {
+        if ((!ENABLE_DRAFTS_FOR_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
           await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
         } else {
           await createAssistantDrafts({ parentId: prompter_message.id, chatId });
@@ -394,6 +401,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setDraftMessages,
       getConfigValues,
       ENABLE_DRAFTS_FOR_PLUGINS,
+      NUM_GENERATED_DRAFTS,
     ]
   );
 
