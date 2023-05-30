@@ -12,6 +12,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
     max_count: 10,
     user_id: req.query.user_id as string,
     include_user: !!req.query.include_user,
+    search_query: req.query.search_query as string,
   });
   res.status(200).json(messages);
 });

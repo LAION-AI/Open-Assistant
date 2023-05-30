@@ -1,5 +1,5 @@
 import { Card, CardBody, IconButton } from "@chakra-ui/react";
-import { createColumnHelper, Cell } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -16,26 +16,24 @@ const columns: DataTableColumnDef<User>[] = [
   columnHelper.accessor("user_id", {
     header: "ID",
   }),
-  {
-    ...columnHelper.accessor("id", {
-      header: "Auth ID",
-    }),
-    filterable: true,
-  },
+  columnHelper.accessor("id", {
+    header: "Auth ID",
+    meta: {
+      filterable: true,
+    },
+  }),
   columnHelper.accessor("auth_method", {
     header: "Auth Method",
   }),
-  {
-    ...columnHelper.accessor("display_name", {
-      header: "Name",
-    }),
-    filterable: true,
+  columnHelper.accessor("display_name", {
+    header: "Name",
     meta: {
+      filterable: true,
       cellProps: (x) => {
         return { style: { overflow: "hidden" } };
       },
     },
-  },
+  }),
   columnHelper.accessor("role", {
     header: "Role",
   }),

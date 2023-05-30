@@ -11,6 +11,7 @@ import torch
 # from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.efficiency_utils import fuse_gelu
+from model_training.models.peft_modeling import peft_model
 from model_training.utils.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -417,6 +418,12 @@ def main():
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
 
     model = get_model(training_conf, tokenizer)
+
+    if training_conf.peft_model:
+        print("Using PEFT model")
+        model = peft_model(
+            model, peft_type=training_conf.peft_type, gradient_checkpointing=training_conf.gradient_checkpointing
+        )
 
     if training_conf.quantization:
         import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
