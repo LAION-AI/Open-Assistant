@@ -159,6 +159,7 @@ class TreeManagerConfiguration(BaseModel):
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
     API_V1_STR: str = "/api/v1"
+    PLUGINS_PATH_PREFIX: str = "/plugins"
     OFFICIAL_WEB_API_KEY: str = "1234"
 
     # Encryption fields for handling the web generated JSON Web Tokens.
