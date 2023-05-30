@@ -2,11 +2,18 @@ import asyncio
 import signal
 import sys
 
+import json
 import fastapi
 import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models
+from oasst_inference_server.models.fake_data_factories import (
+    DbChatFactory,
+    DBMessageFactory,
+    DbUserFactory,
+    DbWorkerFactory,
+)
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
@@ -118,3 +125,29 @@ app.include_router(configs.router)
 async def welcome_message():
     logger.warning("Inference server started")
     logger.warning("To stop the server, press Ctrl+C")
+
+
+if settings.insert_fake_data:
+    @app.on_event("startup")
+    async def insert_fake_data_event():
+        logger.warning("Inserting fake data into database (insert_fake_data is True)")
+        async with deps.manual_create_session() as session:
+            user_1 = DbUserFactory.build()
+            worker_1 = DbWorkerFactory.build()
+
+            session.add(user_1)
+            session.add(worker_1)
+            await session.commit()
+
+            chat_1 = DbChatFactory.build(user_id=user_1.id)
+            session.add(chat_1)
+            await session.commit()
+
+            with open(settings.fake_data_path) as f:
+                dummy_messages_raw = json.load(f)
+
+            messages = [DBMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id,content=dm["text"],**dm) for dm in dummy_messages_raw]
+            session.add_all(messages)
+
+            await session.commit()
+        logger.warning("Done inserting fake data into database")
