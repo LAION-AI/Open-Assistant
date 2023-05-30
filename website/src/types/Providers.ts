@@ -1,1 +1,1 @@
-export type AuthMethod = "local" | "discord" | "google";
+export type AuthMethod = "local" | "discord" | "google" | "system";

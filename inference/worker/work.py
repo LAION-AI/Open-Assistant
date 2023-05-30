@@ -84,7 +84,7 @@ def handle_work_request(
 
     for plugin in parameters.plugins:
         if plugin.enabled:
-            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
+            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer, ws)
             # When using plugins and final prompt is truncated due to length limit
             # LLaMA has tendency to leak internal prompts and generate bad continuations
             # So we add keywords/sequences to the stop sequences to reduce this

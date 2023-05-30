@@ -3,6 +3,7 @@ import datetime
 import interface
 import transformers
 import utils
+import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
@@ -24,9 +25,6 @@ from loguru import logger
 from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
 from settings import settings
-
-# Max depth of retries for tool usage
-MAX_DEPTH = 6
 
 # Exclude tools description from final prompt. Saves ctx space but can hurt output
 # quality especially if truncation kicks in. Dependent on model used
@@ -110,6 +108,9 @@ def handle_plugin_usage(
     parameters: interface.GenerateStreamParameters,
     tools: list[Tool],
     plugin: inference.PluginEntry | None,
+    plugin_max_depth: int,
+    ws: websocket.WebSocket,
+    work_request_id: str,
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -144,18 +145,47 @@ def handle_plugin_usage(
         tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
     )
 
+    # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
+    utils.send_response(
+        ws,
+        inference.PluginIntermediateResponse(
+            request_id=work_request_id,
+            current_plugin_thought="thinking...",
+            current_plugin_action_taken="",
+            current_plugin_action_input="",
+            current_plugin_action_response="",
+        ),
+    )
+
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
     init_prompt, chain_response = chain.call(init_prompt)
 
     inner_monologue.append("In: " + str(init_prompt))
     inner_monologue.append("Out: " + str(chain_response))
 
+    current_action_thought = ""
+    if THOUGHT_SEQ in chain_response:
+        current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+
     # Tool name/assistant prefix, Tool input/assistant response
     prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
     assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
-    while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
+    if assisted:
+        # model decided to use a tool, so send that thought to the client
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=chain_response,
+                current_plugin_action_response=response,
+            ),
+        )
+
+    while not chain_finished and assisted and achieved_depth < plugin_max_depth:
         tool_response = use_tool(prefix, response, tools)
 
         # Save previous chain response for use in final prompt
@@ -166,6 +196,22 @@ def handle_plugin_usage(
 
         inner_monologue.append("In: " + str(new_prompt))
         inner_monologue.append("Out: " + str(chain_response))
+
+        current_action_thought = ""
+        if THOUGHT_SEQ in chain_response:
+            current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+
+        # Send deep plugin intermediate steps to UI
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=chain_response,
+                current_plugin_action_response=response,
+            ),
+        )
 
         prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
         assisted = False if ASSISTANT_PREFIX in prefix else True
@@ -238,7 +284,7 @@ def handle_plugin_usage(
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
-        plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
+        plugin_used.execution_details.error_message = f"Max depth reached: {plugin_max_depth}"
         init_prompt = f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
 
@@ -288,6 +334,7 @@ def handle_conversation(
     worker_config: inference.WorkerConfig,
     parameters: interface.GenerateStreamParameters,
     tokenizer: transformers.PreTrainedTokenizer,
+    ws: websocket.WebSocket,
 ) -> tuple[str, inference.PluginUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
@@ -315,7 +362,18 @@ def handle_conversation(
 
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, memory, worker_config, tokenizer, parameters, tools, plugin
+                original_prompt,
+                prompt_template,
+                language,
+                memory,
+                worker_config,
+                tokenizer,
+                parameters,
+                tools,
+                plugin,
+                work_request.parameters.plugin_max_depth,
+                ws,
+                work_request.id,
             )
 
         return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)

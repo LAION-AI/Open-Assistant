@@ -141,6 +141,7 @@ async def create_assistant_message(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
                 plugins=request.plugins,
+                plugin_max_depth=settings.plugin_max_depth,
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,
@@ -240,6 +241,17 @@ async def message_events(
                     yield {
                         "data": chat_schema.SafePromptResponseEvent(
                             safe_prompt=response_packet.safe_prompt,
+                        ).json(),
+                    }
+
+                if response_packet.response_type == "plugin_intermediate":
+                    logger.info(f"Received plugin intermediate response {chat_id}")
+                    yield {
+                        "data": chat_schema.PluginIntermediateResponseEvent(
+                            current_plugin_thought=response_packet.current_plugin_thought,
+                            current_plugin_action_taken=response_packet.current_plugin_action_taken,
+                            current_plugin_action_input=response_packet.current_plugin_action_input,
+                            current_plugin_action_response=response_packet.current_plugin_action_response,
                         ).json(),
                     }
 

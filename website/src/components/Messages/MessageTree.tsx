@@ -15,11 +15,10 @@ const toPx = (val: number) => `${val}px`;
 interface MessageTreeProps {
   tree: MessageWithChildren;
   messageId?: string;
-  scrollToHighlighted?: boolean;
 }
 
 // eslint-disable-next-line react/display-name
-export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: MessageTreeProps) => {
+export const MessageTree = memo(({ tree, messageId }: MessageTreeProps) => {
   const highlightedElementRef = useRef<HTMLDivElement>(null);
   useScrollToElementOnMount(highlightedElementRef);
 
@@ -37,7 +36,7 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
-                  ref={scrollToHighlighted && child.id === messageId ? highlightedElementRef : undefined}
+                  ref={child.id === messageId ? highlightedElementRef : undefined}
                   showAuthorBadge
                   highlight={child.id === messageId}
                   message={child}
@@ -83,7 +82,7 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
           </>
         )}
         <MessageTableEntry
-          ref={scrollToHighlighted && tree.id === messageId ? highlightedElementRef : undefined}
+          ref={tree.id === messageId ? highlightedElementRef : undefined}
           showAuthorBadge
           message={tree}
           highlight={tree.id === messageId}

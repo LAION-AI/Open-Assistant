@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 import pydantic
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import Settings, settings
@@ -11,7 +11,9 @@ from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
-from oasst_shared.schemas.protocol import SystemStats
+from oasst_shared import utils
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
+from oasst_shared.schemas.protocol import PageResult, SystemStats
 from oasst_shared.utils import ScopeTimer, unaware_to_utc
 
 router = APIRouter()
@@ -169,6 +171,82 @@ class FlaggedMessageResponse(pydantic.BaseModel):
     message_id: UUID
     processed: bool
     created_date: Optional[datetime]
+
+
+class FlaggedMessagePage(PageResult):
+    items: list[FlaggedMessageResponse]
+
+
+@router.get("/flagged_messages/cursor", response_model=FlaggedMessagePage)
+def get_flagged_messages_cursor(
+    *,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    desc: Optional[bool] = False,
+    session: deps.Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+) -> str:
+    assert api_client.trusted
+    assert max_count is not None
+
+    def split_cursor(x: str | None) -> tuple[datetime, UUID]:
+        if not x:
+            return None, None
+        try:
+            m = utils.split_uuid_pattern.match(x)
+            if m:
+                return datetime.fromisoformat(m[2]), UUID(m[1])
+            return datetime.fromisoformat(x), None
+        except ValueError:
+            raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
+
+    if desc:
+        gte_created_date, gt_id = split_cursor(before)
+        lte_created_date, lt_id = split_cursor(after)
+        query_desc = not (before is not None and not after)
+    else:
+        lte_created_date, lt_id = split_cursor(before)
+        gte_created_date, gt_id = split_cursor(after)
+        query_desc = before is not None and not after
+
+    logger.debug(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+
+    qry_max_count = max_count + 1 if before is None or after is None else max_count
+
+    pr = PromptRepository(session, api_client)
+    items = pr.fetch_flagged_messages_by_created_date(
+        gte_created_date=gte_created_date,
+        gt_id=gt_id,
+        lte_created_date=lte_created_date,
+        lt_id=lt_id,
+        desc=query_desc,
+        limit=qry_max_count,
+    )
+
+    num_rows = len(items)
+    if qry_max_count > max_count and num_rows == qry_max_count:
+        assert not (before and after)
+        items = items[:-1]
+
+    if desc != query_desc:
+        items.reverse()
+
+    n, p = None, None
+    if len(items) > 0:
+        if (num_rows > max_count and before) or after:
+            p = str(items[0].message_id) + "$" + items[0].created_date.isoformat()
+        if num_rows > max_count or before:
+            n = str(items[-1].message_id) + "$" + items[-1].created_date.isoformat()
+    else:
+        if after:
+            p = lte_created_date.isoformat() if desc else gte_created_date.isoformat()
+        if before:
+            n = gte_created_date.isoformat() if desc else lte_created_date.isoformat()
+
+    order = "desc" if desc else "asc"
+    print(p, n, items, order)
+    return FlaggedMessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)
 
 
 @router.get("/flagged_messages", response_model=list[FlaggedMessageResponse])
