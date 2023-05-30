@@ -21,3 +21,4 @@ sse-starlette
 uuid7==0.1.0
 uvicorn[standard]
 websockets
+polyfactory
