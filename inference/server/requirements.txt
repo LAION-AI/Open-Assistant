@@ -10,6 +10,7 @@ google-auth-oauthlib
 gunicorn
 loguru
 nvidia-ml-py
+polyfactory
 prometheus-fastapi-instrumentator
 psutil
 pydantic
@@ -21,4 +22,3 @@ sse-starlette
 uuid7==0.1.0
 uvicorn[standard]
 websockets
-polyfactory

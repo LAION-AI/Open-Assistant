@@ -1,8 +1,8 @@
 import asyncio
+import json
 import signal
 import sys
 
-import json
 import fastapi
 import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
@@ -128,6 +128,7 @@ async def welcome_message():
 
 
 if settings.insert_fake_data:
+
     @app.on_event("startup")
     async def insert_fake_data_event():
         logger.warning("Inserting fake data into database (insert_fake_data is True)")
@@ -146,7 +147,10 @@ if settings.insert_fake_data:
             with open(settings.fake_data_path) as f:
                 dummy_messages_raw = json.load(f)
 
-            messages = [DBMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id,content=dm["text"],**dm) for dm in dummy_messages_raw]
+            messages = [
+                DBMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id, content=dm["text"], **dm)
+                for dm in dummy_messages_raw
+            ]
             session.add_all(messages)
 
             await session.commit()

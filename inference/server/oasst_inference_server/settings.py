@@ -1,9 +1,8 @@
+from pathlib import Path
+from typing import Any, Optional
 
 import pydantic
 from pydantic import FilePath
-
-from pathlib import Path
-from typing import Any, Optional
 
 
 def split_keys_string(keys: str | None):
@@ -49,7 +48,8 @@ class Settings(pydantic.BaseSettings):
 
     insert_fake_data: bool = True
     fake_data_path: Optional[FilePath] = (
-            Path(__file__).parent.parent.parent.parent / "backend/test_data/realistic/realistic_seed_data.json" #Todo: Use importlib
+        Path(__file__).parent.parent.parent.parent
+        / "backend/test_data/realistic/realistic_seed_data.json"  # Todo: Use importlib
     )
 
     database_uri: str | None = None
