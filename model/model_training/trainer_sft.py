@@ -37,6 +37,7 @@ import wandb
 from pathlib import Path
 import pydantic
 import json
+import pdb
 
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
@@ -115,7 +116,7 @@ class SFTTrainer(Trainer):
         self.train_collate_fn = train_collate_fn
         self.rm_tokenizer = rm_tokenizer
         self.sampling_params=sampling_params
-        self.tokenizer = tokenizer,
+        self.tokenizer = tokenizer
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function, poly_eps)
         self.sampler = sampler
@@ -174,6 +175,7 @@ class SFTTrainer(Trainer):
             # pdb.set_trace()
             prompt_pred.append(p + z)
 
+        # pdb.set_trace()
         full_text = self.tokenizer.batch_decode(prompt_pred)
         rm_tokens = self.rm_tokenizer(full_text, padding=True, return_tensors="pt")
         score = self.reward_model(**rm_tokens).logits.cpu().detach()
