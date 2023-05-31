@@ -1,6 +1,8 @@
 import { Box } from "@chakra-ui/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { put } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { InferenceMessage } from "src/types/Chat";
 import { buildTree, Tree } from "src/utils/buildTree";
 import { StrictOmit } from "ts-essentials";
@@ -10,16 +12,18 @@ import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { ChatMessageEntry, ChatMessageEntryProps } from "./ChatMessageEntry";
 
-type ChatConversationTreeProps = { messages: InferenceMessage[]; retryingParentId: string | null } & StrictOmit<
-  ChatMessageEntryProps,
-  "message"
->;
+type ChatConversationTreeProps = {
+  messages: InferenceMessage[];
+  retryingParentId: string | null;
+  activeThreadTailMessageId: string | null;
+} & StrictOmit<ChatMessageEntryProps, "message">;
 
 export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
 
 export const ChatConversationTree = memo(function ChatConversationTree({
   messages,
   retryingParentId,
+  activeThreadTailMessageId,
   ...props
 }: ChatConversationTreeProps) {
   const tree = useMemo(() => buildTree(messages), [messages]);
@@ -29,7 +33,12 @@ export const ChatConversationTree = memo(function ChatConversationTree({
     <>
       <ChatMessageEntry message={tree} {...props}></ChatMessageEntry>
       {tree.children.length > 0 && (
-        <TreeChildren trees={tree.children} {...props} retryingParentId={retryingParentId} />
+        <TreeChildren
+          trees={tree.children}
+          {...props}
+          retryingParentId={retryingParentId}
+          activeThreadTailMessageId={activeThreadTailMessageId}
+        />
       )}
     </>
   );
@@ -38,30 +47,55 @@ export const ChatConversationTree = memo(function ChatConversationTree({
 const TreeChildren = ({
   trees,
   retryingParentId,
+  activeThreadTailMessageId,
   ...props
-}: { trees: Tree<InferenceMessage>[]; retryingParentId: string | null } & StrictOmit<
-  ChatMessageEntryProps,
-  "message" | "canRetry"
->) => {
-  const [index, setIndex] = useState(trees.length - 1);
-  useIsomorphicLayoutEffect(() => {
-    setIndex(trees.length - 1); // always show last child
-  }, [trees.length]);
-
+}: {
+  trees: Tree<InferenceMessage>[];
+  retryingParentId: string | null;
+  activeThreadTailMessageId: string | null;
+} & StrictOmit<ChatMessageEntryProps, "message" | "canRetry">) => {
   const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
-  const actualIndex = Math.min(index, trees.length - 1); // index sometimes out of bounds because useIsomorphicLayoutEffect only reset the index on the next render
+  const [index, setIndex] = useState(0);
+  const currentTree = sortedTrees[index];
 
-  const currentTree = sortedTrees[actualIndex];
   const length = trees.length;
-
   const hasSibling = length > 1;
+
+  useIsomorphicLayoutEffect(() => {
+    const activeIndex = trees.findIndex((tree) => {
+      const searchInChildren = (children) => {
+        return children.some((child) => {
+          if (child.id === activeThreadTailMessageId) {
+            return true;
+          }
+          return searchInChildren(child.children);
+        });
+      };
+      return tree.children.length === 0 ? tree.id === activeThreadTailMessageId : searchInChildren(tree.children);
+    });
+
+    setIndex(activeIndex === -1 ? trees.length - 1 : activeIndex);
+  }, [trees.length, activeThreadTailMessageId]);
+
+  useEffect(() => {
+    const updateActiveThread = async () => {
+      await put(API_ROUTES.UPDATE_CHAT(), {
+        arg: { chat_id: currentTree.chat_id, active_thread_tail_message_id: currentTree.id },
+      });
+    };
+
+    if (currentTree.children.length === 0) {
+      updateActiveThread().catch(console.error);
+    }
+  }),
+    [currentTree];
 
   const handlePrevious = useCallback(() => {
     setIndex((i) => (i > 0 ? i - 1 : i));
-  }, []);
+  }, [setIndex]);
   const handleNext = useCallback(() => {
     setIndex((i) => (i < length - 1 ? i + 1 : i));
-  }, [length]);
+  }, [length, setIndex]);
 
   const isRegenerating = retryingParentId !== null && trees.findIndex((t) => t.parent_id === retryingParentId) !== -1;
 
@@ -87,13 +121,13 @@ const TreeChildren = ({
               <BaseMessageEmojiButton
                 emoji={ChevronLeft}
                 onClick={handlePrevious}
-                isDisabled={actualIndex === 0}
+                isDisabled={index === 0}
               ></BaseMessageEmojiButton>
-              <Box fontSize="xs">{`${actualIndex + 1}/${length}`}</Box>
+              <Box fontSize="xs">{`${index + 1}/${length}`}</Box>
               <BaseMessageEmojiButton
                 emoji={ChevronRight}
                 onClick={handleNext}
-                isDisabled={actualIndex === length - 1}
+                isDisabled={index === length - 1}
               ></BaseMessageEmojiButton>
             </MessageInlineEmojiRow>
           </>
@@ -110,7 +144,12 @@ const TreeChildren = ({
     <>
       {node}
       {currentTree.children.length > 0 && (
-        <TreeChildren retryingParentId={retryingParentId} trees={currentTree.children} {...props} />
+        <TreeChildren
+          retryingParentId={retryingParentId}
+          trees={currentTree.children}
+          activeThreadTailMessageId={activeThreadTailMessageId}
+          {...props}
+        />
       )}
     </>
   );

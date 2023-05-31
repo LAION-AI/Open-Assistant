@@ -35,5 +35,7 @@ def get_specific_model(
     elif seq2seqmodel:
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     else:
+        if "falcon" in model_name:
+            kwargs["trust_remote_code"] = True
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     return model
