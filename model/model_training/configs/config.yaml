@@ -262,7 +262,7 @@ falcon-7b:
 falcon-40b:
   dtype: bf16
   log_dir: "falcon_log_40b"
-  learning_rate: 1e-5
+  learning_rate: 1.85e-5
   model_name: "tiiuae/falcon-40b"
   deepspeed_config: configs/zero3_config_falcon.json
   output_dir: falcon
