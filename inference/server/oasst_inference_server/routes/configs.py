@@ -3,12 +3,18 @@ import pydantic
 from fastapi import HTTPException
 from loguru import logger
 from oasst_inference_server import plugin_utils
+from oasst_inference_server.plugins import plugin_apps
 from oasst_inference_server.settings import settings
 from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 
-# NOTE: Populate this with plugins that we will provide out of the box
-OA_PLUGINS = []
+BUILTIN_PLUGINS = [
+    inference.PluginEntry(
+        url=f"{settings.api_root}{settings.plugins_path_prefix}{path}",
+        trusted=True,
+    )
+    for path in plugin_apps.keys()
+]
 
 router = fastapi.APIRouter(
     prefix="/configs",
@@ -136,7 +142,7 @@ async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEn
 async def get_builtin_plugins() -> list[inference.PluginEntry]:
     plugins = []
 
-    for plugin in OA_PLUGINS:
+    for plugin in BUILTIN_PLUGINS:
         try:
             plugin_config = await plugin_utils.fetch_plugin(plugin.url)
         except HTTPException as e:

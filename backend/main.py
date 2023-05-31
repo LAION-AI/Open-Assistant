@@ -19,7 +19,6 @@ from oasst_backend.cached_stats_repository import CachedStatsRepository
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
-from oasst_backend.plugins import plugin_apps
 from oasst_backend.prompt_repository import PromptRepository, UserRepository
 from oasst_backend.task_repository import TaskRepository, delete_expired_tasks
 from oasst_backend.tree_manager import TreeManager, halt_prompts_of_disabled_users
@@ -307,10 +306,6 @@ def update_cached_stats(session: Session) -> None:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-
-# mount plugins
-for app_prefix, sub_app in plugin_apps.items():
-    app.mount(path=settings.PLUGINS_PATH_PREFIX + app_prefix, app=sub_app)
 
 
 def get_openapi_schema():
