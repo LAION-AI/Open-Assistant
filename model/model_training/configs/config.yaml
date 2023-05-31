@@ -245,7 +245,7 @@ falcon-7b:
   deepspeed_config: configs/zero_config_falcon.json
   output_dir: falcon
   weight_decay: 0.0
-  max_length: 512
+  max_length: 200
   warmup_steps: 100
   gradient_checkpointing: true
   gradient_accumulation_steps: 2
@@ -275,7 +275,7 @@ falcon-40b:
   per_device_eval_batch_size: 2
   eval_steps: 100
   save_steps: 500
-  num_train_epochs: 3
+  num_train_epochs: 10
   save_total_limit: 3
   use_flash_attention: false
   residual_dropout: 0.3
