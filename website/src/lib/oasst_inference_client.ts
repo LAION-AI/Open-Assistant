@@ -98,6 +98,21 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}/votes`, { method: "POST", data: { score } });
   }
 
+  message_eval({
+    chat_id,
+    message_id,
+    inferior_message_ids,
+  }: {
+    chat_id: string;
+    message_id: string;
+    inferior_message_ids: string[];
+  }) {
+    return this.request(`/chats/${chat_id}/messages/${message_id}/message_evals`, {
+      method: "POST",
+      data: { inferior_message_ids },
+    });
+  }
+
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
