@@ -6,29 +6,31 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Union, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import pydantic
 import torch
-
+from huggingface_hub import hf_hub_download
+from peft import PeftModel
 from tqdm import tqdm
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from peft import PeftModel
-from huggingface_hub import hf_hub_download
 
-def transfer_embeddings(model,embed_path,tokenizer):
+def transfer_embeddings(model, embed_path, tokenizer):
     old_embeddings = model.get_input_embeddings()
     old_num_tokens, old_embedding_dim = old_embeddings.weight.size()
     new_embeddings = torch.nn.Embedding(old_num_tokens, old_embedding_dim)
     new_embeddings.to(old_embeddings.weight.device, dtype=old_embeddings.weight.dtype)
     model._init_weights(new_embeddings)
-    embed_weights = torch.load(embed_path,map_location=old_embeddings.weight.device)
+    embed_weights = torch.load(embed_path, map_location=old_embeddings.weight.device)
     vocab_size = tokenizer.vocab_size
     new_embeddings.weight.data[:vocab_size, :] = old_embeddings.weight.data[:vocab_size, :]
-    new_embeddings.weight.data[vocab_size:vocab_size + embed_weights.shape[0], :] = embed_weights.weight.data.to(
-        new_embeddings.weight.dtype).to(new_embeddings.weight.device)
+    new_embeddings.weight.data[vocab_size : vocab_size + embed_weights.shape[0], :] = embed_weights.weight.data.to(
+        new_embeddings.weight.dtype
+    ).to(new_embeddings.weight.device)
     model.set_input_embeddings(new_embeddings)
     model.tie_weights()
+
 
 def load_peft_model(model, peft_model_path, tokenizer):
     model.resize_token_embeddings(len(tokenizer))
@@ -41,9 +43,10 @@ def load_peft_model(model, peft_model_path, tokenizer):
         torch_dtype=model.dtype,
     )
     model.eos_token_id = tokenizer.eos_token_id
-    extra_embeds = hf_hub_download(peft_model_path, "extra_embeddings.pt")
-    transfer_embeddings(model,peft_model_path.joinpath('extra_embeddings.pt'),tokenizer)
+    hf_hub_download(peft_model_path, "extra_embeddings.pt")
+    transfer_embeddings(model, peft_model_path.joinpath("extra_embeddings.pt"), tokenizer)
     return model
+
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 QA_SPECIAL_TOKENS_V2_5 = {
@@ -58,7 +61,7 @@ QA_SPECIAL_TOKENS_V2_5 = {
 class SamplingConfig(pydantic.BaseModel):
     name: Optional[str]
     generate_args: Dict[str, Any] = {}
-    system_profile:  Optional[Dict[str, Union[float, int, str]]] = None
+    system_profile: Optional[Dict[str, Union[float, int, str]]] = None
     pre_text: Optional[str]
     add_prefix_tokens: Optional[bool] = False
 
@@ -297,7 +300,7 @@ def parse_args():
     parser.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload")
     parser.add_argument("--nvme_offload_path", help="whether to activate NVME offload and the path on nvme")
     parser.add_argument("--dtype", type=str, default=None)
-    parser.add_argument("--model_hidden_size",type=int,default=8192)
+    parser.add_argument("--model_hidden_size", type=int, default=8192)
 
     return parser.parse_args()
 
@@ -312,9 +315,10 @@ def main():
     """
     import gc
     import os
+
+    import deepspeed
     import torch
     import torch.distributed as dist
-    import deepspeed
     from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
     from transformers.deepspeed import HfDeepSpeedConfig
 
@@ -356,7 +360,7 @@ def main():
     dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
     train_batch_size = 1 * world_size
     model_hidden_size = args.model_hidden_size
-    print('model_hidden_size', model_hidden_size)
+    print("model_hidden_size", model_hidden_size)
     ds_config = {
         "fp16": {
             "enabled": dtype == torch.float16,
@@ -437,8 +441,6 @@ def main():
     ds_engine = deepspeed.initialize(model=model, config_params=ds_config)[0]
     ds_engine.module.eval()
     model = ds_engine.module
-
-
 
     print(f"Loading prompts file: {args.prompts}")
     prompts = load_jsonl(input_file_path=args.prompts)[:5]
