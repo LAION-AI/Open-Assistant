@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import pydantic
 from pydantic import FilePath
@@ -46,7 +46,7 @@ class Settings(pydantic.BaseSettings):
     postgres_db: str = "postgres"
 
     insert_fake_data: bool = True
-    fake_data_path: Optional[FilePath] = "/tmp/test_data/realistic/realistic_seed_data.json"
+    fake_data_path: FilePath | None = "/tmp/test_data/realistic/realistic_seed_data.json"
 
     database_uri: str | None = None
 

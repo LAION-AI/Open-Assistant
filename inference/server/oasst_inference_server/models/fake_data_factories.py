@@ -14,7 +14,7 @@ class DbUserFactory(ModelFactory[DbUser]):
     __model__ = DbUser
 
 
-class DBMessageFactory(ModelFactory[DbMessage]):
+class DbMessageFactory(ModelFactory[DbMessage]):
     __model__ = DbMessage
 
     work_parameters = None  # Work params lead to serialization errors if not none

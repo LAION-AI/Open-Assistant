@@ -10,7 +10,7 @@ from loguru import logger
 from oasst_inference_server import database, deps, models
 from oasst_inference_server.models.fake_data_factories import (
     DbChatFactory,
-    DBMessageFactory,
+    DbMessageFactory,
     DbUserFactory,
     DbWorkerFactory,
 )
@@ -142,7 +142,7 @@ if settings.insert_fake_data:
                 dummy_messages_raw = json.load(f)
 
             messages = [
-                DBMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id, content=dm["text"], **dm)
+                DbMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id, content=dm["text"], **dm)
                 for dm in dummy_messages_raw
             ]
             session.add_all(messages)
