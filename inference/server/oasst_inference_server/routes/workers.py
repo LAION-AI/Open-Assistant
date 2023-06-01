@@ -335,7 +335,9 @@ async def handle_token_response(
     response: inference.TokenResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
+    work_response_container = get_work_request_container(
+        work_request_map=work_request_map, request_id=response.request_id
+    )
     message_queue = queueing.message_queue(
         redis_client=deps.redis_client,
         message_id=work_response_container.message_id,
@@ -348,7 +350,9 @@ async def handle_plugin_intermediate_response(
     response: inference.PluginIntermediateResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
+    work_response_container = get_work_request_container(
+        work_request_map=work_request_map, request_id=response.request_id
+    )
     message_queue = queueing.message_queue(
         redis_client=deps.redis_client,
         message_id=work_response_container.message_id,
@@ -362,7 +366,9 @@ async def handle_generated_text_response(
     work_request_map: WorkRequestContainerMap,
 ):
     try:
-        work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
+        work_response_container = get_work_request_container(
+            work_request_map=work_request_map, request_id=response.request_id
+        )
         message_id = work_response_container.message_id
         async with deps.manual_create_session() as session:
             cr = chat_repository.ChatRepository(session=session)
@@ -401,7 +407,9 @@ async def handle_error_response(
 ):
     logger.warning(f"Got error {response=}")
     try:
-        work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
+        work_response_container = get_work_request_container(
+            work_request_map=work_request_map, request_id=response.request_id
+        )
         message_id = work_response_container.message_id
         await abort_message(message_id=message_id, error=response.error)
     finally:
@@ -421,7 +429,9 @@ async def handle_safe_prompt_response(
     """
     Handle the case where the worker informs the server that the safety model has intervened and modified the user prompt to be safe.
     """
-    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
+    work_response_container = get_work_request_container(
+        work_request_map=work_request_map, request_id=response.request_id
+    )
     message_id = work_response_container.message_id
 
     async with deps.manual_create_session() as session:
