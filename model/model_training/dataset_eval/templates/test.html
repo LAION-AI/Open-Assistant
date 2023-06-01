@@ -1,22 +1,17 @@
-{% extends "bootstrap/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% block title %}test{% endblock %}
-{% block content %}
+{% extends "bootstrap/base.html" %} {% import "bootstrap/wtf.html" as wtf %} {%
+block title %}test{% endblock %} {% block content %}
 <div class="col-md-4">
-    <form action="" method="post" novalidata>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.example }}<br>
-            
-        </p>
-        
-        <input type="submit" value="Use selected datasets">
-    </form>
-    <br>
+  <form action="" method="post" novalidata>
+    {{ form.hidden_tag() }}
+    <p>{{ form.example }}<br /></p>
+
+    <input type="submit" value="Use selected datasets" />
+  </form>
+  <br />
 </div>
 
 <form method="POST" id="1">
-    <input name="text-submit1" id="input1">
-    <input type="submit" id="submit1">
+  <input name="text-submit1" id="input1" />
+  <input type="submit" id="submit1" />
 </form>
 {% endblock %}

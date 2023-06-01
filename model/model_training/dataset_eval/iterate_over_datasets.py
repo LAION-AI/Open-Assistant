@@ -1,9 +1,14 @@
-from model_training.custom_datasets.formatting import DatasetEntryLm, DatasetEntrySft
 from collections import defaultdict
 
-def check_in_dataset_row(row: str | list[str] | tuple[str], matched: dict[str, list], 
-                         strings_to_match: list[str] = [],
-                         regex_strings_to_match: list[str] = []):
+from model_training.custom_datasets.formatting import DatasetEntryLm, DatasetEntrySft
+
+
+def check_in_dataset_row(
+    row: str | list[str] | tuple[str],
+    matched: dict[str, list],
+    strings_to_match: list[str] = [],
+    regex_strings_to_match: list[str] = [],
+):
     def _check_single_string(row: str, matched: dict[str, list]) -> dict[str, list]:
         for exp in regex_strings_to_match:
             if exp.match(row) is not None:
