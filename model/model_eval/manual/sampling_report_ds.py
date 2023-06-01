@@ -32,7 +32,6 @@ def add_embeddings(model, embed_path, tokenizer):
     model.tie_weights()
 
 
-
 def load_peft_model(model, peft_model_path, tokenizer):
     embed_weights = hf_hub_download(peft_model_path, "extra_embeddings.pt")
     model.resize_token_embeddings(tokenizer.vocab_size + torch.load(embed_weights).shape[0])
@@ -320,7 +319,7 @@ def main():
     import deepspeed
     import torch
     import torch.distributed as dist
-    from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoTokenizer
     from transformers.deepspeed import HfDeepSpeedConfig
 
     print("Using pytorch version {}".format(torch.__version__))
@@ -348,7 +347,7 @@ def main():
     model_name = args.model_name
     print(f"Loading model: {model_name}")
 
-    local_rank = int(os.getenv("LOCAL_RANK", "0"))
+    _ = int(os.getenv("LOCAL_RANK", "0"))  # local_rank
     world_size = int(os.getenv("WORLD_SIZE", "1"))
     deepspeed.init_distributed("nccl")
     rank = dist.get_rank()
@@ -394,7 +393,7 @@ def main():
             buffer_size=4e9,
         )
 
-    dschf = HfDeepSpeedConfig(ds_config)  # this tells from_pretrained to instantiate directly on gpus
+    _ = HfDeepSpeedConfig(ds_config)  # dschf # this tells from_pretrained to instantiate directly on gpus
 
     model_args = {}
     if args.int8:

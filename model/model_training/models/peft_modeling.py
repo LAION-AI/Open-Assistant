@@ -23,7 +23,6 @@ def add_embeddings(model, embed_path, tokenizer):
     model.tie_weights()
 
 
-
 def load_peft_model(model, peft_model_path, tokenizer):
     embed_weights = hf_hub_download(peft_model_path, "extra_embeddings.pt")
     model.resize_token_embeddings(tokenizer.vocab_size + torch.load(embed_weights).shape[0])
