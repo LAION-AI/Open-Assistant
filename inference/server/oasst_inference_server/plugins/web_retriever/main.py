@@ -108,6 +108,8 @@ async def get_url_content(url: str = Query(..., description="url to fetch conten
         encoding: str | None
         async with httpx.AsyncClient(follow_redirects=True) as client:
             async with client.stream("GET", url) as response:
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
                 encoding = response.encoding
                 if "Content-Length" in response.headers:
                     total = int(response.headers["Content-Length"])
@@ -124,8 +126,6 @@ async def get_url_content(url: str = Query(..., description="url to fetch conten
                             f"Sorry, the file at {url} is too large.\nYou should report this message to the user!"
                         )
                         return JSONResponse(content={"error": error_message}, status_code=500)
-
-                response.raise_for_status()  # Raise an exception for HTTP errors
 
         content_bytes: bytes = buffer.getvalue()
         content_type: str = detect_content_type(content_bytes)
