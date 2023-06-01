@@ -284,6 +284,11 @@
           INFERENCE_SERVER_API_KEY:
             "{{ lookup('ansible.builtin.env', 'WEB_INFERENCE_SERVER_API_KEY') }}"
           ENABLE_CHAT: "{{ lookup('ansible.builtin.env', 'WEB_ENABLE_CHAT') }}"
+          ENABLE_DRAFTS_WITH_PLUGINS:
+            "{{ lookup('ansible.builtin.env',
+            'WEB_ENABLE_DRAFTS_WITH_PLUGINS')}}"
+          NUM_GENERATED_DRAFTS:
+            "{{ lookup('ansible.builtin.env', 'WEB_NUM_GENERATED_DRAFTS') }}"
           CURRENT_ANNOUNCEMENT:
             "{{ lookup('ansible.builtin.env', 'WEB_CURRENT_ANNOUNCEMENT') }}"
         ports:
