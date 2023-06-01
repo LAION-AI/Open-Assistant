@@ -129,7 +129,7 @@ async def callback_github(
     user_response_json = user_response.json()
 
     try:
-        github_id = str(object=user_response_json["id"])
+        github_id = str(user_response_json["id"])
         github_username = user_response_json["login"]
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
@@ -188,7 +188,7 @@ async def get_or_create_user(
 async def query_user(db: database.AsyncSession, provider: str, provider_id: str) -> models.DbUser | None:
     user = (
         await db.exec(
-            statement=sqlmodel.select(entity_0=models.DbUser)
+            statement=sqlmodel.select(models.DbUser)
             .filter(models.DbUser.provider == provider)
             .filter(models.DbUser.provider_account_id == provider_id)
         )
@@ -231,7 +231,7 @@ async def callback_debug(
 
     # Try to find the user
     user: models.DbUser = (
-        await db.exec(statement=sqlmodel.select(entity_0=models.DbUser).where(models.DbUser.id == username))
+        await db.exec(statement=sqlmodel.select(models.DbUser).where(models.DbUser.id == username))
     ).one_or_none()
 
     if user is None:
@@ -259,7 +259,7 @@ async def login_trusted(
 
     # Try to find the user
     user: models.DbUser = (
-        await db.exec(statement=sqlmodel.select(entity_0=models.DbUser).where(models.DbUser.id == info.user_id))
+        await db.exec(statement=sqlmodel.select(models.DbUser).where(models.DbUser.id == info.user_id))
     ).one_or_none()
 
     if user is None:

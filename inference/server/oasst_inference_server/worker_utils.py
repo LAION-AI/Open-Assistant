@@ -18,7 +18,7 @@ class WorkerSessionStatus(str, enum.Enum):
 
 
 class WorkerSession(pydantic.BaseModel):
-    id: str = pydantic.Field(default_factory=lambda: str(object=uuid.uuid4()))
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
     worker_id: str
     worker_info: inference.WorkerInfo
     requests_in_flight: int = 0
@@ -55,7 +55,7 @@ async def get_worker_id(
     protocol_version: str = Depends(dependency=get_protocol_version),
 ) -> models.DbWorker:
     logger.info(f"get_worker: {api_key=}, {protocol_version=}")
-    query = sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.api_key == api_key)
+    query = sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
     async with deps.manual_create_session() as session:
         worker: models.DbWorker = (await session.exec(statement=query)).one_or_none()
     if worker is None:
@@ -70,7 +70,7 @@ async def get_worker(
     worker_id: str = Depends(dependency=get_worker_id),
     session: database.AsyncSession = Depends(dependency=deps.create_session),
 ) -> models.DbWorker:
-    query = sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.id == worker_id)
+    query = sqlmodel.select(models.DbWorker).where(models.DbWorker.id == worker_id)
     worker = (await session.exec(statement=query)).one()
     return worker
 

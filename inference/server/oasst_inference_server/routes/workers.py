@@ -234,7 +234,7 @@ async def handle_worker(
                 await worker_utils.send_worker_request(websocket=websocket, request=inference.PingRequest())
 
     except Exception as e:
-        logger.exception(f"Error while handling worker {worker_id}: {str(object=e)}")
+        logger.exception(f"Error while handling worker {worker_id}: {str(e)}")
         logger.info(f"Handling {len(work_request_map)} work requests outstanding")
         for container in work_request_map.values():
             try:
@@ -248,7 +248,7 @@ async def handle_worker(
                     logger.warning(f"Aborting {message_id=}")
                     await abort_message(message_id=message_id, error="Aborted due to worker error.")
             except Exception as e:
-                logger.exception(f"Error while trying to reset work for {message_id=}: {str(object=e)}")
+                logger.exception(f"Error while trying to reset work for {message_id=}: {str(e)}")
     finally:
         logger.info(f"Worker {worker_id} disconnected")
         try:
@@ -282,7 +282,7 @@ async def list_worker_sessions() -> list[worker_utils.WorkerSession]:
             worker_session = worker_utils.WorkerSession.parse_raw(b=worker_session_json)
             worker_sessions.append(worker_session)
     except Exception as e:
-        logger.exception(f"Error while listing worker sessions: {str(object=e)}")
+        logger.exception(f"Error while listing worker sessions: {str(e)}")
         raise
     return worker_sessions
 
@@ -296,7 +296,7 @@ async def clear_worker_sessions():
             await redis_client.getdel(name=key)
         logger.warning("Successfully cleared worker sessions")
     except Exception as e:
-        logger.exception(f"Error while clearing worker sessions: {str(object=e)}")
+        logger.exception(f"Error while clearing worker sessions: {str(e)}")
         raise
 
 
@@ -322,7 +322,7 @@ async def initiate_work_for_message(
     try:
         await worker_utils.send_worker_request(websocket=websocket, request=work_request)
     except Exception as e:
-        logger.exception(f"Error while sending work request to worker: {str(object=e)}")
+        logger.exception(f"Error while sending work request to worker: {str(e)}")
         async with deps.manual_create_session() as session:
             await cr.reset_work(message_id=message_id)
         await work_queue.enqueue(value=message_id, enforce_max_size=False)

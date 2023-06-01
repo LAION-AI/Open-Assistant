@@ -21,12 +21,12 @@ class DbWorkerComplianceCheck(SQLModel, table=True):
     id: str = Field(default_factory=uuid7str, primary_key=True)
     worker_id: str = Field(foreign_key="worker.id", index=True)
     worker: "DbWorker" = Relationship(back_populates="compliance_checks")
-    compare_worker_id: str | None = Field(None, index=True, nullable=True)
+    compare_worker_id: str | None = Field(default=None, index=True, nullable=True)
 
     start_time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
-    end_time: datetime.datetime | None = Field(None, nullable=True)
+    end_time: datetime.datetime | None = Field(default=None, nullable=True)
     responded: bool = Field(default=False, nullable=False)
-    error: str | None = Field(None, nullable=True)
+    error: str | None = Field(default=None, nullable=True)
     passed: bool = Field(default=False, nullable=False)
 
 
@@ -38,7 +38,7 @@ class DbWorkerEvent(SQLModel, table=True):
     worker: "DbWorker" = Relationship(back_populates="events")
     time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     event_type: WorkerEventType
-    worker_info: inference.WorkerInfo | None = Field(None, sa_column=sa.Column(pg.JSONB))
+    worker_info: inference.WorkerInfo | None = Field(default=None, sa_column=sa.Column(pg.JSONB))
 
 
 class DbWorker(SQLModel, table=True):
@@ -50,8 +50,8 @@ class DbWorker(SQLModel, table=True):
     trusted: bool = Field(default=False, nullable=False)
 
     compliance_checks: list[DbWorkerComplianceCheck] = Relationship(back_populates="worker")
-    in_compliance_check_since: datetime.datetime | None = Field(None)
-    next_compliance_check: datetime.datetime | None = Field(None)
+    in_compliance_check_since: datetime.datetime | None = Field(default=None)
+    next_compliance_check: datetime.datetime | None = Field(default=None)
     events: list[DbWorkerEvent] = Relationship(back_populates="worker")
 
     @property

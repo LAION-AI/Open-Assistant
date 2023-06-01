@@ -145,7 +145,7 @@ async def query_refresh_token(token: bytes) -> models.DbRefreshToken | None:
     token_hash: bytes = hashlib.sha256(string=token).hexdigest()
 
     async with deps.manual_create_session() as session:
-        query = sqlmodel.select(entity_0=models.DbRefreshToken).where(models.DbRefreshToken.token_hash == token_hash)
+        query = sqlmodel.select(models.DbRefreshToken).where(models.DbRefreshToken.token_hash == token_hash)
         token_model: models.DbRefreshToken = (await session.exec(statement=query)).one_or_none()
 
     return token_model

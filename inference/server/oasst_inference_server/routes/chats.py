@@ -132,10 +132,10 @@ async def create_assistant_message(
     try:
         model_config = chat_utils.get_model_config(model_config_name=request.model_config_name)
     except ValueError as e:
-        logger.warning(str(object=e))
+        logger.warning(str(e))
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(object=e),
+            detail=str(e),
         )
 
     try:

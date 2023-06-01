@@ -119,9 +119,9 @@ class LabelConversationReplyPayload(TaskPayload):
 
     message_id: UUID
     conversation: protocol_schema.Conversation
-    reply: Optional[str] = Field(None, deprecated=True, description="deprecated")
+    reply: Optional[str] = Field(default=None, deprecated=True, description="deprecated")
     reply_message: Optional[protocol_schema.ConversationMessage] = Field(
-        None, deprecated=True, description="deprecated"
+        default=None, deprecated=True, description="deprecated"
     )
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]

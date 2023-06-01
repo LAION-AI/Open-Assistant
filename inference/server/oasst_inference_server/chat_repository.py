@@ -19,7 +19,7 @@ class ChatRepository(pydantic.BaseModel):
 
     async def get_assistant_message_by_id(self, message_id: str) -> models.DbMessage:
         query = (
-            sqlmodel.select(entity_0=models.DbMessage)
+            sqlmodel.select(models.DbMessage)
             .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.reports))
             .where(models.DbMessage.id == message_id, models.DbMessage.role == "assistant")
         )
@@ -28,7 +28,7 @@ class ChatRepository(pydantic.BaseModel):
 
     async def get_prompter_message_by_id(self, message_id: str) -> models.DbMessage:
         query = (
-            sqlmodel.select(entity_0=models.DbMessage)
+            sqlmodel.select(models.DbMessage)
             .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.reports))
             .where(models.DbMessage.id == message_id, models.DbMessage.role == "prompter")
         )

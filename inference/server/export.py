@@ -97,7 +97,7 @@ def prepare_export_message_tree(
         return node
 
     prompt = assign_replies(node=messages_by_parent[None][0])
-    return ExportMessageTree(message_tree_id=str(object=chat.id), tree_state="not_applicable", prompt=prompt)
+    return ExportMessageTree(message_tree_id=str(chat.id), tree_state="not_applicable", prompt=prompt)
 
 
 def prepare_export_message_node(
@@ -113,7 +113,7 @@ def prepare_export_message_node(
     # Chat prompts are human-written, responses are synthetic
     synthetic = message.role == "assistant"
 
-    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(chat, message, anonymizer=anonymizer)
+    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(chat=chat, message=message, anonymizer=anonymizer)
 
     message_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.id)
     parent_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.parent_id)
@@ -170,7 +170,7 @@ async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[Db
     filters.append(DbChat.allow_data_use)
     async with session_generator() as session:
         query = (
-            sqlmodel.select(entity_0=DbChat)
+            sqlmodel.select(DbChat)
             .filter(*filters)
             .options(
                 sqlalchemy.orm.joinedload("*"),

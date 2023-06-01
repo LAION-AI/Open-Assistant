@@ -133,9 +133,9 @@ class TaskRequest(BaseModel):
     type: TaskRequestType = TaskRequestType.random
     # Must use Field(..., nullable=True) to indicate to the OpenAPI schema that
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
-    user: Optional[User] = Field(None, nullable=True)
+    user: Optional[User] = Field(default=None, nullable=True)
     collective: bool = False
-    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
+    lang: Optional[str] = Field(default=None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -147,7 +147,7 @@ class TaskAck(BaseModel):
 class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a message."""
 
-    reason: str | None = Field(None, nullable=True)
+    reason: str | None = Field(default=None, nullable=True)
 
 
 class TaskClose(BaseModel):
@@ -285,14 +285,14 @@ class LabelInitialPromptTask(AbstractLabelTask):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
-    prompt: str | None = Field(None, deprecated=True, description="deprecated, use `prompt_message`")
+    prompt: str | None = Field(default=None, deprecated=True, description="deprecated, use `prompt_message`")
 
 
 class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    reply: str | None = Field(None, deprecated=True, description="deprecated, use last message of `conversation`")
+    reply: str | None = Field(default=None, deprecated=True, description="deprecated, use last message of `conversation`")
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):

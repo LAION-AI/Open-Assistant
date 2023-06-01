@@ -14,4 +14,4 @@ class CachedStats(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
 
-    stats: dict | list | None = Field(None, sa_column=sa.Column(pg.JSONB, nullable=False))
+    stats: dict | list | None = Field(default=None, sa_column=sa.Column(pg.JSONB, nullable=False))

@@ -16,7 +16,7 @@ async def find_compliance_work_request_message(
 ) -> models.DbMessage | None:
     compat_hash = worker_config.compat_hash
     query = (
-        sqlmodel.select(entity_0=models.DbMessage)
+        sqlmodel.select(models.DbMessage)
         .where(
             models.DbMessage.role == "assistant",
             models.DbMessage.state == inference.MessageState.complete,
@@ -126,7 +126,7 @@ async def compute_worker_compliance_score(worker_id: str) -> float:
     In-progress checks are ignored.
     """
     async with deps.manual_create_session() as session:
-        query = sqlmodel.select(entity_0=models.DbWorkerComplianceCheck).where(
+        query = sqlmodel.select(models.DbWorkerComplianceCheck).where(
             or_(
                 models.DbWorkerComplianceCheck.worker_id == worker_id,
                 models.DbWorkerComplianceCheck.compare_worker_id == worker_id,

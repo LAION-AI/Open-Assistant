@@ -208,7 +208,7 @@ async def generate(
                     raise Exception(output.error)
         except Exception as e:
             logger.exception("Exception in event stream")
-            output_queue.put_nowait(item=interface.GenerateStreamResponse(error=str(object=e)))
+            output_queue.put_nowait(item=interface.GenerateStreamResponse(error=str(e)))
             raise
 
     return EventSourceResponse(event_stream())
