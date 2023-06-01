@@ -292,7 +292,9 @@ class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    reply: str | None = Field(default=None, deprecated=True, description="deprecated, use last message of `conversation`")
+    reply: str | None = Field(
+        default=None, deprecated=True, description="deprecated, use last message of `conversation`"
+    )
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):

@@ -77,9 +77,7 @@ class UserChatRepository(pydantic.BaseModel):
     async def create_chat(self) -> models.DbChat:
         # Try to find the user first
         user: models.DbUser = (
-            await self.session.execute(
-                statement=sqlmodel.select(models.DbUser).where(models.DbUser.id == self.user_id)
-            )
+            await self.session.execute(statement=sqlmodel.select(models.DbUser).where(models.DbUser.id == self.user_id))
         ).one_or_none()
         if not user:
             raise fastapi.HTTPException(status_code=404, detail="User not found")

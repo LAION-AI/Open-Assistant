@@ -113,7 +113,9 @@ def prepare_export_message_node(
     # Chat prompts are human-written, responses are synthetic
     synthetic = message.role == "assistant"
 
-    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(chat=chat, message=message, anonymizer=anonymizer)
+    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(
+        chat=chat, message=message, anonymizer=anonymizer
+    )
 
     message_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.id)
     parent_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.parent_id)
