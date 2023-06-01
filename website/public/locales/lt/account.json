@@ -1,0 +1,9 @@
+{
+  "delete_account": "Pašalinti mano paskyrą",
+  "delete_account_data": "Visi duomenys, kuriais prisidedate prie Open Assistant, spręsdami užduotis, reitinguodami žinutes, bei visi pokalbiai, sukurti naudojantis susirašinėjimo paslauga, bus išsaugoti. Visa informacija apie naudotoją yra anonimizuota.",
+  "delete_account_intro": "Paskyros ištrynimas reiškia:",
+  "delete_account_leaderboard": "Pašalintos naudotojų paskyros nebus rodomos lyderių lentelėse",
+  "delete_account_permanent": "Šis veiksmas yra negrįžtamas",
+  "go_to_dashboard": "Grįžti į apžvalgą",
+  "yes_delete": "Taip, ištrinkite mano paskyrą visam laikui"
+}

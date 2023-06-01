@@ -165,7 +165,7 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
           maxW="full"
         >
           {selectedPlugin ? (
-            <Text mt="4px" fontSize="sm" isTruncated display="flex" gap={2} overflow="hidden">
+            <Text alignItems={"center"} mt="4px" fontSize="sm" isTruncated display="flex" gap={2} overflow="hidden">
               <PluginImage plugin={selectedPlugin}></PluginImage>
               {selectedPlugin.plugin_config?.name_for_human}
             </Text>

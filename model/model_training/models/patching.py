@@ -73,6 +73,7 @@ def patch_model(
     resid_pdrop: Optional[float] = 0.1,
     flash_attention: bool = True,
     patch_unsupported: bool = False,
+    residual_dropout_lima: bool = False,
 ):
     """
     Helper function for patching HF language models.
@@ -104,7 +105,10 @@ or run with:
     if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
         return
 
-    if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
+    if (
+        not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS)
+        and model.__class__.__name__ != "RWForCausalLM"
+    ):
         if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
             return  # nothing to patch
 
@@ -141,6 +145,9 @@ or run with:
                 "--use_flash_attention=false  --no-residual_dropout"
             )
 
+    if model.__class__.__name__ == "RWForCausalLM":
+        model = model.base_model
+
     attention_key_lookup = {
         GPTNeoXModel: "attention",
         GPTNeoXRewardModel: "attention",
@@ -151,13 +158,21 @@ or run with:
         GPTNeoXRewardModel: "mlp",
         LlamaModel: "mlp",
     }
-    attention_key = attention_key_lookup.get(model.__class__, "attention")
-    mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
-
-    for layer in model.layers:
+    if model.__class__.__name__ == "RWModel":
+        layers = model.h
+        attention_key = "self_attention"
+        mlp_key = "mlp"
+    else:
+        layers = model.layers
+        attention_key = attention_key_lookup.get(model.__class__, "attention")
+        mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
+    num_layers = len(layers)
+    resid_pdrop_last_layer = resid_pdrop
+    for i, layer in enumerate(layers):
         if flash_attention:
             add_flash_attn(getattr(layer, attention_key), causal=True)
-
+        if residual_dropout_lima:
+            resid_pdrop = i / (num_layers - 1) * resid_pdrop_last_layer
         if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)

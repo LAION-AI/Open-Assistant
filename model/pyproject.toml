@@ -22,6 +22,7 @@ dependencies = [
     "ninja>=1.11.1",
     "nltk>=3.8.1",
     "numpy>=1.22.4",
+    "peft==0.2.0",
     "py7zr",
     "PyYAML>=6.0",
     "sentencepiece>=0.1.97",

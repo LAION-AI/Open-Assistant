@@ -49,6 +49,7 @@ export const ChatListItem = ({
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const containerElementRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
 
@@ -75,7 +76,7 @@ export const ChatListItem = ({
 
   return (
     <Button
-      // @ts-expect-error error due to dynamicly changing as prop
+      // @ts-expect-error error due to dynamically changing as prop
       ref={rootRef}
       {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
       variant={isActive ? "solid" : "ghost"}
@@ -105,6 +106,7 @@ export const ChatListItem = ({
           me={isActive ? "32px" : undefined}
           textOverflow="clip"
           as="span"
+          ref={containerElementRef}
         >
           {chat.title ?? t("empty")}
         </Box>
@@ -160,7 +162,7 @@ export const ChatListItem = ({
                 <MenuButton>
                   <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
                 </MenuButton>
-                <Portal>
+                <Portal containerRef={containerElementRef}>
                   {/* higher z-index so that it is displayed over the mobile sidebar */}
                   <MenuList zIndex="var(--chakra-zIndices-popover)">
                     <OptOutDataButton chatId={chat.id} />

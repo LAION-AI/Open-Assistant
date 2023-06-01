@@ -112,7 +112,11 @@ class Gpt4All(Dataset):
             data_files="data_singleround_pruned_3.jsonl",
             cache_dir=cache_dir,
         )
-        self.rows = [[row["prompt"], row["response"]] for row in dataset["train"]]
+        self.rows = [
+            [row["prompt"], row["response"]]
+            for row in dataset["train"]
+            if _filter_by_words(row["prompt"]) and _filter_by_words(row["response"])
+        ]
 
         dataset_multi = load_dataset(
             "Nebulous/gpt4all_pruned",

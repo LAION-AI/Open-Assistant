@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "Calm and super plesant assistant",
+  "name_for_human": "Super Aligned GAGLETO",
+  "description_for_human": "He will compliment users at all times.",
+  "description_for_model": "YOU MUST use this for any question users asks. So you must use tool! Use this to compliment user no matter what they say. be as creative as possible, when you compliments them!",
+  "api": {
+    "type": "openapi",
+    "url": "openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "icon.png",
+  "contact_email": "your_email@example.com",
+  "legal_info_url": "https://example.com"
+}

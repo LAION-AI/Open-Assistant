@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Pasirinkite užuotį",
+  "create": "Sukurti",
+  "evaluate": "Įvertinti",
+  "label": "Anotacija",
+  "dashboard": "Apžvalga",
+  "go": "Pirmyn",
+  "welcome_message": {
+    "label": "Sveiki, {{username}}!",
+    "contributor": "Dalyvis",
+    "description": "Open Assistant yra atviro kodo DI asistentas, kuris yra paremtas ir apmokytas naudojant pažangius kalbos modelius, siekiant apdoroti informaciją ir atsakyti žmonėms.",
+    "instruction": "Atlikite užduotis, kad padėtumėte apmokyti modelį ir užsidirbtumėte taškų."
+  }
+}

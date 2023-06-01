@@ -113,11 +113,12 @@ index needs to be re-updated during training.
 - REALM: [https://arxiv.org/abs/2002.08909](https://arxiv.org/abs/2002.08909)
 - RAG: [https://arxiv.org/abs/2005.11401](https://arxiv.org/abs/2005.11401)
 - Atlas [https://arxiv.org/abs/2208.03299](https://arxiv.org/abs/2208.03299)
-- ...
+- Unilimiformer
+  [http://arxiv.org/abs/2305.01625](http://arxiv.org/abs/2305.01625)
 
 ## Paper summaries
 
-### Borgeaud et al 2020.: Improving Language Models by Retrieving from Trillions of Tokens - "RETRO"
+### Borgeaud et al. 2020: Improving Language Models by Retrieving from Trillions of Tokens - "RETRO"
 
 Idea: Use BERT (Devlin et al. 2018) as a contextual encoder for chunks of size
 64 of the training data. Then train an encoder-decoder transformer model with
@@ -134,6 +135,17 @@ pre-trained weights fixed. Larger models benefit from more nearest neighbors,
 i.e. the 7B can utilize 40 nearest neighbor chunks, a 172M model only 10 NNs.
 
 [http://arxiv.org/abs/2112.04426](http://arxiv.org/abs/2112.04426)
+
+### Bertsch et al. 2023: Unlimiformer: Long-Range Transformers with Unlimited Length Input
+
+Idea: Use retrieval to actually maximize overlap of "query embeddings" with
+embeddings from an encoder (in a encoder-decoder architecture). Essentially it
+is an ideal approximation of the softmax in the Cross-Attention over all
+previous tokens (in the encoder inputs).
+
+Code:
+[https://github.com/abertsch72/unlimiformer](https://github.com/abertsch72/unlimiformer)
+Paper: [http://arxiv.org/abs/2305.01625](http://arxiv.org/abs/2305.01625)
 
 ### Izacard et al. 2022: Unsupervised Dense Information Retrieval with Contrastive Learning - "Contriver"
 

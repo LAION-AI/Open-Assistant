@@ -16,7 +16,7 @@ dataset = load_dataset("shahules786/prosocial_augmented")
 ## Steps
 
 1. Use prosocial dialog dataset to train a
-   [safety label classifer](https://huggingface.co/shahules786/prosocial-classifier).
+   [safety label classifier](https://huggingface.co/shahules786/prosocial-classifier).
 2. Finding Rules of thumbs(rots) present in prosocial dataset that matches
    task_description in red-teaming data.
 3. Use pretrained safety-classifier to predict safety labels for the selected

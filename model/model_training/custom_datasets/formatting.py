@@ -1,12 +1,11 @@
+import re
+from enum import Enum
 from itertools import zip_longest
 from random import random, shuffle
+from typing import Literal, Optional
 
-from langcodes import Language
-from model_training.custom_datasets.entities import Mode
 from pydantic import BaseModel, validator
 from pydantic.fields import ModelField
-
-SYSTEM_PROPERTY_DROP_PROBA = 0.5
 
 QA_SPECIAL_TOKENS = {
     "Question": "<|prompter|>",
@@ -25,140 +24,229 @@ def format_system_prefix(prefix, eos_token):
     )
 
 
-class PretrainDatasetEntry(BaseModel):
-    text: str | None = None
+def compute_length(s: str) -> int:
+    return len(re.findall(r"\w+", s)) // 5 + 1
 
 
-class DatasetEntry(BaseModel):
-    questions: list[str]
-    answers: list[str] | list[list[str]]
-    context: str | None = None
+class Mode(str, Enum):
+    sft = "sft"
+    rm = "rm"
+    rl = "rl"
+
+
+class Role(str, Enum):
+    prompter = "prompter"
+    assistant = "assistant"
+
+
+class Utterance(BaseModel):
+    text: str
+    role: Role
     lang: str | None = None
-    length: int | None = None
     quality: float | None = None
     humor: float | None = None
     creativity: float | None = None
-
-    @validator("lang")
-    def valid_lang(cls, v) -> str | None:
-        if v is not None:
-            if not (lang := Language.get(v)).is_valid():
-                raise ValueError(f"Language {v} is not valid. Please provide BCP 47 compatible language codes.")
-            return str(lang)
-
-    @validator("length")
-    def above_zero(cls, v) -> int:
-        if v is not None and v < 0:
-            raise ValueError(f"Length cannot be lower than 0. Received {v}")
-        return v
+    context: str | None = None
 
     @validator("quality", "humor", "creativity")
     def between_0_1(cls, v, field: ModelField) -> float:
         if v is not None and not (0 <= v <= 1):
-            raise ValueError(f"Field {field.name} must be between 0 and 1. Received {v}.")
-        return round(v, 1)
+            raise ValueError(f"Field {field.name} must be between 0 and 1. Received: {v}")
+        return v
 
-    def system_tag(self, eos_token: str) -> str | None:
-        relevant_system_infos = [
-            (k, v)
-            for k, v in self.__dict__.items()
-            if k not in ["questions", "answers"]
-            and v is not None
-            and str(v).replace("\n", "")
-            and random() > SYSTEM_PROPERTY_DROP_PROBA
-        ]
-        if len(relevant_system_infos) > 0:
-            shuffle(relevant_system_infos)
-            system_tag_key_values = "\n".join([f"{k}: {v}" for k, v in relevant_system_infos])
-            system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
-            return system_tag
+    def system_tag(
+        self,
+        eos_token: str,
+        enabled: bool = True,
+        property_dropout: float = 0.0,
+        add_length: bool = True,
+    ) -> str:
+        if not enabled:
+            return ""
 
-    def _get_formatted_rm(self, eos_token: str, max_replies: int, system_tag: None | str):
-        if isinstance(self.answers[0], list):
-            answers = self.answers[0]
-        else:
-            answers = self.answers
-        assert len(answers) > 1 and max_replies > 1
-        answers = answers[:max_replies]
-        match len(self.questions):
-            case 0:
-                question = ""
-                # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
-                answers = [f"{a}{eos_token}" for a in answers]
-            case 1:
-                question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{eos_token}"
-                answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
-            case _:
-                raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
-        if system_tag is not None:
-            question = f"{system_tag}{question}"
-        return (question, answers)
+        properties: list[tuple[float | str]] = []
+        for k, v in self.dict().items():
+            if v is not None and k in ["lang", "quality", "humor", "creativity"]:
+                properties.append((k, v))
 
-    def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
-        system_tag = self.system_tag(eos_token)
-        if mode == Mode.rl:
-            if system_tag is not None:
-                return f"{system_tag}{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
+        if add_length:
+            properties.append(("length", compute_length(self.text)))
+
+        shuffle(properties)
+
+        # ensure that potentially multi-line conext field comes last
+        if self.context:
+            properties.append(("context", self.context))
+
+        fragments: list[str] = []
+        for k, v in properties:
+            if random() < property_dropout:
+                continue
+
+            if isinstance(v, float):
+                fragments.append(f"{k}: {v:0.1f}")
+            elif isinstance(v, str):
+                if not v.isspace():  # ignore whitespace-only values
+                    fragments.append(f"{k}: {v}")
             else:
-                return f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
-        elif mode == Mode.rm:
-            return self._get_formatted_rm(
-                eos_token=eos_token, max_replies=kwargs.get("max_replies", 5), system_tag=system_tag
-            )
-        else:
-            if system_tag is not None:
-                qa_list = [system_tag]
+                fragments.append(f"{k}: {v}")
+
+        content = "\n".join(fragments)
+        return f"{QA_SPECIAL_TOKENS['System']}{content}\n{eos_token}"
+
+
+class DatasetEntry(BaseModel):
+    pass
+
+
+class DatasetEntryLm(DatasetEntry):
+    """Language modelling dataset entry"""
+
+    text: str | None = None
+
+
+class DatasetEntrySft(DatasetEntry):
+    """Supervised fine-tuning conversation dataset entry"""
+
+    conversation: list[Utterance]
+
+    def get_formatted(
+        self,
+        eos_token: str,
+        use_system_tag: bool = False,
+        system_property_dropout: float = 0.5,
+        system_add_length: bool = False,
+    ) -> list[str]:
+        output: list[str] = []
+
+        for i, m in enumerate(self.conversation):
+            if m.role == Role.prompter:
+                if use_system_tag and i + 1 < len(self.conversation):
+                    a = self.conversation[i + 1]
+                    assert a.role == Role.assistant
+                    system_tag = a.system_tag(
+                        eos_token=eos_token,
+                        property_dropout=system_property_dropout,
+                        add_length=system_add_length,
+                    )
+                else:
+                    system_tag = ""
+                output.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
             else:
-                qa_list = list()
-            # check if this is a RM capable dataset (so it has multiple answers to the same question)
-            # and if so, extract just the highest scoring answer
-            if isinstance(self.answers[0], list):
-                answers = [answer[0] for answer in self.answers]
+                output.append(f"{QA_SPECIAL_TOKENS['Answer']}{m.text}{eos_token}")
+
+        return output
+
+
+class DatasetEntryRm(DatasetEntry):
+    """Reward model dataset entry (conversation history + ranked replies)"""
+
+    messages: list[Utterance] | None  # conversation history
+    replies: list[Utterance]  # ordered reply variants, best first
+
+    def get_formatted(
+        self,
+        eos_token: str,
+        use_system_tag: bool = False,
+        system_property_dropout: float = 0.5,
+        system_add_length: bool = False,
+        max_replies: int = 5,
+    ) -> tuple[str, list[str]]:
+        reply_variants = self.replies
+        if len(reply_variants) > max_replies:
+            reply_variants = reply_variants[:max_replies]
+
+        # special handling for non-dialogue datasets like Hellaswag
+        if self.messages is None or len(self.messages) == 1 and self.messages[0] is None:
+            prefix = ""
+            replies = [r.text + eos_token for r in reply_variants]
+            return prefix, replies
+
+        assert len(self.messages) > 0 and self.messages[-1].role == Role.prompter
+
+        # format conversation history (prefix)
+        prefix_messages: list[str] = []
+        for i, m in enumerate(self.messages):
+            if m.role == Role.prompter:
+                prefix_messages.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}")
             else:
-                answers = self.answers
-            for q, a in zip_longest(self.questions, answers):
-                match (q, a):
-                    case (str(), str()):
-                        qa_list.extend(
-                            [
-                                f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}",
-                                f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}",
-                            ]
-                        )
-                    case (str(), None):
-                        qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}")
-                    case (None, None):
-                        break
-                    case (None, str()):
-                        raise ValueError("Received answer without getting corresponding question. Aborting")
-            return qa_list
+                if use_system_tag:
+                    assert m.role == Role.assistant
+                    system_tag = m.system_tag(
+                        eos_token=eos_token,
+                        property_dropout=system_property_dropout,
+                        add_length=system_add_length,
+                    )
+                else:
+                    system_tag = ""
+                prefix_messages.append(f"{system_tag}{QA_SPECIAL_TOKENS['Answer']}{m.text}{eos_token}")
+        prefix = "".join(prefix_messages)
 
-    @classmethod
-    def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):
-        """Creates a DatasetEntry from a qa of given structure. Even if qa contains consecutive assistant or prompter phrases.
+        #  format reply variants
+        replies: list[str] = []
+        for r in reply_variants:
+            assert r.role == Role.assistant
+            if use_system_tag:
+                system_tag = r.system_tag(
+                    eos_token=eos_token,
+                    property_dropout=system_property_dropout,
+                    add_length=system_add_length,
+                )
+            else:
+                system_tag = ""
+            replies.append(f"{system_tag}{QA_SPECIAL_TOKENS['Answer']}{r.text}{eos_token}")
+
+        return prefix, replies
 
 
-        Returns:
-            self: DatasetEntry class
-        """
-        # todo: implement
-        NotImplementedError("Function not implemented currently.")
+def create_dataset_entry_qa(
+    mode: Mode | Literal["sft", "rm", "rl"],
+    questions: list[str],
+    answers: list[str] | list[list[str]],
+    context: Optional[str] = None,
+    lang: Optional[str] = None,
+) -> DatasetEntry:
+    """Helper function to create DatasetEntry objects (DatasetEntrySft or DatasetEntryRm) for simple
+    Q&A datasets."""
+    if mode == Mode.sft:
+        messages: list[Utterance] = []
+
+        for q, a in zip_longest(questions, answers):
+            messages.append(Utterance(text=q, role=Role.prompter, lang=lang))
+            if isinstance(a, list):
+                a = a[0]
+            messages.append(Utterance(text=a, role=Role.assistant, lang=lang, context=context))
+
+        return DatasetEntrySft(conversation=messages)
+    elif mode == Mode.rm:
+        if len(questions) != 1:
+            raise RuntimeError("QA dataset entry factory does not support multi-turn conversation for the RM case.")
+
+        if len(answers) == 1 and isinstance(answers[0], list):
+            answers = answers[0]
+
+        assert isinstance(answers, list) and len(answers) > 1 and isinstance(answers[0], str)
+        conversation_history = [Utterance(text=questions[0], role=Role.prompter, lang=lang)]
+        reply_variants = [Utterance(text=a, role=Role.assistant, lang=lang, context=context) for a in answers]
+        return DatasetEntryRm(messages=conversation_history, replies=reply_variants)
+    # elif mode == Mode.rl:
+    else:
+        raise RuntimeError(f"Unsupported mode ({mode=})")
 
 
 def format_pairs(
-    pairs: list[str] | DatasetEntry, eos_token: str, add_initial_reply_token: str = False, mode: Mode | None = None
+    pairs: list[str],
+    eos_token: str,
+    add_initial_reply_token: bool = False,
 ) -> list[str]:
-    if isinstance(pairs, DatasetEntry) and mode is not None:
-        return pairs.get_formatted(mode=mode, eos_token=eos_token)
-    else:
-        # backwards compatibility
-        conversations = [
-            "{}{}{}".format(QA_SPECIAL_TOKENS["Question" if i % 2 == 0 else "Answer"], pairs[i], eos_token)
-            for i in range(len(pairs))
-        ]
-        if add_initial_reply_token:
-            conversations.append(QA_SPECIAL_TOKENS["Answer"])
-        return conversations
+    assert isinstance(pairs, list)
+    conversations = [
+        "{}{}{}".format(QA_SPECIAL_TOKENS["Question" if i % 2 == 0 else "Answer"], pairs[i], eos_token)
+        for i in range(len(pairs))
+    ]
+    if add_initial_reply_token:
+        conversations.append(QA_SPECIAL_TOKENS["Answer"])
+    return conversations
 
 
 def format_rl_text(pairs: list[str]) -> str:

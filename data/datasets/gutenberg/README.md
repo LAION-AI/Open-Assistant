@@ -33,7 +33,7 @@ size_categories:
   - 1K<n<10K
 ---
 
-# Dataset Card for Project Gutenber - Multilanguage eBooks
+# Dataset Card for Project Gutenberg - Multilanguage eBooks
 
 A collection of 7907 non-english (about 75-80% of all the ES, DE, FR, NL, IT,
 PT, HU books available on the site) and 48 285 english (80%+) language ebooks
@@ -103,7 +103,7 @@ metadata columns).
   https://www.gutenberg.org/help/copyright.html and
   https://www.gutenberg.org/policy/permission.html
 - Project Gutenberg has the following requests when using books without
-  metadata: _Books obtianed from the Project Gutenberg site should have the
+  metadata: _Books obtained from the Project Gutenberg site should have the
   following legal note next to them: "This eBook is for the use of anyone
   anywhere in the United States and most other parts of the world at no cost and
   with almost" no restrictions whatsoever. You may copy it, give it away or

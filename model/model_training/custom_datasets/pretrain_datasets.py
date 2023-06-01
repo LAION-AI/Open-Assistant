@@ -4,7 +4,7 @@
 from pathlib import Path
 
 from datasets import load_dataset
-from model_training.custom_datasets.formatting import DatasetEntry, PretrainDatasetEntry
+from model_training.custom_datasets.formatting import DatasetEntryLm
 from torch.utils.data import Dataset
 
 
@@ -22,6 +22,6 @@ class RedPajama(Dataset):
     def __len__(self) -> int:
         return len(self.dataset)
 
-    def __getitem__(self, index) -> DatasetEntry:
-        dialogue = PretrainDatasetEntry(text=self.dataset[index]["text"][: self.char_max_len])
+    def __getitem__(self, index) -> DatasetEntryLm:
+        dialogue = DatasetEntryLm(text=self.dataset[index]["text"][: self.char_max_len])
         return dialogue

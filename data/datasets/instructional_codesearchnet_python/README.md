@@ -1,7 +1,7 @@
 This dataset is a template generated instructional Python datastet generated
 from an annotated version of the code-search-net dataset. The annotated version
 of code-search-net dataset can be found
-[here](https://huggingface.co/datasets/Nan-Do/codesearchnet-python).
+[here](https://huggingface.co/datasets/Nan-Do/code-search-net-python).
 
 The dataset contains around 450000 python annotated functions. The dataset is
 split into two blocks, one in which the task is starting from the annotated
@@ -14,7 +14,8 @@ been used.
 
 **Note**: some summarisation tasks are very easy because the prompt already
 contains a docstring in the function which is then used as the ground truth
-response. It may be useful to filter these in future.
+response. It may be useful to filter these in future. (All the docstrings have
+been removed now)
 
 ### Summarize_codesearchnet_for_python.ipynb
 

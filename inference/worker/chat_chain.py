@@ -3,6 +3,7 @@ import datetime
 import interface
 import transformers
 import utils
+import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
@@ -25,16 +26,9 @@ from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
 from settings import settings
 
-# NOTE: Max depth of retries for tool usage
-MAX_DEPTH = 6
-
-# NOTE: If we want to exclude tools description from final prompt,
-# to save ctx token space, but it can hurt output quality, especially if
-# truncation kicks in!
-# I keep switching this on/off, depending on the model used.
+# Exclude tools description from final prompt. Saves ctx space but can hurt output
+# quality especially if truncation kicks in. Dependent on model used
 REMOVE_TOOLS_FROM_FINAL_PROMPT = False
-
-current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 llm = HFInference(
     inference_server_url=settings.inference_server_url,
@@ -42,31 +36,81 @@ llm = HFInference(
     stop_sequences=[],
     top_k=50,
     temperature=0.20,
-    # NOTE: It seems to me like it's better without repetition_penalty for
-    # llama-sft7e3 model
     seed=43,
-    repetition_penalty=(1 / 0.92),  # works with good with > 0.88
+    repetition_penalty=(1 / 0.92),  # Best with > 0.88
 )
 
 
-def populate_memory(memory: ConversationBufferMemory, work_request: inference.WorkRequest) -> None:
-    for message in work_request.thread.messages[:-1]:
-        if message.role == "prompter" and message.state == inference.MessageState.manual and message.content:
-            memory.chat_memory.add_user_message(message.content)
-        elif message.role == "assistant" and message.state == inference.MessageState.complete and message.content:
-            memory.chat_memory.add_ai_message(message.content)
+class PromptedLLM:
+    """
+    Handles calls to an LLM via LangChain with a prompt template and memory.
+    """
+
+    def __init__(
+        self,
+        tokenizer: transformers.PreTrainedTokenizer,
+        worker_config: inference.WorkerConfig,
+        parameters: interface.GenerateStreamParameters,
+        prompt_template: PromptTemplate,
+        memory: ConversationBufferMemory,
+        tool_names: list[str],
+        language: str,
+        action_input_format: str,
+    ):
+        self.tokenizer = tokenizer
+        self.worker_config = worker_config
+        self.parameters = parameters
+        self.prompt_template = prompt_template
+        self.memory = memory
+        self.tool_names = tool_names
+        self.language = language
+        self.action_input_format = action_input_format
+        self.current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def call(self, prompt: str) -> tuple[str, str]:
+        """Prepares and truncates prompt, calls LLM, returns used prompt and response."""
+        prompt = prepare_prompt(
+            prompt,
+            self.prompt_template,
+            self.memory,
+            self.tool_names,
+            self.current_time,
+            self.language,
+            self.tokenizer,
+            self.worker_config,
+            self.action_input_format,
+        )
+
+        # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
+        prompt = utils.truncate_prompt(self.tokenizer, self.worker_config, self.parameters, prompt, True)
+
+        response = (
+            llm.generate(prompts=[prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
+            .generations[0][0]
+            .text
+        )
+
+        if response:
+            response = response.replace("\n\n", "\n")
+            if response[0] != "\n":
+                response = f"\n{response}"
+
+        return prompt, response
 
 
 def handle_plugin_usage(
     input_prompt: str,
     prompt_template: PromptTemplate,
     language: str,
-    tools: list[Tool],
     memory: ConversationBufferMemory,
-    plugin: inference.PluginEntry | None,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
     parameters: interface.GenerateStreamParameters,
+    tools: list[Tool],
+    plugin: inference.PluginEntry | None,
+    plugin_max_depth: int,
+    ws: websocket.WebSocket,
+    work_request_id: str,
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -94,105 +138,90 @@ def handle_plugin_usage(
     action_input_format = (
         JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
     )
+    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    tool_names = [tool.name for tool in tools]
 
-    eos_token = ""
-    if hasattr(tokenizer, "eos_token"):
-        eos_token = tokenizer.eos_token
+    chain = PromptedLLM(
+        tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
+    )
 
-    tools_names = [tool.name for tool in tools]
+    # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
+    utils.send_response(
+        ws,
+        inference.PluginIntermediateResponse(
+            request_id=work_request_id,
+            current_plugin_thought="thinking...",
+            current_plugin_action_taken="",
+            current_plugin_action_input="",
+            current_plugin_action_response="",
+        ),
+    )
 
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
-    memory, init_prompt = prepare_prompt(
-        init_prompt,
-        prompt_template,
-        memory,
-        tools_names,
-        current_time,
-        language,
-        tokenizer,
-        worker_config,
-        action_input_format,
-    )
-
-    # NOTE: Do not strip() any of the outputs ever, as it will degrade the
-    # instruction following performance, at least with
-    # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-
-    init_prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, init_prompt, True)
-    chain_response = (
-        llm.generate(prompts=[init_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
-        .generations[0][0]
-        .text
-    )
-    if chain_response is not None and chain_response != "":
-        chain_response = chain_response.replace("\n\n", "\n")
-        if chain_response[0] != "\n":
-            chain_response = f"\n{chain_response}"
+    init_prompt, chain_response = chain.call(init_prompt)
 
     inner_monologue.append("In: " + str(init_prompt))
     inner_monologue.append("Out: " + str(chain_response))
 
-    # out_1 -> tool name/assistant prefix
-    # out_2 -> tool input/assistant response
-    out_1, out_2 = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
+    current_action_thought = ""
+    if THOUGHT_SEQ in chain_response:
+        current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
 
-    # whether model decided to use Plugin or not
-    assisted = False if ASSISTANT_PREFIX in out_1 else True
+    # Tool name/assistant prefix, Tool input/assistant response
+    prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
+    assisted = False if ASSISTANT_PREFIX in prefix else True
     chain_finished = not assisted
 
-    # Check if there is need to go deeper
-    while not chain_finished and assisted and achieved_depth < MAX_DEPTH:
-        tool_response = use_tool(out_1, out_2, tools)
+    if assisted:
+        # model decided to use a tool, so send that thought to the client
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=chain_response,
+                current_plugin_action_response=response,
+            ),
+        )
 
-        # Save previous chain response, that we will use for the final prompt
+    while not chain_finished and assisted and achieved_depth < plugin_max_depth:
+        tool_response = use_tool(prefix, response, tools)
+
+        # Save previous chain response for use in final prompt
         prev_chain_response = chain_response
-
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
-        memory, new_prompt = prepare_prompt(
-            new_prompt,
-            prompt_template,
-            memory,
-            tools_names,
-            current_time,
-            language,
-            tokenizer,
-            worker_config,
-            action_input_format,
-        )
 
-        # NOTE: Do not strip() any of the outputs ever, as it will degrade the
-        # instruction following performance, at least with
-        # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-        new_prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, new_prompt, True)
-        chain_response = (
-            llm.generate(prompts=[new_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
-            .generations[0][0]
-            .text
-        )
-
-        if chain_response is not None and chain_response != "":
-            chain_response = chain_response.replace("\n\n", "\n")
-            if chain_response[0] != "\n":
-                chain_response = f"\n{chain_response}"
+        new_prompt, chain_response = chain.call(new_prompt)
 
         inner_monologue.append("In: " + str(new_prompt))
         inner_monologue.append("Out: " + str(chain_response))
 
-        out_1, out_2 = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
-        # Did model decided to use Plugin again or not?
-        assisted = False if ASSISTANT_PREFIX in out_1 else True
+        current_action_thought = ""
+        if THOUGHT_SEQ in chain_response:
+            current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
 
-        # NOTE: Check if tool response contains ERROR string, this is something
-        # that we would like to avoid, but until models are better, we will
-        # help them with this...
-        # for now models, sometime decides to retry, when tool usage reports
-        # error, but sometime it just ignore error...
+        # Send deep plugin intermediate steps to UI
+        utils.send_response(
+            ws,
+            inference.PluginIntermediateResponse(
+                request_id=work_request_id,
+                current_plugin_thought=current_action_thought,
+                current_plugin_action_taken=prefix,
+                current_plugin_action_input=chain_response,
+                current_plugin_action_response=response,
+            ),
+        )
+
+        prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
+        assisted = False if ASSISTANT_PREFIX in prefix else True
+
+        # Check if tool response contains ERROR string and force retry
+        # Current models sometimes decide to retry on error but sometimes just ignore
         if tool_response.find("ERROR") != -1 and assisted is False:
             chain_response = prev_chain_response
             assisted = True
 
-        # Now LLM is done with using the plugin,
-        # so we need to generate the final prompt
         if not assisted:
             chain_finished = True
 
@@ -201,17 +230,17 @@ def handle_plugin_usage(
                 input_variables = ["input", "chat_history", "language", "current_time"]
 
                 prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
-                tools_names = None
+                tool_names = None
 
             final_input = (
                 f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
             )
-            memory, inner_prompt = prepare_prompt(
+            inner_prompt = prepare_prompt(
                 final_input,
                 prompt_template,
                 memory,
-                tools_names,
-                current_time,
+                tool_names,
+                chain.current_time,
                 language,
                 tokenizer,
                 worker_config,
@@ -226,26 +255,24 @@ def handle_plugin_usage(
             plugin_used.execution_details.final_generation_assisted = True
             plugin_used.execution_details.achieved_depth = achieved_depth + 1
             plugin_used.execution_details.status = "success"
-            plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-            plugin_used.trusted = getattr(plugin, "trusted", None)
-            plugin_used.url = getattr(plugin, "url", None)
+            plugin_used.name = plugin.plugin_config.name_for_human
+            plugin_used.trusted = plugin.trusted
+            plugin_used.url = plugin.url
 
             return inner_prompt, plugin_used
         achieved_depth += 1
 
-    plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
-    plugin_used.trusted = getattr(plugin, "trusted", None)
-    plugin_used.url = getattr(plugin, "url", None)
+    plugin_used.name = plugin.plugin_config.name_for_human
+    plugin_used.trusted = plugin.trusted
+    plugin_used.url = plugin.url
     plugin_used.execution_details.inner_monologue = inner_monologue
 
-    # bring back ASSISTANT_PREFIX to chain_response,
-    # that was omitted with stop=[ASSISTANT_PREFIX]
+    # Re-add ASSISTANT_PREFIX to chain_response, omitted with stop=[ASSISTANT_PREFIX]
     chain_response = f"{chain_response}{ASSISTANT_PREFIX}:  "
 
-    # Return non-assisted response
     if chain_finished:
-        # Malformed non-assisted LLM output
-        if not out_2 or out_2 == "":
+        if not response:
+            # Malformed non-assisted LLM output
             plugin_used.execution_details.status = "failure"
             plugin_used.execution_details.error_message = "Malformed LLM output"
             return init_prompt, plugin_used
@@ -253,13 +280,53 @@ def handle_plugin_usage(
         plugin_used.execution_details.status = "success"
         return f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
     else:
-        # Max depth reached, just try to answer without using a tool
+        # Max depth reached, answer without tool
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
-        plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
+        plugin_used.execution_details.error_message = f"Max depth reached: {plugin_max_depth}"
         init_prompt = f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
+
+
+def handle_standard_usage(
+    original_prompt: str,
+    prompt_template: PromptTemplate,
+    language: str,
+    memory: ConversationBufferMemory,
+    worker_config: inference.WorkerConfig,
+    tokenizer: transformers.PreTrainedTokenizer,
+):
+    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Non-plugin prompt template can include some external data e.g. datetime, language
+    action_input_format = (
+        JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
+    )
+    input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
+    init_prompt = prepare_prompt(
+        input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
+    )
+    return init_prompt, None
+
+
+def build_memory(work_request: inference.WorkRequest) -> ConversationBufferMemory:
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        input_key="input",
+        output_key="output",
+        ai_prefix=ASSISTANT_PREFIX,
+        human_prefix=HUMAN_PREFIX,
+    )
+
+    for message in work_request.thread.messages[:-1]:
+        if message.role == "prompter" and message.state == inference.MessageState.manual and message.content:
+            memory.chat_memory.add_user_message(message.content)
+        elif message.role == "assistant" and message.state == inference.MessageState.complete and message.content:
+            memory.chat_memory.add_ai_message(message.content)
+
+    return memory
 
 
 def handle_conversation(
@@ -267,6 +334,7 @@ def handle_conversation(
     worker_config: inference.WorkerConfig,
     parameters: interface.GenerateStreamParameters,
     tokenizer: transformers.PreTrainedTokenizer,
+    ws: websocket.WebSocket,
 ) -> tuple[str, inference.PluginUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
@@ -274,30 +342,11 @@ def handle_conversation(
             raise ValueError("Prompt is empty")
 
         language = "English"
-
-        # Get one and only one enabled plugin
-        # TODO: Add support for multiple plugins at once
-        # maybe... should be explored
         plugin = next((p for p in parameters.plugins if p.enabled), None)
 
-        # Compose tools from plugin, where every endpoint of plugin will become
-        # one tool, and return prepared prompt with instructions
         tools_instructions_template, tools = compose_tools_from_plugin(plugin)
-        plugin_enabled = len(tools)
-
-        eos_token = ""
-        if hasattr(tokenizer, "eos_token"):
-            eos_token = tokenizer.eos_token
-
-        memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            input_key="input",
-            output_key="output",
-            ai_prefix=ASSISTANT_PREFIX,
-            human_prefix=HUMAN_PREFIX,
-        )
-
-        populate_memory(memory, work_request)
+        plugin_enabled = len(tools) > 0
+        memory: ConversationBufferMemory = build_memory(work_request)
 
         TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{tools_instructions_template}{SUFFIX}"""
         input_variables = [
@@ -308,42 +357,31 @@ def handle_conversation(
             "action_input_format",
         ] + (["tools_names"] if plugin_enabled else [])
 
-        # NOTE: Should we pass language from the UI here?
+        # TODO: Consider passing language from the UI here
         prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
 
-        # Run trough plugin chain. Returns PluginUsed and final prompt
-        # that will be passed to worker for final completion with LLM
-        # using sampling settings derived from frontend UI
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, tools, memory, plugin, worker_config, tokenizer, parameters
+                original_prompt,
+                prompt_template,
+                language,
+                memory,
+                worker_config,
+                tokenizer,
+                parameters,
+                tools,
+                plugin,
+                work_request.parameters.plugin_max_depth,
+                ws,
+                work_request.id,
             )
 
-        # Just regular prompt template without plugin chain.
-        # Here is prompt in format of a template, that includes some
-        # external/ "realtime" data, such as current date&time and language
-        # that can be passed from frontend here.
-        action_input_format = (
-            JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
-        )
-        input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
-        memory, init_prompt = prepare_prompt(
-            input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
-        )
-        return init_prompt, None
-
+        return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
     except Exception as e:
         logger.error(f"Error while handling conversation: {e}")
         return "", None
 
 
-# NOTE: Only for local DEV and prompt "engineering"
-# some of the plugins that can be used for testing:
-# - https://www.klarna.com/.well-known/ai-plugin.json
-# - https://nla.zapier.com/.well-known/ai-plugin.json (this one is behind auth)
-# - https://chat-calculator-plugin.supportmirage.repl.co/.well-known/ai-plugin.json (error responses seems to be html)
-# - https://www.joinmilo.com/.well-known/ai-plugin.json (works quite well, but
-#   is very simple, so it's not very useful for testing)
 if __name__ == "__main__":
     plugin = inference.PluginEntry(
         enabled=True,

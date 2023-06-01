@@ -15,6 +15,42 @@ from sqlmodel import Session, SQLModel
 Error Handling Reference: https://www.postgresql.org/docs/15/mvcc-serialization-failure-handling.html
 """
 
+TEXT_SEARCH_LANGUAGE_MAPPING: dict[str, str] = {
+    "ar": "arabic",
+    "hy": "armenian",
+    "eu": "basque",
+    "ca": "catalan",
+    "da": "danish",
+    "nl": "dutch",
+    "en": "english",
+    "fi": "finnish",
+    "fr": "french",
+    "de": "german",
+    "el": "greek",
+    "ga": "irish",
+    "hi": "hindi",
+    "hu": "hungarian",
+    "id": "indonesian",
+    "it": "italian",
+    "lt": "lithuanian",
+    "ne": "nepali",
+    "no": "norwegian",
+    "pt": "portuguese",
+    "ro": "romanian",
+    "ru": "russian",
+    "sr": "serbian",
+    "ta": "tamil",
+    "es": "spanish",
+    "sv": "swedish",
+    "tr": "turkish",
+    "yi": "yiddish",
+}
+
+
+def db_lang_to_postgres_ts_lang(db_lang: str) -> str:
+    # Return 'simple' if language is not directly supported by Postgres
+    return TEXT_SEARCH_LANGUAGE_MAPPING.get(db_lang, "simple")
+
 
 class CommitMode(IntEnum):
     """

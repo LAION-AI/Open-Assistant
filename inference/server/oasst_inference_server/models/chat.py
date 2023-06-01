@@ -85,6 +85,7 @@ class DbChat(SQLModel, table=True):
     title: str | None = Field(None)
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
+    active_thread_tail_message_id: str | None = Field(None)
 
     hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
@@ -109,6 +110,7 @@ class DbChat(SQLModel, table=True):
             messages=[m.to_read() for m in self.messages],
             hidden=self.hidden,
             allow_data_use=self.allow_data_use,
+            active_thread_tail_message_id=self.active_thread_tail_message_id,
         )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
@@ -126,3 +128,13 @@ class DbReport(SQLModel, table=True):
 
     def to_read(self) -> inference.Report:
         return inference.Report(id=self.id, report_type=self.report_type, reason=self.reason)
+
+
+class DbMessageEval(SQLModel, table=True):
+    __tablename__ = "message_evaluation"
+
+    id: str = Field(default_factory=uuid7str, primary_key=True)
+    chat_id: str = Field(..., foreign_key="chat.id", index=True)
+    user_id: str = Field(..., foreign_key="user.id", index=True)
+    selected_message_id: str = Field(..., foreign_key="message.id")
+    inferior_message_ids: list[str] = Field(default_factory=list, sa_column=sa.Column(pg.JSONB))

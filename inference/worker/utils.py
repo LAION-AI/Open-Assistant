@@ -172,6 +172,7 @@ class HttpClient(pydantic.BaseModel):
     base_url: str
     basic_auth_username: str | None = None
     basic_auth_password: str | None = None
+    bearer_token: str | None = None
 
     @property
     def auth(self):
@@ -180,10 +181,19 @@ class HttpClient(pydantic.BaseModel):
         else:
             return None
 
+    def _maybe_add_bearer_token(self, headers: dict[str, str] | None):
+        if self.bearer_token:
+            if headers is None:
+                headers = {}
+            headers["Authorization"] = f"Bearer {self.bearer_token}"
+        return headers
+
     def get(self, path: str, **kwargs):
+        kwargs["headers"] = self._maybe_add_bearer_token(kwargs.get("headers"))
         return requests.get(self.base_url + path, auth=self.auth, **kwargs)
 
     def post(self, path: str, **kwargs):
+        kwargs["headers"] = self._maybe_add_bearer_token(kwargs.get("headers"))
         return requests.post(self.base_url + path, auth=self.auth, **kwargs)
 
 
@@ -192,9 +202,10 @@ def get_inference_server_stream_events(request: interface.GenerateStreamRequest)
         base_url=settings.inference_server_url,
         basic_auth_username=settings.basic_auth_username,
         basic_auth_password=settings.basic_auth_password,
+        bearer_token=settings.bearer_token,
     )
     response = http.post(
-        "/generate_stream",
+        settings.inference_server_route,
         json=request.dict(),
         stream=True,
         headers={"Accept": "text/event-stream"},
