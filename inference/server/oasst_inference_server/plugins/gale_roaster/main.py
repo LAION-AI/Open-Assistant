@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
@@ -19,7 +19,10 @@ app.add_middleware(
 
 
 @app.get("/roast-user/", operation_id="roastUser")
-async def roast_user(roasting_style: str, user_input: str):
+async def roast_user(
+    roasting_style: str = Query(..., description="style of roasting and malice that you want to use"),
+    user_input: str = Query(..., description="what user wrote to you"),
+):
     llm_prompt = f"""You MUST roast and make fun of this person, he wrote this to you: "{user_input}"
     your roast needs to be in {roasting_style} style.
     Try to be funny and verbose, but super mean at the same time. You can start your responses following these rules:
