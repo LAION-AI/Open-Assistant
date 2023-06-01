@@ -13,8 +13,22 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from peft import LoraConfig, PeftModel, PrefixTuningConfig, get_peft_model, prepare_model_for_int8_training
+from peft import PeftModel
 from huggingface_hub import hf_hub_download
+
+def transfer_embeddings(model,embed_path,tokenizer):
+    old_embeddings = model.get_input_embeddings()
+    old_num_tokens, old_embedding_dim = old_embeddings.weight.size()
+    new_embeddings = torch.nn.Embedding(old_num_tokens, old_embedding_dim)
+    new_embeddings.to(old_embeddings.weight.device, dtype=old_embeddings.weight.dtype)
+    model._init_weights(new_embeddings)
+    embed_weights = torch.load(embed_path,map_location=old_embeddings.weight.device)
+    vocab_size = tokenizer.vocab_size
+    new_embeddings.weight.data[:vocab_size, :] = old_embeddings.weight.data[:vocab_size, :]
+    new_embeddings.weight.data[vocab_size:vocab_size + embed_weights.shape[0], :] = embed_weights.weight.data.to(
+        new_embeddings.weight.dtype).to(new_embeddings.weight.device)
+    model.set_input_embeddings(new_embeddings)
+    model.tie_weights()
 
 def load_peft_model(model, peft_model_path, tokenizer):
     model.resize_token_embeddings(len(tokenizer))
@@ -27,13 +41,8 @@ def load_peft_model(model, peft_model_path, tokenizer):
         torch_dtype=model.dtype,
     )
     model.eos_token_id = tokenizer.eos_token_id
-    # extra_embeds = hf_hub_download(peft_model_path, "extra_embeddings.pt")
-    # embed_weights = torch.load(extra_embeds, map_location=model.device)
-    embed_weights = torch.load(peft_model_path + '/extra_embeddings.pt', map_location=model.device)
-
-    model.base_model.model.model.embed_tokens.weight[len(tokenizer) - embed_weights.shape[0] :, :] = embed_weights.to(
-        model.base_model.model.model.embed_tokens.weight.dtype
-    )
+    extra_embeds = hf_hub_download(peft_model_path, "extra_embeddings.pt")
+    transfer_embeddings(model,peft_model_path.joinpath('extra_embeddings.pt'),tokenizer)
     return model
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
@@ -287,7 +296,8 @@ def parse_args():
     parser.add_argument("--benchmark", action="store_true", help="additionally run benchmark")
     parser.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload")
     parser.add_argument("--nvme_offload_path", help="whether to activate NVME offload and the path on nvme")
-
+    parser.add_argument("--dtype", type=str, default=None)
+    parser.add_argument("--model_hidden_size",type=int,default=8192)
 
     return parser.parse_args()
 
@@ -333,14 +343,6 @@ def main():
     model_name = args.model_name
     print(f"Loading model: {model_name}")
 
-    tokenizer = AutoTokenizer.from_pretrained(args.peft_model)
-    print('len(tokenizer)',len(tokenizer))
-    print('tokenizer.eos_token_id',tokenizer.eos_token_id)
-    print('tokenizer.bos_token_id',tokenizer.bos_token_id)
-    print('tokenizer.pad_token_id',tokenizer.pad_token_id)
-
-
-    # todo DS LOAD MODEL
     local_rank = int(os.getenv("LOCAL_RANK", "0"))
     world_size = int(os.getenv("WORLD_SIZE", "1"))
     deepspeed.init_distributed("nccl")
@@ -351,13 +353,9 @@ def main():
             return
         print(*msg)
 
-    # config = AutoConfig.from_pretrained(model_name)
-    # XXX: can't automatically derive dtype via config's `from_pretrained`
-    dtype = torch.float16
+    dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
     train_batch_size = 1 * world_size
-    # config_for_model_hz = AutoConfig.from_pretrained("decapoda-research/llama-65b-hf")
-    # model_hidden_size = config_for_model_hz.hidden_size
-    model_hidden_size = 8192
+    model_hidden_size = args.model_hidden_size
     print('model_hidden_size', model_hidden_size)
     ds_config = {
         "fp16": {
@@ -379,40 +377,17 @@ def main():
         "train_micro_batch_size_per_gpu": 1,
         "wall_clock_breakdown": False,
     }
-  #   ds_config = {
-  #       "fp16": {
-  #           "enabled": dtype == torch.float16,
-  #       },
-  #       "bf16": {
-  #           "enabled": dtype == torch.bfloat16,
-  #       },
-  # "zero_optimization": {
-  #   "stage": 3,
-  #   "overlap_comm": True,
-  #   "contiguous_gradients": True,
-  #   "sub_group_size": 2e9,
-  #   "reduce_bucket_size": "auto",
-  #   "stage3_prefetch_bucket_size": "auto",
-  #   "stage3_param_persistence_threshold": "auto",
-  #   "stage3_max_live_parameters": 2e9,
-  #   "stage3_max_reuse_distance": 2e9,
-  #   "stage3_gather_16bit_weights_on_model_save": True,
-  #   "offload_param": {
-  #     "device": "cpu",
-  #     "pin_memory": True,
-  #   },
-  # }}
-    # if args.cpu_offload and args.nvme_offload_path:
-    #     raise ValueError("Use one of --cpu_offload or --nvme_offload_path and not both")
-    # if args.cpu_offload:
-    #     ds_config["zero_optimization"]["offload_param"] = dict(device="cpu", pin_memory=True)
-    # if args.nvme_offload_path:
-    #     ds_config["zero_optimization"]["offload_param"] = dict(
-    #         device="nvme",
-    #         pin_memory=True,
-    #         nvme_path=args.nvme_offload_path,
-    #         buffer_size=4e9,
-    #     )
+    if args.cpu_offload and args.nvme_offload_path:
+        raise ValueError("Use one of --cpu_offload or --nvme_offload_path and not both")
+    if args.cpu_offload:
+        ds_config["zero_optimization"]["offload_param"] = dict(device="cpu", pin_memory=True)
+    if args.nvme_offload_path:
+        ds_config["zero_optimization"]["offload_param"] = dict(
+            device="nvme",
+            pin_memory=True,
+            nvme_path=args.nvme_offload_path,
+            buffer_size=4e9,
+        )
 
     dschf = HfDeepSpeedConfig(ds_config)  # this tells from_pretrained to instantiate directly on gpus
 

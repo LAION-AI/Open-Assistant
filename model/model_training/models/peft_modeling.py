@@ -110,14 +110,13 @@ class SaveLoraConfig:
     model_name: str = ""
     torch_ckpt_path: str = ""
     peft_type: str = "lora"
-    model_name: str = "llama"
 
 
 
 def save_adapter_model_from_ckpt(save_config: SaveLoraConfig):
     tokenizer = get_tokenizer(save_config)
     model = get_model(save_config, tokenizer)
-    model = peft_model(model)
+    model = peft_model(model,model_name=save_config.model_name)
     model.load_state_dict(torch.load(save_config.torch_ckpt_path))
     vocab_size = tokenizer.vocab_size
     print(f"Vocab size is {vocab_size}, and new tokenizer length is {len(tokenizer)}")
