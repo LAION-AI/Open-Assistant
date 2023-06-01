@@ -29,6 +29,7 @@ export const ROUTES = {
   MESSAGE_DETAIL: (id: string) => `/messages/${id}`,
   ADMIN_USER_DETAIL: (id: string) => `/admin/manage_user/${id}`,
   CHAT: (id: string) => `/chat/${id}`,
+  ADMIN_MESSAGE_EDIT: (id: string) => `/admin/edit/${id}`,
 };
 
 export type QueryWithLang<T extends RouteQuery | undefined = undefined> = T extends undefined

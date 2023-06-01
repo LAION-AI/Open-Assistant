@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import { Eye, RotateCw, Trash } from "lucide-react";
+import { Edit, Eye, RotateCw, Trash } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
@@ -219,6 +219,12 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                   isLoading={isUndeleteMutating && undeleteMessageId === id}
                 />
               )}
+              <DataTableAction
+                as={NextLink}
+                href={ROUTES.ADMIN_MESSAGE_EDIT(id)}
+                icon={Edit}
+                aria-label="Edit message"
+              />
             </HStack>
           );
         },
