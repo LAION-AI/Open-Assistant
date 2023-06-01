@@ -48,8 +48,7 @@ class Settings(pydantic.BaseSettings):
 
     insert_fake_data: bool = True
     fake_data_path: Optional[FilePath] = (
-        Path(__file__).parent.parent.parent.parent
-        / "backend/test_data/realistic/realistic_seed_data.json"  # Todo: Use importlib
+        "/tmp/test_data/realistic/realistic_seed_data.json"
     )
 
     database_uri: str | None = None

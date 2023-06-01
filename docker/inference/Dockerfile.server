@@ -66,6 +66,7 @@ ARG APP_USER
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared ${SHARED_LIBS_BASE}/oasst-shared
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-data ${SHARED_LIBS_BASE}/oasst-data
+COPY --chown="${APP_USER}:${APP_USER}" ./backend/test_data /tmp/test_data/
 
 USER root
 RUN --mount=type=cache,target=/var/cache/pip,from=build \
