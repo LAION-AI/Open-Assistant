@@ -110,6 +110,7 @@ class SaveLoraConfig:
     model_name: str = ""
     torch_ckpt_path: str = ""
     peft_type: str = "lora"
+    model_name: str = "llama"
 
 
 
