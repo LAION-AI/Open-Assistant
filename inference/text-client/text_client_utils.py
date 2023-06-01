@@ -1,4 +1,5 @@
 import json
+from typing import Any, Generator
 
 import requests
 import sseclient
@@ -13,7 +14,7 @@ class DebugClient:
         self.available_models = self.get_available_models()
 
     def login(self, username):
-        auth_data = self.http_client.get(f"{self.backend_url}/auth/callback/debug", params={"code": username}).json()
+        auth_data = self.http_client.get(url=f"{self.backend_url}/auth/callback/debug", params={"code": username}).json()
         assert auth_data["access_token"]["token_type"] == "bearer"
         bearer_token = auth_data["access_token"]["access_token"]
         logger.debug(f"Logged in as {username} with token {bearer_token}")
@@ -21,7 +22,7 @@ class DebugClient:
 
     def create_chat(self):
         response = self.http_client.post(
-            f"{self.backend_url}/chats",
+            url=f"{self.backend_url}/chats",
             json={},
             headers=self.auth_headers,
         )
@@ -30,20 +31,20 @@ class DebugClient:
         self.message_id = None
         return self.chat_id
 
-    def get_available_models(self):
+    def get_available_models(self) -> list[Any]:
         response = self.http_client.get(
-            f"{self.backend_url}/configs/model_configs",
+            url=f"{self.backend_url}/configs/model_configs",
             headers=self.auth_headers,
         )
         response.raise_for_status()
         return [model["name"] for model in response.json()]
 
-    def send_message(self, message, model_config_name):
+    def send_message(self, message, model_config_name) -> Generator[Any, Any, None]:
         available_models = self.get_available_models()
         if model_config_name not in available_models:
             raise ValueError(f"Invalid model config name: {model_config_name}")
         response = self.http_client.post(
-            f"{self.backend_url}/chats/{self.chat_id}/prompter_message",
+            url=f"{self.backend_url}/chats/{self.chat_id}/prompter_message",
             json={
                 "parent_id": self.message_id,
                 "content": message,
@@ -54,7 +55,7 @@ class DebugClient:
         prompter_message_id = response.json()["id"]
 
         response = self.http_client.post(
-            f"{self.backend_url}/chats/{self.chat_id}/assistant_message",
+            url=f"{self.backend_url}/chats/{self.chat_id}/assistant_message",
             json={
                 "parent_id": prompter_message_id,
                 "model_config_name": model_config_name,
@@ -71,7 +72,7 @@ class DebugClient:
         self.message_id = response.json()["id"]
 
         response = self.http_client.get(
-            f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}/events",
+            url=f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}/events",
             stream=True,
             headers={
                 "Accept": "text/event-stream",
@@ -81,14 +82,14 @@ class DebugClient:
         response.raise_for_status()
         if response.status_code == 204:
             response = self.http_client.get(
-                f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}",
+                url=f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}",
                 headers=self.auth_headers,
             )
             response.raise_for_status()
             data = response.json()
             yield data["content"]
         else:
-            client = sseclient.SSEClient(response)
+            client = sseclient.SSEClient(event_source=response)
             events = iter(client.events())
             for event in events:
                 if event.event == "error":
@@ -96,7 +97,7 @@ class DebugClient:
                 if event.event == "ping":
                     continue
                 try:
-                    data = json.loads(event.data)
+                    data = json.loads(s=event.data)
                 except json.JSONDecodeError:
                     raise RuntimeError(f"Failed to decode {event.data=}")
                 event_type = data["event_type"]

@@ -15,7 +15,7 @@ class SequenceStoppingCriteria(StoppingCriteria):
         super().__init__(*args, **kwargs)
         self.stop_texts = stop_texts
         self.tokenizer = tokenizer
-        self.input_length = len(tokenizer.encode(input_prompt))
+        self.input_length = len(tokenizer.encode(sequence=input_prompt))
 
     def __call__(
         self,
@@ -27,5 +27,5 @@ class SequenceStoppingCriteria(StoppingCriteria):
         generated_ids = input_ids[0, self.input_length :].tolist()
         # TODO: optimise this. Inefficient to decode whole sequence every time
         # but can't encode stop sequences as they don't always tokenize the same
-        generated_text = self.tokenizer.decode(generated_ids)
+        generated_text = self.tokenizer.decode(ids=generated_ids)
         return any(text in generated_text for text in self.stop_texts)

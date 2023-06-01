@@ -27,52 +27,52 @@ class RedisQueue:
         if enforce_max_size and self.max_size > 0:
             if await self.get_length() >= self.max_size:
                 raise QueueFullException()
-        await self.redis_client.rpush(self.queue_id, value)
+        await self.redis_client.rpush(name=self.queue_id, value)
         if self.expire is not None:
-            await self.set_expire(self.expire)
+            await self.set_expire(timeout=self.expire)
         if self.with_counter:
-            ctr = await self.redis_client.incr(f"ctr_enq:{self.queue_id}")
-            await self.redis_client.set(f"pos:{value}", ctr, ex=self.counter_pos_expire)
+            ctr = await self.redis_client.incr(name=f"ctr_enq:{self.queue_id}")
+            await self.redis_client.set(name=f"pos:{value}", ctr, ex=self.counter_pos_expire)
         else:
             ctr = None
         return ctr
 
     async def dequeue(self, timeout: int = 1) -> str | None:
-        val = await self.redis_client.blpop(self.queue_id, timeout=timeout)
+        val = await self.redis_client.blpop(keys=self.queue_id, timeout=timeout)
         if val is not None and self.with_counter:
-            await self.redis_client.incr(f"ctr_deq:{self.queue_id}")
+            await self.redis_client.incr(name=f"ctr_deq:{self.queue_id}")
         return val
 
     async def set_expire(self, timeout: int) -> None:
-        return await self.redis_client.expire(self.queue_id, timeout)
+        return await self.redis_client.expire(name=self.queue_id, time=timeout)
 
     async def get_enq_counter(self) -> int:
         if not self.with_counter:
             return 0
-        enq = await self.redis_client.get(f"ctr_enq:{self.queue_id}")
-        enq = int(enq) if enq is not None else 0
+        enq = await self.redis_client.get(name=f"ctr_enq:{self.queue_id}")
+        enq = int(__x=enq) if enq is not None else 0
         return enq
 
     async def get_deq_counter(self) -> int:
         if not self.with_counter:
             return 0
-        deq = await self.redis_client.get(f"ctr_deq:{self.queue_id}")
-        deq = int(deq) if deq is not None else 0
+        deq = await self.redis_client.get(name=f"ctr_deq:{self.queue_id}")
+        deq = int(__x=deq) if deq is not None else 0
         return deq
 
     async def get_length(self) -> int:
-        return await self.redis_client.llen(self.queue_id)
+        return await self.redis_client.llen(name=self.queue_id)
 
 
 async def get_pos_value(redis_client: redis.Redis, message_id: str) -> int:
-    val = await redis_client.get(f"pos:{message_id}")
+    val = await redis_client.get(name=f"pos:{message_id}")
     if val is None:
         return 0
-    return int(val)
+    return int(__x=val)
 
 
 def message_queue(redis_client: redis.Redis, message_id: str) -> RedisQueue:
-    return RedisQueue(redis_client, f"message:{message_id}", expire=settings.message_queue_expire)
+    return RedisQueue(redis_client=redis_client, queue_id=f"message:{message_id}", expire=settings.message_queue_expire)
 
 
 def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue:
@@ -80,8 +80,8 @@ def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue
         if worker_compat_hash not in settings.allowed_worker_compat_hashes_list:
             raise ValueError(f"Worker compat hash {worker_compat_hash} not allowed")
     return RedisQueue(
-        redis_client,
-        f"work:{worker_compat_hash}",
+        redis_client=redis_client,
+        queue_id=f"work:{worker_compat_hash}",
         with_counter=True,
         counter_pos_expire=settings.message_queue_expire,
         max_size=settings.work_queue_max_size,
@@ -89,4 +89,4 @@ def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue
 
 
 def compliance_queue(redis_client: redis.Redis, worker_id: str) -> RedisQueue:
-    return RedisQueue(redis_client, f"compliance:{worker_id}")
+    return RedisQueue(redis_client=redis_client, queue_id=f"compliance:{worker_id}")

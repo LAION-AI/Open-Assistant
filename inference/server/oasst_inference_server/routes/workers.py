@@ -53,7 +53,7 @@ async def add_worker_connect_event(
         event_type=models.WorkerEventType.connect,
         worker_info=worker_info,
     )
-    session.add(event)
+    session.add(instance=event)
     await session.commit()
 
 
@@ -78,14 +78,14 @@ class WorkRequestNotFound(Exception):
 
 def get_work_request_container(work_request_map: WorkRequestContainerMap, request_id: str) -> WorkRequestContainer:
     if request_id is None:
-        raise WorkRequestNotFound(request_id)
+        raise WorkRequestNotFound(request_id=request_id)
     container = work_request_map.get(request_id)
     if container is None:
-        raise WorkRequestNotFound(request_id)
+        raise WorkRequestNotFound(request_id=request_id)
     return container
 
 
-@router.websocket("/work")
+@router.websocket(path="/work")
 async def handle_worker(
     websocket: fastapi.WebSocket,
     api_key: str = worker_utils.api_key_header,
@@ -94,8 +94,8 @@ async def handle_worker(
     await websocket.accept()
 
     try:
-        worker_utils.get_protocol_version(protocol_version)
-        api_key = worker_utils.get_api_key(api_key)
+        worker_utils.get_protocol_version(protocol_version=protocol_version)
+        api_key = worker_utils.get_api_key(api_key=api_key)
         worker_id = await worker_utils.get_worker_id(api_key=api_key, protocol_version=protocol_version)
     except fastapi.HTTPException as e:
         logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
@@ -107,16 +107,16 @@ async def handle_worker(
             await websocket.close(code=e.status_code, reason=e.detail)
         except Exception:
             pass
-        raise fastapi.WebSocketException(e.status_code, e.detail)
+        raise fastapi.WebSocketException(code=e.status_code, reason=e.detail)
 
     logger.info(f"handle_worker: {worker_id=}")
-    worker_info = await worker_utils.receive_worker_info(websocket)
+    worker_info = await worker_utils.receive_worker_info(websocket=websocket)
     logger.info(f"handle_worker: {worker_info=}")
     worker_config = worker_info.config
     worker_compat_hash = worker_config.compat_hash
-    work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
+    work_queue = queueing.work_queue(redis_client=deps.redis_client, worker_compat_hash=worker_compat_hash)
     redis_client = deps.make_redis_client()
-    blocking_work_queue = queueing.work_queue(redis_client, worker_compat_hash)
+    blocking_work_queue = queueing.work_queue(redis_client=redis_client, worker_compat_hash=worker_compat_hash)
     worker_session = worker_utils.WorkerSession(
         worker_id=worker_id,
         worker_info=worker_info,
@@ -126,7 +126,7 @@ async def handle_worker(
     try:
         async with deps.manual_create_session() as session:
             await add_worker_connect_event(session=session, worker_id=worker_id, worker_info=worker_info)
-        await worker_utils.store_worker_session(worker_session)
+        await worker_utils.store_worker_session(worker_session=worker_session)
 
         async def _update_session(metrics: inference.WorkerMetricsInfo):
             worker_session.requests_in_flight = len(work_request_map)
@@ -137,13 +137,13 @@ async def handle_worker(
         def _add_dequeue(ftrs: set):
             requests_in_progress = len(work_request_map)
             if requests_in_progress < worker_config.max_parallel_requests:
-                ftrs.add(asyncio.ensure_future(blocking_work_queue.dequeue(timeout=0)))
+                ftrs.add(asyncio.ensure_future(coro_or_future=blocking_work_queue.dequeue(timeout=0)))
 
         def _add_receive(ftrs: set):
-            ftrs.add(asyncio.ensure_future(worker_utils.receive_worker_response(websocket=websocket)))
+            ftrs.add(asyncio.ensure_future(coro_or_future=worker_utils.receive_worker_response(websocket=websocket)))
 
-        _add_dequeue(pending_futures)
-        _add_receive(pending_futures)
+        _add_dequeue(ftrs=pending_futures)
+        _add_receive(ftrs=pending_futures)
 
         logger.info(f"handle_worker: {worker_id=} started")
         while True:
@@ -184,7 +184,7 @@ async def handle_worker(
                         match worker_response.response_type:
                             case "pong":
                                 worker_response = cast(inference.PongResponse, worker_response)
-                                await _update_session(worker_response.metrics)
+                                await _update_session(metrics=worker_response.metrics)
                             case "token":
                                 worker_response = cast(inference.TokenResponse, worker_response)
                                 await handle_token_response(
@@ -197,20 +197,20 @@ async def handle_worker(
                                     work_request_map=work_request_map,
                                     response=worker_response,
                                 )
-                                await _update_session(worker_response.metrics)
+                                await _update_session(metrics=worker_response.metrics)
                             case "error":
                                 worker_response = cast(inference.ErrorResponse, worker_response)
                                 await handle_error_response(
                                     work_request_map=work_request_map,
                                     response=worker_response,
                                 )
-                                await _update_session(worker_response.metrics)
+                                await _update_session(metrics=worker_response.metrics)
                             case "general_error":
                                 worker_response = cast(inference.GeneralErrorResponse, worker_response)
                                 await handle_general_error_response(
                                     response=worker_response,
                                 )
-                                await _update_session(worker_response.metrics)
+                                await _update_session(metrics=worker_response.metrics)
                             case "safe_prompt":
                                 logger.info("Received safe prompt response")
                                 worker_response = cast(inference.SafePromptResponse, worker_response)
@@ -228,13 +228,13 @@ async def handle_worker(
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
                         if len(pending_futures) == 0:
-                            _add_dequeue(pending_futures)
-                        _add_receive(pending_futures)
+                            _add_dequeue(ftrs=pending_futures)
+                        _add_receive(ftrs=pending_futures)
             if not done:
-                await worker_utils.send_worker_request(websocket, inference.PingRequest())
+                await worker_utils.send_worker_request(websocket=websocket, request=inference.PingRequest())
 
     except Exception as e:
-        logger.exception(f"Error while handling worker {worker_id}: {str(e)}")
+        logger.exception(f"Error while handling worker {worker_id}: {str(object=e)}")
         logger.info(f"Handling {len(work_request_map)} work requests outstanding")
         for container in work_request_map.values():
             try:
@@ -242,13 +242,13 @@ async def handle_worker(
                 if container.num_responses == 0:
                     logger.warning(f"Marking {message_id=} as pending since no work was done.")
                     async with deps.manual_chat_repository() as cr:
-                        await cr.reset_work(message_id)
+                        await cr.reset_work(message_id=message_id)
                     await work_queue.enqueue(message_id, enforce_max_size=False)
                 else:
                     logger.warning(f"Aborting {message_id=}")
                     await abort_message(message_id=message_id, error="Aborted due to worker error.")
             except Exception as e:
-                logger.exception(f"Error while trying to reset work for {message_id=}: {str(e)}")
+                logger.exception(f"Error while trying to reset work for {message_id=}: {str(object=e)}")
     finally:
         logger.info(f"Worker {worker_id} disconnected")
         try:
@@ -256,7 +256,7 @@ async def handle_worker(
         except Exception:
             logger.warning("Error while closing redis client")
         try:
-            await worker_utils.delete_worker_session(worker_session.id)
+            await worker_utils.delete_worker_session(worker_session_id=worker_session.id)
         except Exception:
             logger.warning("Error while deleting worker session")
         # try closing websocket if it's still open
@@ -272,17 +272,17 @@ async def handle_worker(
             logger.warning("Error while closing websocket")
 
 
-@router.get("/sessions")
+@router.get(path="/sessions")
 async def list_worker_sessions() -> list[worker_utils.WorkerSession]:
     redis_client = deps.redis_client
     try:
         worker_sessions = []
-        async for key in redis_client.scan_iter("worker_session:*"):
-            worker_session_json = await redis_client.get(key)
-            worker_session = worker_utils.WorkerSession.parse_raw(worker_session_json)
+        async for key in redis_client.scan_iter(match="worker_session:*"):
+            worker_session_json = await redis_client.get(name=key)
+            worker_session = worker_utils.WorkerSession.parse_raw(b=worker_session_json)
             worker_sessions.append(worker_session)
     except Exception as e:
-        logger.exception(f"Error while listing worker sessions: {str(e)}")
+        logger.exception(f"Error while listing worker sessions: {str(object=e)}")
         raise
     return worker_sessions
 
@@ -292,11 +292,11 @@ async def clear_worker_sessions():
     redis_client = deps.redis_client
     try:
         logger.warning("Clearing worker sessions")
-        async for key in redis_client.scan_iter("worker_session:*"):
-            await redis_client.getdel(key)
+        async for key in redis_client.scan_iter(match="worker_session:*"):
+            await redis_client.getdel(name=key)
         logger.warning("Successfully cleared worker sessions")
     except Exception as e:
-        logger.exception(f"Error while clearing worker sessions: {str(e)}")
+        logger.exception(f"Error while clearing worker sessions: {str(object=e)}")
         raise
 
 
@@ -316,16 +316,16 @@ async def initiate_work_for_message(
             worker_id=worker_id,
             worker_config=worker_config,
         )
-        work_request = await worker_utils.build_work_request(session, message.id)
+        work_request = await worker_utils.build_work_request(session=session, message_id=message.id)
 
     logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
     try:
-        await worker_utils.send_worker_request(websocket, work_request)
+        await worker_utils.send_worker_request(websocket=websocket, request=work_request)
     except Exception as e:
-        logger.exception(f"Error while sending work request to worker: {str(e)}")
+        logger.exception(f"Error while sending work request to worker: {str(object=e)}")
         async with deps.manual_create_session() as session:
-            await cr.reset_work(message_id)
-        await work_queue.enqueue(message_id, enforce_max_size=False)
+            await cr.reset_work(message_id=message_id)
+        await work_queue.enqueue(value=message_id, enforce_max_size=False)
         raise
 
     return work_request
@@ -335,9 +335,9 @@ async def handle_token_response(
     response: inference.TokenResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
     message_queue = queueing.message_queue(
-        deps.redis_client,
+        redis_client=deps.redis_client,
         message_id=work_response_container.message_id,
     )
     await message_queue.enqueue(response.json())
@@ -348,12 +348,12 @@ async def handle_plugin_intermediate_response(
     response: inference.PluginIntermediateResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
     message_queue = queueing.message_queue(
-        deps.redis_client,
+        redis_client=deps.redis_client,
         message_id=work_response_container.message_id,
     )
-    await message_queue.enqueue(response.json())
+    await message_queue.enqueue(value=response.json())
     work_response_container.num_responses += 1
 
 
@@ -362,7 +362,7 @@ async def handle_generated_text_response(
     work_request_map: WorkRequestContainerMap,
 ):
     try:
-        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
         message_id = work_response_container.message_id
         async with deps.manual_create_session() as session:
             cr = chat_repository.ChatRepository(session=session)
@@ -376,23 +376,23 @@ async def handle_generated_text_response(
             message=message.to_read(),
         )
         message_queue = queueing.message_queue(
-            deps.redis_client,
+            redis_client=deps.redis_client,
             message_id=message_id,
         )
-        await message_queue.enqueue(message_packet.json())
+        await message_queue.enqueue(value=message_packet.json())
     finally:
         del work_request_map[response.request_id]
 
 
 async def abort_message(message_id: str, error: str):
     async with deps.manual_chat_repository() as cr:
-        message = await cr.abort_work(message_id, reason=error)
+        message = await cr.abort_work(message_id=message_id, reason=error)
     response = inference.InternalErrorResponse(error=error, message=message.to_read())
     message_queue = queueing.message_queue(
-        deps.redis_client,
+        redis_client=deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(response.json())
+    await message_queue.enqueue(value=response.json())
 
 
 async def handle_error_response(
@@ -401,9 +401,9 @@ async def handle_error_response(
 ):
     logger.warning(f"Got error {response=}")
     try:
-        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
         message_id = work_response_container.message_id
-        await abort_message(message_id, response.error)
+        await abort_message(message_id=message_id, error=response.error)
     finally:
         del work_request_map[response.request_id]
 
@@ -421,13 +421,13 @@ async def handle_safe_prompt_response(
     """
     Handle the case where the worker informs the server that the safety model has intervened and modified the user prompt to be safe.
     """
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    work_response_container = get_work_request_container(work_request_map=work_request_map, request_id=response.request_id)
     message_id = work_response_container.message_id
 
     async with deps.manual_create_session() as session:
         cr = chat_repository.ChatRepository(session=session)
-        message = await cr.get_assistant_message_by_id(message_id)
-        prompt = await cr.get_prompter_message_by_id(message.parent_id)
+        message = await cr.get_assistant_message_by_id(message_id=message_id)
+        prompt = await cr.get_prompter_message_by_id(message_id=message.parent_id)
         prompt.safe_content = response.safe_prompt
         prompt.safety_level = response.safety_parameters.level
         prompt.safety_label = response.safety_label
@@ -441,7 +441,7 @@ async def handle_timeout(message: inference.MessageRead):
         message=message,
     )
     message_queue = queueing.message_queue(
-        deps.redis_client,
+        redis_client=deps.redis_client,
         message_id=message.id,
     )
-    await message_queue.enqueue(response.json())
+    await message_queue.enqueue(value=response.json())

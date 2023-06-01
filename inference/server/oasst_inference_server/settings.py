@@ -25,13 +25,13 @@ class Settings(pydantic.BaseSettings):
 
     @property
     def allowed_worker_compat_hashes_list(self) -> list[str]:
-        return self.allowed_worker_compat_hashes.split(",")
+        return self.allowed_worker_compat_hashes.split(sep=",")
 
     allowed_model_config_names: str = "*"
 
     @property
     def allowed_model_config_names_list(self) -> list[str]:
-        return self.allowed_model_config_names.split(",")
+        return self.allowed_model_config_names.split(sep=",")
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True
@@ -69,13 +69,13 @@ class Settings(pydantic.BaseSettings):
 
     @property
     def debug_api_keys_list(self) -> list[str]:
-        return split_keys_string(self.debug_api_keys)
+        return split_keys_string(keys=self.debug_api_keys)
 
     trusted_client_keys: str | None
 
     @property
     def trusted_api_keys_list(self) -> list[str]:
-        return split_keys_string(self.trusted_client_keys)
+        return split_keys_string(keys=self.trusted_client_keys)
 
     do_compliance_checks: bool = False
     compliance_check_interval: int = 60
@@ -120,7 +120,7 @@ class Settings(pydantic.BaseSettings):
 
     @property
     def inference_cors_origins_list(self) -> list[str]:
-        return self.inference_cors_origins.split(",")
+        return self.inference_cors_origins.split(sep=",")
 
 
 settings = Settings()

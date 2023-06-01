@@ -20,11 +20,11 @@ def _unpack(value):
 # based on HF text streamer
 class HFStreamer(transformers.generation.streamers.BaseStreamer):
     def __init__(self, input_ids, printer: Printer):
-        self.input_ids = _unpack(input_ids)[::-1]
+        self.input_ids = _unpack(value=input_ids)[::-1]
         self.printer = printer
 
     def put(self, value):
-        for token_id in _unpack(value):
+        for token_id in _unpack(value=value):
             if self.input_ids:
                 input_id = self.input_ids.pop()
                 if input_id != token_id:

@@ -115,7 +115,7 @@ DEFAULT_PARAMETER_CONFIGS = [
 ]
 
 
-@router.get("/model_configs")
+@router.get(path="/model_configs")
 async def get_model_configs() -> list[ModelConfigInfo]:
     return [
         ModelConfigInfo(
@@ -127,7 +127,7 @@ async def get_model_configs() -> list[ModelConfigInfo]:
     ]
 
 
-@router.post("/plugin_config")
+@router.post(path="/plugin_config")
 async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEntry:
     try:
         plugin_config = await plugin_utils.fetch_plugin(plugin.url)
@@ -138,7 +138,7 @@ async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEn
     return inference.PluginEntry(url=plugin.url, enabled=plugin.enabled, plugin_config=plugin_config)
 
 
-@router.get("/builtin_plugins")
+@router.get(path="/builtin_plugins")
 async def get_builtin_plugins() -> list[inference.PluginEntry]:
     plugins = []
 

@@ -10,7 +10,7 @@ from oasst_shared.schemas import inference
 
 class UserChatRepository(pydantic.BaseModel):
     session: database.AsyncSession
-    user_id: str = pydantic.Field(..., min_length=1)
+    user_id: str = pydantic.Field(default=..., min_length=1)
 
     class Config:
         arbitrary_types_allowed = True
@@ -25,13 +25,13 @@ class UserChatRepository(pydantic.BaseModel):
         if after is not None and before is not None:
             raise fastapi.HTTPException(status_code=400, detail="Cannot specify both after and before.")
 
-        query = sqlmodel.select(models.DbChat)
+        query = sqlmodel.select(entity_0=models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
 
         if not include_hidden:
             query = query.where(models.DbChat.hidden.is_(False))
         if limit is not None:
-            query = query.limit(limit)
+            query = query.limit(limit=limit)
         if before is not None:
             query = query.where(models.DbChat.id > before)
         if after is not None:
@@ -39,66 +39,66 @@ class UserChatRepository(pydantic.BaseModel):
 
         query = query.order_by(models.DbChat.created_at.desc() if before is None else models.DbChat.created_at)
 
-        return (await self.session.exec(query)).all()
+        return (await self.session.exec(statement=query)).all()
 
     async def get_chat_by_id(self, chat_id: str, include_messages: bool = True) -> models.DbChat:
-        query = sqlmodel.select(models.DbChat).where(
+        query = sqlmodel.select(entity_0=models.DbChat).where(
             models.DbChat.id == chat_id,
             models.DbChat.user_id == self.user_id,
         )
         if include_messages:
             query = query.options(
-                sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
+                sqlalchemy.orm.selectinload(attr=models.DbChat.messages).selectinload(attr=models.DbMessage.reports),
             )
 
-        chat = (await self.session.exec(query)).one_or_none()
+        chat = (await self.session.exec(statement=query)).one_or_none()
         if chat is None:
             raise fastapi.HTTPException(status_code=404, detail="Chat not found")
         return chat
 
     async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
         query = (
-            sqlmodel.select(models.DbMessage)
+            sqlmodel.select(entity_0=models.DbMessage)
             .where(
                 models.DbMessage.id == message_id,
                 models.DbMessage.chat_id == chat_id,
             )
             .options(
-                sqlalchemy.orm.selectinload(models.DbMessage.reports),
+                sqlalchemy.orm.selectinload(attr=models.DbMessage.reports),
             )
-            .join(models.DbChat)
+            .join(target=models.DbChat)
             .where(
                 models.DbChat.user_id == self.user_id,
             )
         )
-        message = (await self.session.exec(query)).one()
+        message = (await self.session.exec(statement=query)).one()
         return message
 
     async def create_chat(self) -> models.DbChat:
         # Try to find the user first
         user: models.DbUser = (
-            await self.session.execute(sqlmodel.select(models.DbUser).where(models.DbUser.id == self.user_id))
+            await self.session.execute(statement=sqlmodel.select(entity_0=models.DbUser).where(models.DbUser.id == self.user_id))
         ).one_or_none()
         if not user:
             raise fastapi.HTTPException(status_code=404, detail="User not found")
         chat = models.DbChat(user_id=self.user_id)
-        self.session.add(chat)
+        self.session.add(instance=chat)
         await self.session.commit()
         return chat
 
     async def delete_chat(self, chat_id: str) -> models.DbChat:
-        chat = await self.get_chat_by_id(chat_id)
+        chat = await self.get_chat_by_id(chat_id=chat_id)
         if chat is None:
             raise fastapi.HTTPException(status_code=403)
         logger.debug(f"Deleting {chat_id=}")
         message_ids = [message.id for message in chat.messages]
         # delete reports associated with messages
-        await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
+        await self.session.exec(statement=sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
         # delete messages
-        await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
+        await self.session.exec(statement=sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
         await self.session.exec(
-            sqlmodel.delete(models.DbChat).where(
+            statement=sqlmodel.delete(models.DbChat).where(
                 models.DbChat.id == chat_id,
                 models.DbChat.user_id == self.user_id,
             )
@@ -114,8 +114,8 @@ class UserChatRepository(pydantic.BaseModel):
 
         chat: models.DbChat = (
             await self.session.exec(
-                sqlmodel.select(models.DbChat)
-                .options(sqlalchemy.orm.selectinload(models.DbChat.messages))
+                statement=sqlmodel.select(entity_0=models.DbChat)
+                .options(sqlalchemy.orm.selectinload(attr=models.DbChat.messages))
                 .where(
                     models.DbChat.id == chat_id,
                     models.DbChat.user_id == self.user_id,
@@ -140,23 +140,23 @@ class UserChatRepository(pydantic.BaseModel):
                 raise fastapi.HTTPException(status_code=400, detail="Parent message is not complete")
 
         message = models.DbMessage(role="prompter", chat_id=chat_id, chat=chat, parent_id=parent_id, content=content)
-        self.session.add(message)
+        self.session.add(instance=message)
         chat.modified_at = message.created_at
 
         await self.session.commit()
         logger.debug(f"Added prompter message {len(content)=} to chat {chat_id}")
         query = (
-            sqlmodel.select(models.DbMessage)
+            sqlmodel.select(entity_0=models.DbMessage)
             .options(
-                sqlalchemy.orm.selectinload(models.DbMessage.chat)
-                .selectinload(models.DbChat.messages)
-                .selectinload(models.DbMessage.reports),
+                sqlalchemy.orm.selectinload(attr=models.DbMessage.chat)
+                .selectinload(attr=models.DbChat.messages)
+                .selectinload(attr=models.DbMessage.reports),
             )
             .where(
                 models.DbMessage.id == message.id,
             )
         )
-        message = (await self.session.exec(query)).one()
+        message = (await self.session.exec(statement=query)).one()
         return message
 
     async def initiate_assistant_message(
@@ -166,19 +166,19 @@ class UserChatRepository(pydantic.BaseModel):
 
         # find and cancel all pending messages by this user
         pending_msg_query = (
-            sqlmodel.select(models.DbMessage)
+            sqlmodel.select(entity_0=models.DbMessage)
             .where(
                 models.DbMessage.role == "assistant",
                 models.DbMessage.state == inference.MessageState.pending,
                 models.DbMessage.parent_id != parent_id,  # Prevent draft messages from cancelling each other
             )
-            .join(models.DbChat)
+            .join(target=models.DbChat)
             .where(
                 models.DbChat.user_id == self.user_id,
             )
         )
 
-        pending_msgs: list[models.DbMessage] = (await self.session.exec(pending_msg_query)).all()
+        pending_msgs: list[models.DbMessage] = (await self.session.exec(statement=pending_msg_query)).all()
         for pending_msg in pending_msgs:
             logger.warning(
                 f"User {self.user_id} has a pending message {pending_msg.id} in chat {pending_msg.chat_id}. Cancelling..."
@@ -188,14 +188,14 @@ class UserChatRepository(pydantic.BaseModel):
             logger.debug(f"Cancelled message {pending_msg.id} in chat {pending_msg.chat_id}.")
 
         query = (
-            sqlmodel.select(models.DbMessage)
-            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            sqlmodel.select(entity_0=models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.chat))
             .where(
                 models.DbMessage.id == parent_id,
                 models.DbMessage.role == "prompter",
             )
         )
-        parent: models.DbMessage = (await self.session.exec(query)).one()
+        parent: models.DbMessage = (await self.session.exec(statement=query)).one()
         if parent.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
 
@@ -203,7 +203,7 @@ class UserChatRepository(pydantic.BaseModel):
             count_query = sqlmodel.select(sqlmodel.func.count(models.DbMessage.id)).where(
                 models.DbMessage.chat_id == parent.chat.id
             )
-            num_msgs: int = (await self.session.exec(count_query)).one()
+            num_msgs: int = (await self.session.exec(statement=count_query)).one()
 
             if num_msgs >= settings.chat_max_messages:
                 raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
@@ -217,19 +217,19 @@ class UserChatRepository(pydantic.BaseModel):
             work_parameters=work_parameters,
             worker_compat_hash=worker_compat_hash,
         )
-        self.session.add(message)
+        self.session.add(instance=message)
         await self.session.commit()
         logger.debug(f"Initiated assistant message of {parent_id=}")
         query = (
-            sqlmodel.select(models.DbMessage)
+            sqlmodel.select(entity_0=models.DbMessage)
             .options(
-                sqlalchemy.orm.selectinload(models.DbMessage.chat)
-                .selectinload(models.DbChat.messages)
-                .selectinload(models.DbMessage.reports),
+                sqlalchemy.orm.selectinload(attr=models.DbMessage.chat)
+                .selectinload(attr=models.DbChat.messages)
+                .selectinload(attr=models.DbMessage.reports),
             )
             .where(models.DbMessage.id == message.id)
         )
-        message = (await self.session.exec(query)).one()
+        message = (await self.session.exec(statement=query)).one()
         return message
 
     async def update_score(self, message_id: str, score: int) -> models.DbMessage:
@@ -238,14 +238,14 @@ class UserChatRepository(pydantic.BaseModel):
 
         logger.info(f"Updating message score to {message_id=}: {score=}")
         query = (
-            sqlmodel.select(models.DbMessage)
-            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            sqlmodel.select(entity_0=models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.chat))
             .where(
                 models.DbMessage.id == message_id,
                 models.DbMessage.role == "assistant",
             )
         )
-        message: models.DbMessage = (await self.session.exec(query)).one()
+        message: models.DbMessage = (await self.session.exec(statement=query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         message.score = score
@@ -255,11 +255,11 @@ class UserChatRepository(pydantic.BaseModel):
     async def add_message_eval(self, message_id: str, inferior_message_ids: list[str]):
         logger.info(f"Adding message evaluation to {message_id=}: {inferior_message_ids=}")
         query = (
-            sqlmodel.select(models.DbMessage)
-            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            sqlmodel.select(entity_0=models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.chat))
             .where(models.DbMessage.id == message_id)
         )
-        message: models.DbMessage = (await self.session.exec(query)).one()
+        message: models.DbMessage = (await self.session.exec(statement=query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         message_eval = models.DbMessageEval(
@@ -268,26 +268,26 @@ class UserChatRepository(pydantic.BaseModel):
             selected_message_id=message.id,
             inferior_message_ids=inferior_message_ids,
         )
-        self.session.add(message_eval)
+        self.session.add(instance=message_eval)
         await self.session.commit()
 
     async def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
         logger.info(f"Adding report to {message_id=}: {reason=}")
         query = (
-            sqlmodel.select(models.DbMessage)
-            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            sqlmodel.select(entity_0=models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(attr=models.DbMessage.chat))
             .where(
                 models.DbMessage.id == message_id,
                 models.DbMessage.role == "assistant",
             )
         )
-        message: models.DbMessage = (await self.session.exec(query)).one()
+        message: models.DbMessage = (await self.session.exec(statement=query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         report = models.DbReport(message_id=message.id, reason=reason, report_type=report_type)
-        self.session.add(report)
+        self.session.add(instance=report)
         await self.session.commit()
-        await self.session.refresh(report)
+        await self.session.refresh(instance=report)
         return report
 
     async def update_chat(

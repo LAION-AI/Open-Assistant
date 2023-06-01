@@ -93,11 +93,11 @@ def prepare_export_message_tree(
     def assign_replies(node: ExportMessageNode) -> ExportMessageNode:
         node.replies = messages_by_parent[node.message_id]
         for child in node.replies:
-            assign_replies(child)
+            assign_replies(node=child)
         return node
 
-    prompt = assign_replies(messages_by_parent[None][0])
-    return ExportMessageTree(message_tree_id=str(chat.id), tree_state="not_applicable", prompt=prompt)
+    prompt = assign_replies(node=messages_by_parent[None][0])
+    return ExportMessageTree(message_tree_id=str(object=chat.id), tree_state="not_applicable", prompt=prompt)
 
 
 def prepare_export_message_node(
@@ -115,9 +115,9 @@ def prepare_export_message_node(
 
     events: dict[str, list[ExportMessageEvent]] = prepare_export_events(chat, message, anonymizer=anonymizer)
 
-    message_id = maybe_anonymize(anonymizer, "message", message.id)
-    parent_id = maybe_anonymize(anonymizer, "message", message.parent_id)
-    user_id = maybe_anonymize(anonymizer, "user", chat.user_id)
+    message_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.id)
+    parent_id = maybe_anonymize(anonymizer=anonymizer, collection="message", key=message.parent_id)
+    user_id = maybe_anonymize(anonymizer=anonymizer, collection="user", key=chat.user_id)
 
     return ExportMessageNode(
         message_id=message_id,
@@ -144,23 +144,23 @@ def write_messages_to_file(
     if use_compression:
         if not file:
             raise RuntimeError("File name must be specified when using compression.")
-        out_buff = gzip.open(file, "wt", encoding="UTF-8")
+        out_buff = gzip.open(filename=file, mode="wt", encoding="UTF-8")
     else:
-        out_buff = smart_open(file)
+        out_buff = smart_open(filename=file)
 
     with out_buff as f:
         for chat in chats:
             if write_trees:
-                export_chat = prepare_export_message_tree(chat, anonymizer=anonymizer)
-                file_data = jsonable_encoder(export_chat, exclude_none=True)
-                json.dump(file_data, f)
+                export_chat = prepare_export_message_tree(chat=chat, anonymizer=anonymizer)
+                file_data = jsonable_encoder(obj=export_chat, exclude_none=True)
+                json.dump(obj=file_data, fp=f)
                 f.write("\n")
             else:
                 # Exclude messages without content (e.g. work still in progress or aborted)
                 for message in filter(lambda m: m.content, chat.messages):
-                    export_message = prepare_export_message_node(chat, message, anonymizer=anonymizer)
-                    file_data = jsonable_encoder(export_message, exclude_none=True)
-                    json.dump(file_data, f)
+                    export_message = prepare_export_message_node(chat=chat, message=message, anonymizer=anonymizer)
+                    file_data = jsonable_encoder(obj=export_message, exclude_none=True)
+                    json.dump(obj=file_data, fp=f)
                     f.write("\n")
 
 
@@ -170,7 +170,7 @@ async def fetch_eligible_chats(session_generator, filters: list[Any]) -> list[Db
     filters.append(DbChat.allow_data_use)
     async with session_generator() as session:
         query = (
-            sqlmodel.select(DbChat)
+            sqlmodel.select(entity_0=DbChat)
             .filter(*filters)
             .options(
                 sqlalchemy.orm.joinedload("*"),
@@ -188,12 +188,12 @@ def export_chats(
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
 ) -> None:
-    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator, filters))
-    anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
+    eligible_chats: list[DbChat] = asyncio.run(main=fetch_eligible_chats(session_generator=session_generator, filters=filters))
+    anonymizer = Anonymizer(seed=anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
-        export_path,
-        eligible_chats,
+        file=export_path,
+        chats=eligible_chats,
         write_trees=write_trees,
         use_compression=use_compression,
         anonymizer=anonymizer,
@@ -282,12 +282,12 @@ def main():
     args = parse_args()
 
     export_path = Path(args.export_file) if args.export_file else None
-    filters = create_filters(args)
+    filters = create_filters(args=args)
 
     export_chats(
-        deps.manual_create_session,
-        export_path,
-        filters,
+        session_generator=deps.manual_create_session,
+        export_path=export_path,
+        filters=filters,
         use_compression=not args.no_compression,
         write_trees=not args.write_flat,
         anonymizer_seed=args.anonymizer_seed,

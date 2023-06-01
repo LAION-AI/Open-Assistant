@@ -7,7 +7,7 @@ from oasst_shared import utils as shared_utils
 async def delete_user_from_db(session: database.AsyncSession, user_id: str):
     """Deletes a user."""
     logger.info(f"Deleting user {user_id}")
-    user = await session.get(models.DbUser, user_id)
+    user = await session.get(entity=models.DbUser, ident=user_id)
     if not user:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,

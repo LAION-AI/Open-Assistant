@@ -7,7 +7,7 @@ from oasst_shared.schemas import inference
 
 class CreatePrompterMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
-    content: str = pydantic.Field(..., repr=False)
+    content: str = pydantic.Field(default=..., repr=False)
 
 
 class CreateAssistantMessageRequest(pydantic.BaseModel):

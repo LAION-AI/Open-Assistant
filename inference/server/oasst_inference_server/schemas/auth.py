@@ -18,4 +18,4 @@ class TrustedClientToken(pydantic.BaseModel):
 
     @validator("content", pre=True)
     def parse(token: str):
-        return json.loads(b64decode(token))
+        return json.loads(s=b64decode(s=token))

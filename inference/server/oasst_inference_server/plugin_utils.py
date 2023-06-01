@@ -9,8 +9,8 @@ from loguru import logger
 from oasst_shared.schemas import inference
 
 
-async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout: float = 5.0):
-    async with session.get(url, timeout=timeout) as response:
+async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout: float = 5.0) -> inference.PluginConfig:
+    async with session.get(url=url, timeout=timeout) as response:
         content_type = response.headers.get("Content-Type")
 
         if response.status == 404:
@@ -30,7 +30,7 @@ async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout
             or url.endswith(".yaml")
             or url.endswith(".yml")
         ):
-            config = yaml.safe_load(await response.text())
+            config = yaml.safe_load(stream=await response.text())
         else:
             raise HTTPException(
                 status_code=400,
@@ -44,7 +44,7 @@ async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> infe
     async with aiohttp.ClientSession() as session:
         for attempt in range(retries):
             try:
-                plugin_config = await attempt_fetch_plugin(session, url, timeout=timeout)
+                plugin_config = await attempt_fetch_plugin(session=session, url=url, timeout=timeout)
                 return plugin_config
             except (ClientConnectorError, ServerTimeoutError) as e:
                 if attempt == retries - 1:

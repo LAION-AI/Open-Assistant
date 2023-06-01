@@ -8,21 +8,21 @@ from oasst_shared.schemas import inference
 
 
 def fetch_openapi_spec(url):
-    response = requests.get(url)
+    response = requests.get(url=url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch data from URL: {url}. Status code: {response.status_code}")
 
     content_type = response.headers.get("Content-Type")
 
     if "application/json" in content_type or url.endswith(".json"):
-        return json.loads(response.text)
+        return json.loads(s=response.text)
     elif (
         "application/yaml" in content_type
         or "application/x-yaml" in content_type
         or url.endswith(".yaml")
         or url.endswith(".yml")
     ):
-        return yaml.safe_load(response.text)
+        return yaml.safe_load(stream=response.text)
     else:
         raise Exception(f"Unsupported content type: {content_type}. Only JSON and YAML are supported.")
 
@@ -33,7 +33,7 @@ def get_plugin_config(url: str) -> inference.PluginConfig | None:
         response.raise_for_status()
         plugin_dict = response.json()
         logger.info(f"Plugin config downloaded {plugin_dict}")
-        plugin_config = inference.PluginConfig.parse_obj(plugin_dict)
+        plugin_config = inference.PluginConfig.parse_obj(obj=plugin_dict)
         return plugin_config
     except (requests.RequestException, ValueError) as e:
         logger.warning(f"Error downloading or parsing Plugin config: {e}")
@@ -44,7 +44,7 @@ def resolve_schema_reference(ref: str, openapi_dict: dict):
     if not ref.startswith("#/"):
         raise ValueError(f"Invalid reference format: {ref}")
 
-    components = ref.split("/")
+    components = ref.split(sep="/")
     schema = openapi_dict
     for component in components[1:]:
         if component not in schema:
@@ -73,7 +73,7 @@ def parse_plugin_endpoint(
         path: Path of the endpoint.
         openapi_dict: Full OpenAPI spec of the plugin.
     """
-    split_result = urlsplit(api_url)
+    split_result = urlsplit(url=api_url)
     backup_url = f"{split_result.scheme}://{split_result.netloc}"
     params_list = []
     parameters = details.get("parameters", [])
@@ -81,7 +81,7 @@ def parse_plugin_endpoint(
         for param in parameters:
             schema = None
             if "$ref" in param["schema"]:
-                schema = resolve_schema_reference(param["schema"]["$ref"], openapi_dict)
+                schema = resolve_schema_reference(ref=param["schema"]["$ref"], openapi_dict=openapi_dict)
 
             params_list.append(
                 inference.PluginOpenAPIParameter(
@@ -99,7 +99,7 @@ def parse_plugin_endpoint(
         for media_type, media_schema in content.items():
             if media_type == "application/json":
                 if "$ref" in media_schema["schema"]:
-                    payload = resolve_schema_reference(media_schema["schema"]["$ref"], openapi_dict)
+                    payload = resolve_schema_reference(ref=media_schema["schema"]["$ref"], openapi_dict=openapi_dict)
                 else:
                     payload = media_schema["schema"]
 
@@ -128,25 +128,25 @@ def get_plugin_endpoints(api_url: str, openapi_dict: dict) -> list[inference.Plu
 
     for path, methods in paths.items():
         for method, details in methods.items():
-            endpoints.append(parse_plugin_endpoint(api_url, method, details, base_url, path, openapi_dict))
+            endpoints.append(parse_plugin_endpoint(api_url=api_url, method=method, details=details, base_url=base_url, path=path, openapi_dict=openapi_dict))
 
     return endpoints
 
 
 def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
-    plugin_config = get_plugin_config(plugin_url)
+    plugin_config = get_plugin_config(url=plugin_url)
     if not plugin_config:
         return None
 
     try:
         api_url = plugin_config.api.url
         if not api_url.startswith("http"):
-            parsed_link = urlsplit(plugin_url)
+            parsed_link = urlsplit(url=plugin_url)
             base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
             api_url = f"{base_of_url}/{api_url}"
 
-        openapi_dict = fetch_openapi_spec(api_url)
-        plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
+        openapi_dict = fetch_openapi_spec(url=api_url)
+        plugin_config.endpoints = get_plugin_endpoints(api_url=api_url, openapi_dict=openapi_dict)
         return plugin_config
     except Exception:
         logger.debug(f"Error preparing plugin: {plugin_url}")

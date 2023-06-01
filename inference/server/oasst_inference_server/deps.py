@@ -1,4 +1,5 @@
 import contextlib
+from typing import Any, Generator
 
 import redis.asyncio as redis
 from fastapi import Depends
@@ -10,7 +11,7 @@ from oasst_inference_server.user_chat_repository import UserChatRepository
 
 
 # create async redis client
-def make_redis_client():
+def make_redis_client() -> redis.Redis:
     redis_client = redis.Redis(
         host=settings.redis_host, port=settings.redis_port, db=settings.redis_db, decode_responses=True
     )
@@ -20,37 +21,37 @@ def make_redis_client():
 redis_client = make_redis_client()
 
 
-async def create_session():
+async def create_session() -> Generator[AsyncSession, Any, None]:
     async for session in get_async_session():
         yield session
 
 
 @contextlib.asynccontextmanager
-async def manual_create_session(autoflush=True):
-    async with contextlib.asynccontextmanager(get_async_session)(autoflush=autoflush) as session:
+async def manual_create_session(autoflush=True) -> Generator[AsyncSession, Any, None]:
+    async with contextlib.asynccontextmanager(func=get_async_session)(autoflush=autoflush) as session:
         yield session
 
 
-async def create_chat_repository(session: AsyncSession = Depends(create_session)) -> ChatRepository:
+async def create_chat_repository(session: AsyncSession = Depends(dependency=create_session)) -> ChatRepository:
     repository = ChatRepository(session=session)
     return repository
 
 
 async def create_user_chat_repository(
-    session: AsyncSession = Depends(create_session),
-    user_id: str = Depends(auth.get_current_user_id),
+    session: AsyncSession = Depends(dependency=create_session),
+    user_id: str = Depends(dependency=auth.get_current_user_id),
 ) -> UserChatRepository:
     repository = UserChatRepository(session=session, user_id=user_id)
     return repository
 
 
 @contextlib.asynccontextmanager
-async def manual_chat_repository():
+async def manual_chat_repository() -> Generator[ChatRepository, Any, None]:
     async with manual_create_session() as session:
-        yield await create_chat_repository(session)
+        yield await create_chat_repository(session=session)
 
 
 @contextlib.asynccontextmanager
-async def manual_user_chat_repository(user_id: str):
+async def manual_user_chat_repository(user_id: str) -> Generator[UserChatRepository, Any, None]:
     async with manual_create_session() as session:
-        yield await create_user_chat_repository(session, user_id)
+        yield await create_user_chat_repository(session=session, user_id=user_id)

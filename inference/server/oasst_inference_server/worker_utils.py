@@ -18,14 +18,14 @@ class WorkerSessionStatus(str, enum.Enum):
 
 
 class WorkerSession(pydantic.BaseModel):
-    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str = pydantic.Field(default_factory=lambda: str(object=uuid.uuid4()))
     worker_id: str
     worker_info: inference.WorkerInfo
     requests_in_flight: int = 0
     metrics: inference.WorkerMetricsInfo | None = None
 
 
-api_key_header = fastapi.Header(None, alias="X-API-Key")
+api_key_header = fastapi.Header(default=None, alias="X-API-Key")
 
 
 def get_api_key(api_key: str = api_key_header) -> str:
@@ -37,7 +37,7 @@ def get_api_key(api_key: str = api_key_header) -> str:
     return api_key
 
 
-protocol_version_header = fastapi.Header(None, alias="X-Protocol-Version")
+protocol_version_header = fastapi.Header(default=None, alias="X-Protocol-Version")
 
 
 def get_protocol_version(protocol_version: str = protocol_version_header) -> str:
@@ -51,13 +51,13 @@ def get_protocol_version(protocol_version: str = protocol_version_header) -> str
 
 
 async def get_worker_id(
-    api_key: str = Depends(get_api_key),
-    protocol_version: str = Depends(get_protocol_version),
+    api_key: str = Depends(dependency=get_api_key),
+    protocol_version: str = Depends(dependency=get_protocol_version),
 ) -> models.DbWorker:
     logger.info(f"get_worker: {api_key=}, {protocol_version=}")
-    query = sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
+    query = sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.api_key == api_key)
     async with deps.manual_create_session() as session:
-        worker: models.DbWorker = (await session.exec(query)).one_or_none()
+        worker: models.DbWorker = (await session.exec(statement=query)).one_or_none()
     if worker is None:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
@@ -67,11 +67,11 @@ async def get_worker_id(
 
 
 async def get_worker(
-    worker_id: str = Depends(get_worker_id),
-    session: database.AsyncSession = Depends(deps.create_session),
+    worker_id: str = Depends(dependency=get_worker_id),
+    session: database.AsyncSession = Depends(dependency=deps.create_session),
 ) -> models.DbWorker:
-    query = sqlmodel.select(models.DbWorker).where(models.DbWorker.id == worker_id)
-    worker = (await session.exec(query)).one()
+    query = sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.id == worker_id)
+    worker = (await session.exec(statement=query)).one()
     return worker
 
 

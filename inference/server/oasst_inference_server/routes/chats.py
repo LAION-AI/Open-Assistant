@@ -1,5 +1,6 @@
 import asyncio
 import base64
+from typing import Any, Generator
 
 import fastapi
 import pydantic
@@ -18,40 +19,40 @@ router = fastapi.APIRouter(
 )
 
 
-@router.get("")
+@router.get(path="")
 async def list_chats(
     include_hidden: bool = False,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-    limit: int | None = Query(10, gt=0, le=100),
+    ucr: UserChatRepository = Depends(dependency=deps.create_user_chat_repository),
+    limit: int | None = Query(default=10, gt=0, le=100),
     after: str | None = None,
     before: str | None = None,
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
 
-    def encode_cursor(chat: models.DbChat):
+    def encode_cursor(chat: models.DbChat) -> str:
         return base64.b64encode(chat.id.encode()).decode()
 
-    def decode_cursor(cursor: str | None):
+    def decode_cursor(cursor: str | None) -> str | None:
         if cursor is None:
             return None
-        return base64.b64decode(cursor.encode()).decode()
+        return base64.b64decode(s=cursor.encode()).decode()
 
     chats = await ucr.get_chats(
-        include_hidden=include_hidden, limit=limit + 1, after=decode_cursor(after), before=decode_cursor(before)
+        include_hidden=include_hidden, limit=limit + 1, after=decode_cursor(cursor=after), before=decode_cursor(cursor=before)
     )
 
     num_rows = len(chats)
     chats = chats if num_rows <= limit else chats[:-1]  # remove extra item
     chats = chats if before is None else chats[::-1]  # reverse if query in backward direction
 
-    def get_cursors():
+    def get_cursors() -> tuple[str | None, str | None]:
         prev, next = None, None
         if num_rows > 0:
             if (num_rows > limit and before) or after:
-                prev = encode_cursor(chats[0])
+                prev = encode_cursor(chat=chats[0])
             if num_rows > limit or before:
-                next = encode_cursor(chats[-1])
+                next = encode_cursor(chat=chats[-1])
         else:
             if after:
                 prev = after
@@ -65,10 +66,10 @@ async def list_chats(
     return chat_schema.ListChatsResponse(chats=chats_list, next=next, prev=prev)
 
 
-@router.post("")
+@router.post(path="")
 async def create_chat(
     request: chat_schema.CreateChatRequest,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+    ucr: UserChatRepository = Depends(dependency=deps.create_user_chat_repository),
 ) -> chat_schema.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
@@ -76,36 +77,36 @@ async def create_chat(
     return chat.to_list_read()
 
 
-@router.get("/{chat_id}")
+@router.get(path="/{chat_id}")
 async def get_chat(
     chat_id: str,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+    ucr: UserChatRepository = Depends(dependency=deps.create_user_chat_repository),
 ) -> chat_schema.ChatRead:
     """Allows a client to get the current state of a chat."""
-    chat = await ucr.get_chat_by_id(chat_id)
+    chat = await ucr.get_chat_by_id(chat_id=chat_id)
     return chat.to_read()
 
 
-@router.delete("/{chat_id}")
+@router.delete(path="/{chat_id}")
 async def delete_chat(
     chat_id: str,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-):
-    await ucr.delete_chat(chat_id)
+    ucr: UserChatRepository = Depends(dependency=deps.create_user_chat_repository),
+) -> fastapi.Response:
+    await ucr.delete_chat(chat_id=chat_id)
     return fastapi.Response(status_code=200)
 
 
-@router.post("/{chat_id}/prompter_message")
+@router.post(path="/{chat_id}/prompter_message")
 async def create_prompter_message(
     chat_id: str,
     request: chat_schema.CreatePrompterMessageRequest,
-    user_id: str = Depends(auth.get_current_user_id),
+    user_id: str = Depends(dependency=auth.get_current_user_id),
 ) -> inference.MessageRead:
     """Adds a prompter message to a chat."""
 
     try:
         ucr: UserChatRepository
-        async with deps.manual_user_chat_repository(user_id) as ucr:
+        async with deps.manual_user_chat_repository(user_id=user_id) as ucr:
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
@@ -117,26 +118,26 @@ async def create_prompter_message(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/assistant_message")
+@router.post(path="/{chat_id}/assistant_message")
 async def create_assistant_message(
     chat_id: str,
     request: chat_schema.CreateAssistantMessageRequest,
-    user_id: str = Depends(auth.get_current_user_id),
+    user_id: str = Depends(dependency=auth.get_current_user_id),
 ) -> inference.MessageRead:
     """Allows the client to stream the results of a request."""
 
     try:
-        model_config = chat_utils.get_model_config(request.model_config_name)
+        model_config = chat_utils.get_model_config(model_config_name=request.model_config_name)
     except ValueError as e:
-        logger.warning(str(e))
+        logger.warning(str(object=e))
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e),
+            detail=str(object=e),
         )
 
     try:
         ucr: UserChatRepository
-        async with deps.manual_user_chat_repository(user_id) as ucr:
+        async with deps.manual_user_chat_repository(user_id=user_id) as ucr:
             work_parameters = inference.WorkParameters(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
@@ -148,7 +149,7 @@ async def create_assistant_message(
                 work_parameters=work_parameters,
                 worker_compat_hash=model_config.compat_hash,
             )
-        queue = queueing.work_queue(deps.redis_client, model_config.compat_hash)
+        queue = queueing.work_queue(redis_client=deps.redis_client, worker_compat_hash=model_config.compat_hash)
         logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
         await queue.enqueue(assistant_message.id)
         logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
@@ -165,27 +166,27 @@ async def create_assistant_message(
         return fastapi.Response(status_code=500)
 
 
-@router.get("/{chat_id}/messages/{message_id}")
+@router.get(path="/{chat_id}/messages/{message_id}")
 async def get_message(
     chat_id: str,
     message_id: str,
-    user_id: str = Depends(auth.get_current_user_id),
+    user_id: str = Depends(dependency=auth.get_current_user_id),
 ) -> inference.MessageRead:
     ucr: UserChatRepository
-    async with deps.manual_user_chat_repository(user_id) as ucr:
+    async with deps.manual_user_chat_repository(user_id=user_id) as ucr:
         message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
     return message.to_read()
 
 
-@router.get("/{chat_id}/messages/{message_id}/events")
+@router.get(path="/{chat_id}/messages/{message_id}/events")
 async def message_events(
     chat_id: str,
     message_id: str,
     fastapi_request: fastapi.Request,
-    user_id: str = Depends(auth.get_current_user_id),
+    user_id: str = Depends(dependency=auth.get_current_user_id),
 ) -> EventSourceResponse:
     ucr: UserChatRepository
-    async with deps.manual_user_chat_repository(user_id) as ucr:
+    async with deps.manual_user_chat_repository(user_id=user_id) as ucr:
         message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
     if message.role != "assistant":
         raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
@@ -193,11 +194,11 @@ async def message_events(
     if message.has_finished:
         raise fastapi.HTTPException(status_code=204, detail=message.state)
 
-    async def event_generator(chat_id: str, message_id: str, worker_compat_hash: str | None):
+    async def event_generator(chat_id: str, message_id: str, worker_compat_hash: str | None) -> Generator[dict[str, str], Any, None]:
         redis_client = deps.make_redis_client()
-        message_queue = queueing.message_queue(redis_client, message_id=message_id)
+        message_queue = queueing.message_queue(redis_client=redis_client, message_id=message_id)
         work_queue = (
-            queueing.work_queue(redis_client, worker_compat_hash=worker_compat_hash)
+            queueing.work_queue(redis_client=redis_client, worker_compat_hash=worker_compat_hash)
             if worker_compat_hash is not None
             else None
         )
@@ -214,7 +215,7 @@ async def message_events(
                             [qdeq, qenq, mpos] = await asyncio.gather(
                                 work_queue.get_deq_counter(),
                                 work_queue.get_enq_counter(),
-                                queueing.get_pos_value(redis_client, message_id),
+                                queueing.get_pos_value(redis_client=redis_client, message_id=message_id),
                             )
                             qpos = max(mpos - qdeq, 0)
                             qlen = max(qenq - qdeq, qpos)
@@ -228,7 +229,7 @@ async def message_events(
                 has_started = True
 
                 _, response_packet_str = item
-                response_packet = pydantic.parse_raw_as(inference.WorkerResponse, response_packet_str)
+                response_packet = pydantic.parse_raw_as(type_=inference.WorkerResponse, b=response_packet_str)
 
                 if response_packet.response_type in ("error", "generated_text"):
                     logger.warning(
@@ -288,11 +289,11 @@ async def message_events(
     )
 
 
-@router.post("/{chat_id}/messages/{message_id}/votes")
+@router.post(path="/{chat_id}/messages/{message_id}/votes")
 async def handle_create_vote(
     message_id: str,
     vote_request: chat_schema.VoteRequest,
-    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+    ucr: deps.UserChatRepository = fastapi.Depends(dependency=deps.create_user_chat_repository),
 ) -> fastapi.Response:
     """Allows the client to vote on a message."""
     try:
@@ -303,11 +304,11 @@ async def handle_create_vote(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/messages/{message_id}/message_evals")
+@router.post(path="/{chat_id}/messages/{message_id}/message_evals")
 async def handle_create_message_eval(
     message_id: str,
     inferior_message_request: chat_schema.MessageEvalRequest,
-    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+    ucr: deps.UserChatRepository = fastapi.Depends(dependency=deps.create_user_chat_repository),
 ) -> fastapi.Response:
     try:
         await ucr.add_message_eval(
@@ -319,11 +320,11 @@ async def handle_create_message_eval(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/messages/{message_id}/reports")
+@router.post(path="/{chat_id}/messages/{message_id}/reports")
 async def handle_create_report(
     message_id: str,
     report_request: chat_schema.ReportRequest,
-    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+    ucr: deps.UserChatRepository = fastapi.Depends(dependency=deps.create_user_chat_repository),
 ) -> fastapi.Response:
     """Allows the client to report a message."""
     try:
@@ -340,7 +341,7 @@ async def handle_create_report(
 async def handle_update_chat(
     chat_id: str,
     request: chat_schema.ChatUpdateRequest,
-    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+    ucr: deps.UserChatRepository = fastapi.Depends(dependency=deps.create_user_chat_repository),
 ) -> fastapi.Response:
     """Allows the client to update a chat."""
     try:

@@ -70,19 +70,19 @@ class PromptedLLM:
     def call(self, prompt: str) -> tuple[str, str]:
         """Prepares and truncates prompt, calls LLM, returns used prompt and response."""
         prompt = prepare_prompt(
-            prompt,
-            self.prompt_template,
-            self.memory,
-            self.tool_names,
-            self.current_time,
-            self.language,
-            self.tokenizer,
-            self.worker_config,
-            self.action_input_format,
+            input_prompt=prompt,
+            prompt_template=self.prompt_template,
+            memory=self.memory,
+            tools_names=self.tool_names,
+            current_time=self.current_time,
+            language=self.language,
+            tokenizer=self.tokenizer,
+            worker_config=self.worker_config,
+            action_input_format=self.action_input_format,
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
-        prompt = utils.truncate_prompt(self.tokenizer, self.worker_config, self.parameters, prompt, True)
+        prompt = utils.truncate_prompt(tokenizer=self.tokenizer, worker_config=self.worker_config, parameters=self.parameters, prompt=prompt, plugin_used=True)
 
         response = (
             llm.generate(prompts=[prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
@@ -142,13 +142,13 @@ def handle_plugin_usage(
     tool_names = [tool.name for tool in tools]
 
     chain = PromptedLLM(
-        tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
+        tokenizer=tokenizer, worker_config=worker_config, parameters=parameters, prompt_template=prompt_template, memory=memory, tool_names=tool_names, language=language, action_input_format=action_input_format
     )
 
     # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
     utils.send_response(
-        ws,
-        inference.PluginIntermediateResponse(
+        ws=ws,
+        response=inference.PluginIntermediateResponse(
             request_id=work_request_id,
             current_plugin_thought="thinking...",
             current_plugin_action_taken="",
@@ -158,14 +158,14 @@ def handle_plugin_usage(
     )
 
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
-    init_prompt, chain_response = chain.call(init_prompt)
+    init_prompt, chain_response = chain.call(prompt=init_prompt)
 
     inner_monologue.append("In: " + str(init_prompt))
     inner_monologue.append("Out: " + str(chain_response))
 
     current_action_thought = ""
     if THOUGHT_SEQ in chain_response:
-        current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+        current_action_thought = chain_response.split(sep=THOUGHT_SEQ)[1].split(sep="\n")[0]
 
     # Tool name/assistant prefix, Tool input/assistant response
     prefix, response = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
@@ -175,8 +175,8 @@ def handle_plugin_usage(
     if assisted:
         # model decided to use a tool, so send that thought to the client
         utils.send_response(
-            ws,
-            inference.PluginIntermediateResponse(
+            ws=ws,
+            response=inference.PluginIntermediateResponse(
                 request_id=work_request_id,
                 current_plugin_thought=current_action_thought,
                 current_plugin_action_taken=prefix,
@@ -186,25 +186,25 @@ def handle_plugin_usage(
         )
 
     while not chain_finished and assisted and achieved_depth < plugin_max_depth:
-        tool_response = use_tool(prefix, response, tools)
+        tool_response = use_tool(tool_name=prefix, tool_input=response, tools=tools)
 
         # Save previous chain response for use in final prompt
         prev_chain_response = chain_response
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
 
-        new_prompt, chain_response = chain.call(new_prompt)
+        new_prompt, chain_response = chain.call(prompt=new_prompt)
 
         inner_monologue.append("In: " + str(new_prompt))
         inner_monologue.append("Out: " + str(chain_response))
 
         current_action_thought = ""
         if THOUGHT_SEQ in chain_response:
-            current_action_thought = chain_response.split(THOUGHT_SEQ)[1].split("\n")[0]
+            current_action_thought = chain_response.split(sep=THOUGHT_SEQ)[1].split(sep="\n")[0]
 
         # Send deep plugin intermediate steps to UI
         utils.send_response(
-            ws,
-            inference.PluginIntermediateResponse(
+            ws=ws,
+            response=inference.PluginIntermediateResponse(
                 request_id=work_request_id,
                 current_plugin_thought=current_action_thought,
                 current_plugin_action_taken=prefix,
@@ -236,15 +236,15 @@ def handle_plugin_usage(
                 f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
             )
             inner_prompt = prepare_prompt(
-                final_input,
-                prompt_template,
-                memory,
-                tool_names,
-                chain.current_time,
-                language,
-                tokenizer,
-                worker_config,
-                action_input_format,
+                input_prompt=final_input,
+                prompt_template=prompt_template,
+                memory=memory,
+                tools_names=tool_names,
+                current_time=chain.current_time,
+                language=language,
+                tokenizer=tokenizer,
+                worker_config=worker_config,
+                action_input_format=action_input_format,
             )
 
             inner_prompt = f"{inner_prompt}\n{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
@@ -296,7 +296,7 @@ def handle_standard_usage(
     memory: ConversationBufferMemory,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
-):
+) -> tuple[str, None]:
     eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -306,7 +306,7 @@ def handle_standard_usage(
     )
     input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
     init_prompt = prepare_prompt(
-        input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
+        input_prompt=input, prompt_template=prompt_template, memory=memory, tools_names=None, current_time=current_time, language=language, tokenizer=tokenizer, worker_config=worker_config, action_input_format=action_input_format
     )
     return init_prompt, None
 
@@ -362,21 +362,21 @@ def handle_conversation(
 
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt,
-                prompt_template,
-                language,
-                memory,
-                worker_config,
-                tokenizer,
-                parameters,
-                tools,
-                plugin,
-                work_request.parameters.plugin_max_depth,
-                ws,
-                work_request.id,
+                input_prompt=original_prompt,
+                prompt_template=prompt_template,
+                language=language,
+                memory=memory,
+                worker_config=worker_config,
+                tokenizer=tokenizer,
+                parameters=parameters,
+                tools=tools,
+                plugin=plugin,
+                plugin_max_depth=work_request.parameters.plugin_max_depth,
+                ws=ws,
+                work_request_id=work_request.id,
             )
 
-        return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
+        return handle_standard_usage(original_prompt=original_prompt, prompt_template=prompt_template, language=language, memory=memory, worker_config=worker_config, tokenizer=tokenizer)
     except Exception as e:
         logger.error(f"Error while handling conversation: {e}")
         return "", None
@@ -404,7 +404,7 @@ if __name__ == "__main__":
     )
 
     work_parameters = inference.WorkParameters(model_config=model_config, do_sample=True, seed=42, plugins=[plugin])
-    parameters = interface.GenerateStreamParameters.from_work_parameters(work_parameters)
+    parameters = interface.GenerateStreamParameters.from_work_parameters(params=work_parameters)
 
     worker_config = inference.WorkerConfig(
         model_config=model_config,
@@ -416,7 +416,7 @@ if __name__ == "__main__":
     )
 
     while True:
-        input_ = input("Enter your input: ")
+        input_ = input(__prompt="Enter your input: ")
         if input == "exit":
             break
         work_request = inference.WorkRequest(
@@ -463,7 +463,7 @@ if __name__ == "__main__":
                 ]
             ),
         )
-        tokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
-        final_out, used_plugin = handle_conversation(work_request, worker_config, parameters, tokenizer)
+        tokenizer = transformers.LlamaTokenizer.from_pretrained(pretrained_model_name_or_path=model_config.model_id)
+        final_out, used_plugin = handle_conversation(work_request=work_request, worker_config=worker_config, parameters=parameters, tokenizer=tokenizer)
         print(f"Used_plugin: {used_plugin}")
         print(final_out)

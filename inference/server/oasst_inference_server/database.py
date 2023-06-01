@@ -15,36 +15,36 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 def default_json_serializer(obj):
     class_name = obj.__class__.__name__
-    encoded = pydantic.json.pydantic_encoder(obj)
+    encoded = pydantic.json.pydantic_encoder(obj=obj)
     encoded["_classname_"] = class_name
     return encoded
 
 
 def custom_json_serializer(obj):
-    return json.dumps(obj, default=default_json_serializer)
+    return json.dumps(obj=obj, default=default_json_serializer)
 
 
 def custom_json_deserializer(s):
-    d = json.loads(s)
+    d = json.loads(s=s)
     if not isinstance(d, dict):
         return d
     match d.get("_classname_"):
         case "WorkParameters":
-            return inference.WorkParameters.parse_obj(d)
+            return inference.WorkParameters.parse_obj(obj=d)
         case "ModelConfig":
-            return inference.ModelConfig.parse_obj(d)
+            return inference.ModelConfig.parse_obj(obj=d)
         case "SamplingParameters":
-            return inference.SamplingParameters.parse_obj(d)
+            return inference.SamplingParameters.parse_obj(obj=d)
         case "WorkerConfig":
-            return inference.WorkerConfig.parse_obj(d)
+            return inference.WorkerConfig.parse_obj(obj=d)
         case "WorkerInfo":
-            return inference.WorkerInfo.parse_obj(d)
+            return inference.WorkerInfo.parse_obj(obj=d)
         case "CreateMessageRequest":
             return chat_schema.CreateMessageRequest.parse_obj(d)
         case "WorkRequest":
-            return inference.WorkRequest.parse_obj(d)
+            return inference.WorkRequest.parse_obj(obj=d)
         case "PluginUsed":
-            return inference.PluginUsed.parse_obj(d)
+            return inference.PluginUsed.parse_obj(obj=d)
         case None:
             return d
         case _:
@@ -76,7 +76,7 @@ async def get_async_session(autoflush=True):
 
 def alembic_upgrade(connection):
     alembic_ini_path = Path(__file__).parent.parent / "alembic.ini"
-    alembic_cfg = alembic.config.Config(str(alembic_ini_path))
-    alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
+    alembic_cfg = alembic.config.Config(file_=str(object=alembic_ini_path))
+    alembic_cfg.set_main_option(name="sqlalchemy.url", value=settings.database_uri)
     alembic_cfg.attributes["connection"] = connection
-    alembic.command.upgrade(alembic_cfg, "head")
+    alembic.command.upgrade(config=alembic_cfg, revision="head")

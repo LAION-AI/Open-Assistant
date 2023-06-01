@@ -16,7 +16,7 @@ async def find_compliance_work_request_message(
 ) -> models.DbMessage | None:
     compat_hash = worker_config.compat_hash
     query = (
-        sqlmodel.select(models.DbMessage)
+        sqlmodel.select(entity_0=models.DbMessage)
         .where(
             models.DbMessage.role == "assistant",
             models.DbMessage.state == inference.MessageState.complete,
@@ -25,12 +25,12 @@ async def find_compliance_work_request_message(
         )
         .order_by(sql_random())
     )
-    message = (await session.exec(query)).first()
+    message = (await session.exec(statement=query)).first()
     return message
 
 
 async def should_do_compliance_check(session: database.AsyncSession, worker_id: str) -> bool:
-    worker = await worker_utils.get_worker(worker_id, session)
+    worker = await worker_utils.get_worker(worker_id=worker_id, session=session)
     if worker.trusted:
         return False
     if worker.in_compliance_check:
@@ -45,7 +45,7 @@ async def should_do_compliance_check(session: database.AsyncSession, worker_id: 
 async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, worker_config: inference.WorkerConfig):
     async with deps.manual_create_session() as session:
         try:
-            worker = await worker_utils.get_worker(worker_id, session)
+            worker = await worker_utils.get_worker(worker_id=worker_id, session=session)
             if worker.in_compliance_check:
                 logger.info(f"Worker {worker.id} is already in compliance check")
                 return
@@ -59,7 +59,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
         compliance_check = models.DbWorkerComplianceCheck(worker_id=worker_id)
 
         try:
-            message = await find_compliance_work_request_message(session, worker_config, worker_id)
+            message = await find_compliance_work_request_message(session=session, worker_config=worker_config, worker_id=worker_id)
             if message is None:
                 logger.warning(
                     f"Could not find message for compliance check for worker {worker_id} with config {worker_config}"
@@ -67,13 +67,13 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
                 return
 
             compliance_check.compare_worker_id = message.worker_id
-            compliance_work_request = await worker_utils.build_work_request(session, message.id)
+            compliance_work_request = await worker_utils.build_work_request(session=session, message_id=message.id)
 
             logger.info(f"Found work request for compliance check for worker {worker_id}: {compliance_work_request}")
-            await worker_utils.send_worker_request(websocket, compliance_work_request)
+            await worker_utils.send_worker_request(websocket=websocket, request=compliance_work_request)
             response = None
             while True:
-                response = await worker_utils.receive_worker_response(websocket)
+                response = await worker_utils.receive_worker_response(websocket=websocket)
                 if response.response_type == "error":
                     compliance_check.responded = True
                     compliance_check.error = response.error
@@ -92,8 +92,8 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
 
         finally:
             compliance_check.end_time = datetime.datetime.utcnow()
-            session.add(compliance_check)
-            worker = await worker_utils.get_worker(worker_id, session)
+            session.add(instance=compliance_check)
+            worker = await worker_utils.get_worker(worker_id=worker_id, session=session)
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
             )
@@ -105,14 +105,14 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
 
 async def maybe_do_compliance_check(websocket, worker_id, worker_config, worker_session_id):
     async with deps.manual_create_session() as session:
-        should_check = await should_do_compliance_check(session, worker_id)
+        should_check = await should_do_compliance_check(session=session, worker_id=worker_id)
     if should_check:
         logger.info(f"Worker {worker_id} needs compliance check")
         try:
             await worker_utils.update_worker_session_status(
                 worker_session_id, worker_utils.WorkerSessionStatus.compliance_check
             )
-            await run_compliance_check(websocket, worker_id, worker_config)
+            await run_compliance_check(websocket=websocket, worker_id=worker_id, worker_config=worker_config)
         finally:
             await worker_utils.update_worker_session_status(worker_session_id, worker_utils.WorkerSessionStatus.waiting)
 
@@ -124,14 +124,14 @@ async def compute_worker_compliance_score(worker_id: str) -> float:
     In-progress checks are ignored.
     """
     async with deps.manual_create_session() as session:
-        query = sqlmodel.select(models.DbWorkerComplianceCheck).where(
+        query = sqlmodel.select(entity_0=models.DbWorkerComplianceCheck).where(
             or_(
                 models.DbWorkerComplianceCheck.worker_id == worker_id,
                 models.DbWorkerComplianceCheck.compare_worker_id == worker_id,
             ),
-            not_(models.DbWorkerComplianceCheck.end_time.is_(None)),
+            not_(clause=models.DbWorkerComplianceCheck.end_time.is_(None)),
         )
-        worker_checks: list[models.DbWorkerComplianceCheck] = (await session.exec(query)).all()
+        worker_checks: list[models.DbWorkerComplianceCheck] = (await session.exec(statement=query)).all()
 
         # Rudimentary scoring algorithm, we may want to add weightings or other factors
         total_count = len(worker_checks)

@@ -13,9 +13,9 @@ def terminate(signum, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, terminate)
-    model_id = os.getenv("MODEL_ID")
-    snapshot_dir = Path(huggingface_hub.snapshot_download(model_id))
-    for file in snapshot_dir.rglob("*.json"):
+    model_id = os.getenv(key="MODEL_ID")
+    snapshot_dir = Path(huggingface_hub.snapshot_download(repo_id=model_id))
+    for file in snapshot_dir.rglob(pattern="*.json"):
         text = file.read_text()
         text = text.replace("LLaMA", "Llama")
-        file.write_text(text)
+        file.write_text(data=text)

@@ -18,27 +18,27 @@ class DbMessage(SQLModel, table=True):
     chat: "DbChat" = Relationship(back_populates="messages")
     reports: list["DbReport"] = Relationship(back_populates="message")
 
-    parent_id: str | None = Field(None)
+    parent_id: str | None = Field(default=None)
 
-    content: str | None = Field(None)
-    error: str | None = Field(None)
+    content: str | None = Field(default=None)
+    error: str | None = Field(default=None)
 
-    safe_content: str | None = Field(None)
-    safety_level: int | None = Field(None)
-    safety_label: str | None = Field(None)
-    safety_rots: str | None = Field(None)
+    safe_content: str | None = Field(default=None)
+    safety_level: int | None = Field(default=None)
+    safety_label: str | None = Field(default=None)
+    safety_rots: str | None = Field(default=None)
 
-    used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+    used_plugin: inference.PluginUsed | None = Field(default=None, sa_column=sa.Column(pg.JSONB))
 
-    state: inference.MessageState = Field(inference.MessageState.manual)
-    work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
-    work_begin_at: datetime.datetime | None = Field(None)
-    work_end_at: datetime.datetime | None = Field(None)
-    worker_id: str | None = Field(None, foreign_key="worker.id")
-    worker_compat_hash: str | None = Field(None, index=True)
-    worker_config: inference.WorkerConfig | None = Field(None, sa_column=sa.Column(pg.JSONB))
+    state: inference.MessageState = Field(default=inference.MessageState.manual)
+    work_parameters: inference.WorkParameters = Field(default=None, sa_column=sa.Column(pg.JSONB))
+    work_begin_at: datetime.datetime | None = Field(default=None)
+    work_end_at: datetime.datetime | None = Field(default=None)
+    worker_id: str | None = Field(default=None, foreign_key="worker.id")
+    worker_compat_hash: str | None = Field(default=None, index=True)
+    worker_config: inference.WorkerConfig | None = Field(default=None, sa_column=sa.Column(pg.JSONB))
 
-    score: int = Field(0)
+    score: int = Field(default=0)
 
     @property
     def has_finished(self) -> bool:
@@ -82,14 +82,14 @@ class DbChat(SQLModel, table=True):
     user_id: str = Field(foreign_key="user.id", index=True)
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, index=True)
     modified_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, index=True)
-    title: str | None = Field(None)
+    title: str | None = Field(default=None)
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
-    active_thread_tail_message_id: str | None = Field(None)
+    active_thread_tail_message_id: str | None = Field(default=None)
 
-    hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+    hidden: bool = Field(default=False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
-    allow_data_use: bool = Field(True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    allow_data_use: bool = Field(default=True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(
@@ -121,10 +121,10 @@ class DbReport(SQLModel, table=True):
     __tablename__ = "report"
 
     id: str = Field(default_factory=uuid7str, primary_key=True)
-    message_id: str = Field(..., foreign_key="message.id", index=True)
+    message_id: str = Field(default=..., foreign_key="message.id", index=True)
     message: DbMessage = Relationship(back_populates="reports")
-    report_type: inference.ReportType = Field(...)
-    reason: str = Field(...)
+    report_type: inference.ReportType = Field(default=...)
+    reason: str = Field(default=...)
 
     def to_read(self) -> inference.Report:
         return inference.Report(id=self.id, report_type=self.report_type, reason=self.reason)
@@ -134,7 +134,7 @@ class DbMessageEval(SQLModel, table=True):
     __tablename__ = "message_evaluation"
 
     id: str = Field(default_factory=uuid7str, primary_key=True)
-    chat_id: str = Field(..., foreign_key="chat.id", index=True)
-    user_id: str = Field(..., foreign_key="user.id", index=True)
-    selected_message_id: str = Field(..., foreign_key="message.id")
+    chat_id: str = Field(default=..., foreign_key="chat.id", index=True)
+    user_id: str = Field(default=..., foreign_key="user.id", index=True)
+    selected_message_id: str = Field(default=..., foreign_key="message.id")
     inferior_message_ids: list[str] = Field(default_factory=list, sa_column=sa.Column(pg.JSONB))

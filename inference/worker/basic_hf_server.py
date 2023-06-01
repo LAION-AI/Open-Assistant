@@ -24,7 +24,7 @@ DECODE_TOKEN = "<decode-token>"
 
 # Allow CORS
 app.add_middleware(
-    CORSMiddleware,
+    middleware_class=CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 
-@app.middleware("http")
+@app.middleware(middleware_type="http")
 async def log_exceptions(request: fastapi.Request, call_next):
     try:
         response = await call_next(request)
@@ -66,27 +66,27 @@ def model_thread():
             params.pop("plugins")
 
             if seed is not None:
-                torch.manual_seed(seed)
+                torch.manual_seed(seed=seed)
 
             last_token_id = None  # need to delay by 1 to simulate tgi
 
             def print_text(token_id: int):
                 nonlocal last_token_id
                 if last_token_id is not None:
-                    text = decode_token(last_token_id)
+                    text = decode_token(token_id=last_token_id)
                     stream_response = interface.GenerateStreamResponse(
                         token=interface.Token(text=text, id=last_token_id),
                     )
-                    output_queue.put_nowait(stream_response)
+                    output_queue.put_nowait(item=stream_response)
                 last_token_id = token_id
 
             with torch.no_grad():
-                ids = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
+                ids = tokenizer.encode(text=prompt, return_tensors="pt", add_special_tokens=False)
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 stopping_criteria = (
                     transformers.StoppingCriteriaList(
-                        [hf_stopping.SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)]
+                        [hf_stopping.SequenceStoppingCriteria(tokenizer=tokenizer, stop_texts=stop_sequences, input_prompt=prompt)]
                     )
                     if stop_sequences
                     else None
@@ -100,11 +100,11 @@ def model_thread():
                 )
                 output = output.cpu()
                 output_ids = output[0][len(ids[0]) :]
-                decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
+                decoded = tokenizer.decode(token_ids=output_ids, skip_special_tokens=True)
 
             stream_response = interface.GenerateStreamResponse(
                 token=interface.Token(
-                    text=decode_token(last_token_id),  # hack because the "normal" inference server does this at once
+                    text=decode_token(token_id=last_token_id),  # hack because the "normal" inference server does this at once
                     id=last_token_id,
                 ),
                 generated_text=decoded.strip(),
@@ -123,27 +123,27 @@ def model_thread():
 def load_models():
     global model_loaded
 
-    torch.set_num_threads(1)
-    torch.set_num_interop_threads(1)
+    torch.set_num_threads(num=1)
+    torch.set_num_interop_threads(num=1)
 
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
     if model_config is None:
         logger.error(f"Unknown model config name: {settings.model_config_name}")
         sys.exit(2)
 
-    hf_config = transformers.AutoConfig.from_pretrained(model_config.model_id)
+    hf_config = transformers.AutoConfig.from_pretrained(pretrained_model_name_or_path=model_config.model_id)
     logger.warning(f"Loading model {model_config.model_id}...")
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(pretrained_model_name_or_path=model_config.model_id)
     logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {tokenizer.vocab_size}")
 
     # see `decode_token` method, taken from HF text-generation-inference
-    tokenizer.add_special_tokens({"additional_special_tokens": ["<decode-token>"]})
+    tokenizer.add_special_tokens(special_tokens_dict={"additional_special_tokens": ["<decode-token>"]})
 
-    special_decode_token_id = tokenizer.convert_tokens_to_ids("<decode-token>")
+    special_decode_token_id = tokenizer.convert_tokens_to_ids(tokens="<decode-token>")
     special_decode_token_length = len("<decode-token>")
 
-    def decode_token(token_id):
-        result = tokenizer.decode([special_decode_token_id, token_id], skip_special_tokens=False)
+    def decode_token(token_id) -> str:
+        result = tokenizer.decode(token_ids=[special_decode_token_id, token_id], skip_special_tokens=False)
         # slice to remove special decode token
         return result[special_decode_token_length:]
 
@@ -151,7 +151,7 @@ def load_models():
     dtype = torch.bfloat16 if torch.has_cuda and torch.cuda.is_bf16_supported() else config_dtype
 
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        model_config.model_id,
+        pretrained_model_name_or_path=model_config.model_id,
         torch_dtype=dtype,
         load_in_8bit=settings.quantize,
         device_map="auto" if torch.cuda.is_available() else None,
@@ -161,7 +161,7 @@ def load_models():
     # warmup
     with torch.no_grad():
         text = "Hello, world"
-        tokens = tokenizer.encode(text, return_tensors="pt")
+        tokens = tokenizer.encode(text=text, return_tensors="pt")
         tokens = tokens.to(model.device)
         model.generate(tokens, max_length=10, num_beams=1, do_sample=False)
 
@@ -170,14 +170,14 @@ def load_models():
     return model, tokenizer, decode_token
 
 
-@app.on_event("startup")
+@app.on_event(event_type="startup")
 async def start_model_thread():
     logger.warning("Starting model thread...")
     threading.Thread(target=model_thread, daemon=True).start()
     logger.warning("Model thread started")
 
 
-@app.on_event("startup")
+@app.on_event(event_type="startup")
 async def welcome_message():
     global fully_loaded
     logger.warning("Server started")
@@ -185,14 +185,14 @@ async def welcome_message():
     fully_loaded = True
 
 
-@app.post("/generate_stream")
+@app.post(path="/generate_stream")
 async def generate(
     request: interface.GenerateStreamRequest,
 ):
     def event_stream():
         try:
             output_queue: Queue = Queue()
-            model_input_queue.put_nowait((request, output_queue))
+            model_input_queue.put_nowait(item=(request, output_queue))
             while True:
                 output = output_queue.get()  # type: interface.GenerateStreamResponse
                 yield {"data": output.json()}
@@ -202,18 +202,18 @@ async def generate(
                     raise Exception(output.error)
         except Exception as e:
             logger.exception("Exception in event stream")
-            output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
+            output_queue.put_nowait(item=interface.GenerateStreamResponse(error=str(object=e)))
             raise
 
     return EventSourceResponse(event_stream())
 
 
-@app.get("/health")
-async def health():
+@app.get(path="/health")
+async def health() -> dict[str, str]:
     if not (fully_loaded and model_loaded):
         raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
     return {"status": "ok"}
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app=app, host="0.0.0.0", port=8000)
