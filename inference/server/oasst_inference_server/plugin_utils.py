@@ -9,7 +9,9 @@ from loguru import logger
 from oasst_shared.schemas import inference
 
 
-async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout: float = 5.0) -> inference.PluginConfig:
+async def attempt_fetch_plugin(
+    session: aiohttp.ClientSession, url: str, timeout: float = 5.0
+) -> inference.PluginConfig:
     async with session.get(url=url, timeout=timeout) as response:
         content_type = response.headers.get("Content-Type")
 

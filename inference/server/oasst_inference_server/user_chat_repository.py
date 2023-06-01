@@ -77,7 +77,9 @@ class UserChatRepository(pydantic.BaseModel):
     async def create_chat(self) -> models.DbChat:
         # Try to find the user first
         user: models.DbUser = (
-            await self.session.execute(statement=sqlmodel.select(entity_0=models.DbUser).where(models.DbUser.id == self.user_id))
+            await self.session.execute(
+                statement=sqlmodel.select(entity_0=models.DbUser).where(models.DbUser.id == self.user_id)
+            )
         ).one_or_none()
         if not user:
             raise fastapi.HTTPException(status_code=404, detail="User not found")
@@ -93,7 +95,9 @@ class UserChatRepository(pydantic.BaseModel):
         logger.debug(f"Deleting {chat_id=}")
         message_ids = [message.id for message in chat.messages]
         # delete reports associated with messages
-        await self.session.exec(statement=sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
+        await self.session.exec(
+            statement=sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids))
+        )
         # delete messages
         await self.session.exec(statement=sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat

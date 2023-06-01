@@ -89,7 +89,9 @@ class DbChat(SQLModel, table=True):
 
     hidden: bool = Field(default=False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
-    allow_data_use: bool = Field(default=True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    allow_data_use: bool = Field(
+        default=True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true())
+    )
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(

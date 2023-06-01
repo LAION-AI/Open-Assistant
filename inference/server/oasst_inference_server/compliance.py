@@ -59,7 +59,9 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
         compliance_check = models.DbWorkerComplianceCheck(worker_id=worker_id)
 
         try:
-            message = await find_compliance_work_request_message(session=session, worker_config=worker_config, worker_id=worker_id)
+            message = await find_compliance_work_request_message(
+                session=session, worker_config=worker_config, worker_id=worker_id
+            )
             if message is None:
                 logger.warning(
                     f"Could not find message for compliance check for worker {worker_id} with config {worker_config}"

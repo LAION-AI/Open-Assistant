@@ -22,7 +22,8 @@ trusted_client_scheme = APIKeyHeader(name="TrustedClient", auto_error=False, sch
 
 
 def get_current_user_id(
-    token: str = Security(dependency=authorization_scheme), trusted_client_token: str = Security(dependency=trusted_client_scheme)
+    token: str = Security(dependency=authorization_scheme),
+    trusted_client_token: str = Security(dependency=trusted_client_scheme),
 ) -> str:
     """Get the current user ID by decoding the JWT token."""
     if trusted_client_token is not None:
@@ -56,7 +57,9 @@ def get_current_user_id(
 
 def create_access_token(user_id: str) -> str:
     """Create encoded JSON Web Token (JWT) for the given user ID."""
-    payload: bytes = build_payload(user_id=user_id, token_type="access", expire_minutes=settings.auth_access_token_expire_minutes)
+    payload: bytes = build_payload(
+        user_id=user_id, token_type="access", expire_minutes=settings.auth_access_token_expire_minutes
+    )
 
     key = derive_key()
     token: bytes = jwe.encrypt(plaintext=payload, key=key)
@@ -66,7 +69,9 @@ def create_access_token(user_id: str) -> str:
 
 async def create_refresh_token(user_id: str) -> str:
     """Create encoded refresh token for the given user ID."""
-    payload: bytes = build_payload(user_id=user_id, token_type="refresh", expire_minutes=settings.auth_refresh_token_expire_minutes)
+    payload: bytes = build_payload(
+        user_id=user_id, token_type="refresh", expire_minutes=settings.auth_refresh_token_expire_minutes
+    )
 
     key = derive_key()
     token: bytes = jwe.encrypt(plaintext=payload, key=key)

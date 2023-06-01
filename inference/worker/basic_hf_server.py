@@ -86,7 +86,11 @@ def model_thread():
                 ids = ids.to(model.device)
                 stopping_criteria = (
                     transformers.StoppingCriteriaList(
-                        [hf_stopping.SequenceStoppingCriteria(tokenizer=tokenizer, stop_texts=stop_sequences, input_prompt=prompt)]
+                        [
+                            hf_stopping.SequenceStoppingCriteria(
+                                tokenizer=tokenizer, stop_texts=stop_sequences, input_prompt=prompt
+                            )
+                        ]
                     )
                     if stop_sequences
                     else None
@@ -104,7 +108,9 @@ def model_thread():
 
             stream_response = interface.GenerateStreamResponse(
                 token=interface.Token(
-                    text=decode_token(token_id=last_token_id),  # hack because the "normal" inference server does this at once
+                    text=decode_token(
+                        token_id=last_token_id
+                    ),  # hack because the "normal" inference server does this at once
                     id=last_token_id,
                 ),
                 generated_text=decoded.strip(),

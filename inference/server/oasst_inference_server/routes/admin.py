@@ -81,7 +81,9 @@ async def revoke_refresh_tokens(
     """Revoke refresh tokens for a user."""
     logger.info(f"Revoking refresh tokens for user {user_id}")
     refresh_tokens = (
-        await session.exec(statement=sqlmodel.select(entity_0=models.DbRefreshToken).where(models.DbRefreshToken.user_id == user_id))
+        await session.exec(
+            statement=sqlmodel.select(entity_0=models.DbRefreshToken).where(models.DbRefreshToken.user_id == user_id)
+        )
     ).all()
     for refresh_token in refresh_tokens:
         refresh_token.enabled = False

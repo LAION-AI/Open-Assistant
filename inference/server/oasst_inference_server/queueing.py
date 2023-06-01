@@ -27,12 +27,12 @@ class RedisQueue:
         if enforce_max_size and self.max_size > 0:
             if await self.get_length() >= self.max_size:
                 raise QueueFullException()
-        await self.redis_client.rpush(name=self.queue_id, value)
+        await self.redis_client.rpush(self.queue_id, value)
         if self.expire is not None:
             await self.set_expire(timeout=self.expire)
         if self.with_counter:
             ctr = await self.redis_client.incr(name=f"ctr_enq:{self.queue_id}")
-            await self.redis_client.set(name=f"pos:{value}", ctr, ex=self.counter_pos_expire)
+            await self.redis_client.set(name=f"pos:{value}", value=ctr, ex=self.counter_pos_expire)
         else:
             ctr = None
         return ctr

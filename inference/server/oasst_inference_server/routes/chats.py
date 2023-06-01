@@ -39,7 +39,10 @@ async def list_chats(
         return base64.b64decode(s=cursor.encode()).decode()
 
     chats = await ucr.get_chats(
-        include_hidden=include_hidden, limit=limit + 1, after=decode_cursor(cursor=after), before=decode_cursor(cursor=before)
+        include_hidden=include_hidden,
+        limit=limit + 1,
+        after=decode_cursor(cursor=after),
+        before=decode_cursor(cursor=before),
     )
 
     num_rows = len(chats)
@@ -194,7 +197,9 @@ async def message_events(
     if message.has_finished:
         raise fastapi.HTTPException(status_code=204, detail=message.state)
 
-    async def event_generator(chat_id: str, message_id: str, worker_compat_hash: str | None) -> Generator[dict[str, str], Any, None]:
+    async def event_generator(
+        chat_id: str, message_id: str, worker_compat_hash: str | None
+    ) -> Generator[dict[str, str], Any, None]:
         redis_client = deps.make_redis_client()
         message_queue = queueing.message_queue(redis_client=redis_client, message_id=message_id)
         work_queue = (

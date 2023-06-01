@@ -105,7 +105,9 @@ async def callback_discord(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
-    user: models.DbUser = await get_or_create_user(db=db, provider="discord", provider_id=discord_id, display_name=discord_username)
+    user: models.DbUser = await get_or_create_user(
+        db=db, provider="discord", provider_id=discord_id, display_name=discord_username
+    )
     token_pair: protocol.TokenPair = await create_tokens(user=user)
     return token_pair
 
@@ -132,7 +134,9 @@ async def callback_github(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
 
-    user: models.DbUser = await get_or_create_user(db=db, provider="github", provider_id=github_id, display_name=github_username)
+    user: models.DbUser = await get_or_create_user(
+        db=db, provider="github", provider_id=github_id, display_name=github_username
+    )
     token_pair: protocol.TokenPair = await create_tokens(user=user)
     return token_pair
 
@@ -160,7 +164,9 @@ async def callback_google(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
-    user: models.DbUser = await get_or_create_user(db=db, provider="google", provider_id=google_id, display_name=google_username)
+    user: models.DbUser = await get_or_create_user(
+        db=db, provider="google", provider_id=google_id, display_name=google_username
+    )
     token_pair: protocol.TokenPair = await create_tokens(user=user)
     return token_pair
 
@@ -211,7 +217,9 @@ async def login_debug(username: str, state: str = r"{}"):
 
 
 @router.get(path="/callback/debug", response_model=protocol.TokenPair)
-async def callback_debug(code: str, db: database.AsyncSession = Depends(dependency=deps.create_session)) -> protocol.TokenPair:
+async def callback_debug(
+    code: str, db: database.AsyncSession = Depends(dependency=deps.create_session)
+) -> protocol.TokenPair:
     """Login using a debug username, which the system will accept unconditionally."""
 
     username = code

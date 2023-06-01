@@ -82,7 +82,13 @@ class PromptedLLM:
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
-        prompt = utils.truncate_prompt(tokenizer=self.tokenizer, worker_config=self.worker_config, parameters=self.parameters, prompt=prompt, plugin_used=True)
+        prompt = utils.truncate_prompt(
+            tokenizer=self.tokenizer,
+            worker_config=self.worker_config,
+            parameters=self.parameters,
+            prompt=prompt,
+            plugin_used=True,
+        )
 
         response = (
             llm.generate(prompts=[prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
@@ -142,7 +148,14 @@ def handle_plugin_usage(
     tool_names = [tool.name for tool in tools]
 
     chain = PromptedLLM(
-        tokenizer=tokenizer, worker_config=worker_config, parameters=parameters, prompt_template=prompt_template, memory=memory, tool_names=tool_names, language=language, action_input_format=action_input_format
+        tokenizer=tokenizer,
+        worker_config=worker_config,
+        parameters=parameters,
+        prompt_template=prompt_template,
+        memory=memory,
+        tool_names=tool_names,
+        language=language,
+        action_input_format=action_input_format,
     )
 
     # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
@@ -306,7 +319,15 @@ def handle_standard_usage(
     )
     input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
     init_prompt = prepare_prompt(
-        input_prompt=input, prompt_template=prompt_template, memory=memory, tools_names=None, current_time=current_time, language=language, tokenizer=tokenizer, worker_config=worker_config, action_input_format=action_input_format
+        input_prompt=input,
+        prompt_template=prompt_template,
+        memory=memory,
+        tools_names=None,
+        current_time=current_time,
+        language=language,
+        tokenizer=tokenizer,
+        worker_config=worker_config,
+        action_input_format=action_input_format,
     )
     return init_prompt, None
 
@@ -376,7 +397,14 @@ def handle_conversation(
                 work_request_id=work_request.id,
             )
 
-        return handle_standard_usage(original_prompt=original_prompt, prompt_template=prompt_template, language=language, memory=memory, worker_config=worker_config, tokenizer=tokenizer)
+        return handle_standard_usage(
+            original_prompt=original_prompt,
+            prompt_template=prompt_template,
+            language=language,
+            memory=memory,
+            worker_config=worker_config,
+            tokenizer=tokenizer,
+        )
     except Exception as e:
         logger.error(f"Error while handling conversation: {e}")
         return "", None
@@ -464,6 +492,8 @@ if __name__ == "__main__":
             ),
         )
         tokenizer = transformers.LlamaTokenizer.from_pretrained(pretrained_model_name_or_path=model_config.model_id)
-        final_out, used_plugin = handle_conversation(work_request=work_request, worker_config=worker_config, parameters=parameters, tokenizer=tokenizer)
+        final_out, used_plugin = handle_conversation(
+            work_request=work_request, worker_config=worker_config, parameters=parameters, tokenizer=tokenizer
+        )
         print(f"Used_plugin: {used_plugin}")
         print(final_out)

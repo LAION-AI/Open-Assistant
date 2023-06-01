@@ -92,7 +92,9 @@ async def maybe_add_debug_api_keys():
             for api_key in debug_api_keys:
                 logger.info(f"Checking if debug API key {api_key} exists")
                 if (
-                    await session.exec(statement=sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.api_key == api_key))
+                    await session.exec(
+                        statement=sqlmodel.select(entity_0=models.DbWorker).where(models.DbWorker.api_key == api_key)
+                    )
                 ).one_or_none() is None:
                     logger.info(f"Adding debug API key {api_key}")
                     session.add(instance=models.DbWorker(api_key=api_key, name="Debug API Key"))

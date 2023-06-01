@@ -188,7 +188,9 @@ def export_chats(
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
 ) -> None:
-    eligible_chats: list[DbChat] = asyncio.run(main=fetch_eligible_chats(session_generator=session_generator, filters=filters))
+    eligible_chats: list[DbChat] = asyncio.run(
+        main=fetch_eligible_chats(session_generator=session_generator, filters=filters)
+    )
     anonymizer = Anonymizer(seed=anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
