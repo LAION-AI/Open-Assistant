@@ -12,6 +12,7 @@ from fastapi import FastAPI, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 # In total, the text + image links + prompts should be <= 2048
 CHAR_LIMIT = 1585  # TODO: increase these values after long-context support has been added
@@ -204,7 +205,7 @@ Thought: I now know the answer{IMAGES_SUFIX if len(images) > 0 else "."}
         return Response(content=text, media_type="text/plain")
 
     except Exception as e:
-        print(e)
+        logger.opt(exception=True).debug("web_retriever GET failed:")
         error_message = f"Sorry, the url is not available. {e}\nYou should report this message to the user!"
         return JSONResponse(content={"error": error_message}, status_code=500)
 
