@@ -122,6 +122,7 @@ app.include_router(configs.router)
 
 
 if settings.insert_fake_data:
+
     @app.on_event("startup")
     async def insert_fake_data_event():
         logger.warning("Inserting fake data into database (insert_fake_data is True)")
@@ -148,6 +149,7 @@ if settings.insert_fake_data:
 
             await session.commit()
         logger.warning("Done inserting fake data into database")
+
 
 @app.on_event("startup")
 async def welcome_message():
