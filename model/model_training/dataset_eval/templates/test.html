@@ -1,4 +1,6 @@
-{% extends "bootstrap/base.html" %} {% import "bootstrap/wtf.html" as wtf %} {%
+{% extends "bootstrap/base.html" %} 
+{% from "bootstrap5/form.html" import render_form %}
+{% import "bootstrap/wtf.html" as wtf %} {%
 block title %}test{% endblock %} {% block content %}
 <div class="col-md-4">
   <form action="" method="post" novalidata>
