@@ -447,6 +447,8 @@ def main():
         import wandb
 
         wandb_name = training_conf.model_name.replace(os.getenv("HOME", "/home/ubuntu"), "")
+        if training_conf.peft_model:
+            wandb_name = f"peft-{training_conf.peft_type}-{wandb_name}"
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
