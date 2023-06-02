@@ -25,15 +25,20 @@ import { MessageTree } from "src/components/Messages/MessageTree";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { get, put } from "src/lib/api";
-import { API_ROUTES } from "src/lib/routes";
+import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { Message, MessageWithChildren } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
+import { useBoolean } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
 const RenderedMarkdown = lazy(() => import("../../../components/Messages/RenderedMarkdown"));
 
 const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const [messageText, setMessageText] = useState("");
   const { t } = useTranslation(["common", "tasks"]);
+  const router = useRouter();
+
+  const [messageText, setMessageText] = useState("");
+  const [submitting, setSubmitting] = useBoolean(false);
   const { data, isLoading, error } = useSWRImmutable<{ tree: MessageWithChildren | null; message?: Message }>(
     `/api/admin/messages/${id}/tree`,
     get,
@@ -71,9 +76,11 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
   };
 
   const handleSubmit = async () => {
-    if (data && data.message) {
-      await put(API_ROUTES.ADMIN_EDIT_MESSAGE(data.message.id), { arg: messageText });
-    }
+    setSubmitting.on();
+    await put(API_ROUTES.ADMIN_EDIT_MESSAGE(id), { arg: messageText });
+    setSubmitting.off();
+
+    router.push(ROUTES.ADMIN_MESSAGE_DETAIL(id));
   };
 
   const messageThread = getThreadFromTree(data?.tree, id);
@@ -111,7 +118,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                 {!messageThread ? (
                   "Unable to build tree"
                 ) : (
-                  <MessageTree tree={messageThread} messageId={data.message?.id} />
+                  <MessageTree tree={messageThread} messageId={id} />
                 )}
               </Box>
             </>
@@ -137,7 +144,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                   </TabPanels>
                 </Tabs>
                 <Flex justify={"flex-start"}>
-                  <Button size="lg" variant="solid" colorScheme="green" onClick={handleSubmit}>
+                  <Button size="lg" variant="solid" colorScheme="green" onClick={handleSubmit} isLoading={submitting} loadingText={"Submitting"}>
                     {t("common:submit")}
                   </Button>
                 </Flex>
