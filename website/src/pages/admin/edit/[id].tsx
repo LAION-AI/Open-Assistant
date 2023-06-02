@@ -104,7 +104,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                 {!messageThread ? (
                   "Unable to build tree"
                 ) : (
-                  <MessageTree tree={messageThread} messageId={data.message?.id} scrollToHighlighted />
+                  <MessageTree tree={messageThread} messageId={data.message?.id} />
                 )}
               </Box>
             </>
