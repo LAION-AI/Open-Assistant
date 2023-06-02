@@ -6,13 +6,12 @@ from contextlib import closing
 
 import pydantic
 import transformers
-import utils
 import websocket
-import work
 from loguru import logger
+from oasst_inference_worker import utils, work
+from oasst_inference_worker.settings import settings
 from oasst_shared import model_configs
 from oasst_shared.schemas import inference
-from settings import settings
 
 
 def terminate_worker(signum, frame):

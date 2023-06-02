@@ -22,7 +22,7 @@ export HF_HOME=$HOME/.cache/huggingface
 export HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
 
 echo "Downloading model $MODEL_ID"
-CUDA_VISIBLE_DEVICES="" /opt/miniconda/envs/text-generation/bin/python /worker/download_model.py
+CUDA_VISIBLE_DEVICES="" /opt/miniconda/envs/text-generation/bin/python /worker/scripts/download_model.py
 
 # if cuda devices is empty
 if [ -z "$CUDA_VISIBLE_DEVICES" ]; then

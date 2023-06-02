@@ -1,10 +1,13 @@
 import datetime
 
-import interface
 import transformers
-import utils
 import websocket
-from chat_chain_prompts import (
+from langchain.agents import Tool
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
+from loguru import logger
+from oasst_inference_worker import interface, utils
+from oasst_inference_worker.chain.chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
     JSON_FORMAT_NO_PAYLOAD,
@@ -16,15 +19,16 @@ from chat_chain_prompts import (
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
 )
-from chat_chain_utils import compose_tools_from_plugin, extract_tool_and_input, prepare_prompt, use_tool
-from hf_langchain_inference import HFInference
-from langchain.agents import Tool
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import PromptTemplate
-from loguru import logger
+from oasst_inference_worker.chain.chat_chain_utils import (
+    compose_tools_from_plugin,
+    extract_tool_and_input,
+    prepare_prompt,
+    use_tool,
+)
+from oasst_inference_worker.chain.hf_langchain_inference import HFInference
+from oasst_inference_worker.settings import settings
 from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
-from settings import settings
 
 # Exclude tools description from final prompt. Saves ctx space but can hurt output
 # quality especially if truncation kicks in. Dependent on model used

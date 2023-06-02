@@ -1,6 +1,5 @@
-import interface
-import utils
 from langchain.llms.base import LLM
+from oasst_inference_worker import interface, utils
 
 
 class HFInference(LLM):

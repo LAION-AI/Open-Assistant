@@ -1,13 +1,13 @@
 import re
 from concurrent import futures
 
-import chat_chain
-import interface
 import requests
 import transformers
-import utils
 import websocket
-from chat_chain_prompts import (
+from loguru import logger
+from oasst_inference_worker import interface, utils
+from oasst_inference_worker.chain import chat_chain
+from oasst_inference_worker.chain.chat_chain_prompts import (
     ASSISTANT_PREFIX,
     END_SEQ,
     OBSERVATION_SEQ,
@@ -16,10 +16,9 @@ from chat_chain_prompts import (
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
 )
-from loguru import logger
+from oasst_inference_worker.settings import settings
+from oasst_inference_worker.utils import shared_tokenizer_lock
 from oasst_shared.schemas import inference
-from settings import settings
-from utils import shared_tokenizer_lock
 
 
 def make_prompt_and_parameters(

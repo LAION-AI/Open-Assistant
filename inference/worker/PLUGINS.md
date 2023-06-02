@@ -66,9 +66,5 @@ that will be a bit different approach than this one as it will be utilizing
 other smaller embedding transformer models and vector stores, so we can do A/B
 testing of the system alongside new OA model releases.
 
-## Relevant files for the inference side of the plugin system
-
-- chat_chain.py
-- chat*chain_utils.py *(tweaking tools/plugin description string generation can
-  help for some models)\_
-- chat*chain_prompts.py *(tweaking prompts can help also)\_
+Relevant files for the inference side of the plugin system are contained in
+**oasst_inference_worker/chain/**.
