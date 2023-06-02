@@ -336,21 +336,31 @@ class PromptRepository:
 
     @managed_tx_method(CommitMode.COMMIT)
     def revise_message(self, message_id: UUID, new_content: str):
-        # store current content as revision
-        current_message = self.fetch_message(message_id)
-        current_content_revision = self.insert_revision(
+        # store original message as revision if not already stored
+        message = self.fetch_message(message_id)
+        previous_head_revision_id = message.head_revision_id
+        if message.head_revision_id is None:
+            original_message_revision = self.insert_revision(
+                message_id=message_id,
+                user_id=message.user_id,
+                created_date=message.created_date,
+                previous_revision_id=None,
+                payload=message.payload,
+            )
+            previous_head_revision_id = original_message_revision.id
+
+        # store new version as revision
+        new_revision = self.insert_revision(
             message_id=message_id,
-            user_id=current_message.user_id,
-            created_date=current_message.created_date,
-            previous_revision_id=current_message.previous_revision_id,
-            payload=current_message.payload,
+            user_id=self.user_id,
+            created_date=utcnow(),
+            previous_revision_id=previous_head_revision_id,
+            payload=PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
         )
 
-        # update message with new data
+        # update message with new content
         updated_message_data = {
-            "user_id": self.user_id,
-            "created_date": utcnow(),
-            "previous_revision_id": current_content_revision.id,
+            "head_revision_id": new_revision.id,
             "payload": PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
         }
 

@@ -22,7 +22,7 @@ def prepare_message(m: Message) -> protocol.Message:
         review_count=m.review_count,
         ranking_count=m.ranking_count,
         deleted=m.deleted,
-        edited=m.previous_revision_id is not None,
+        edited=m.head_revision_id is not None,
         synthetic=m.synthetic,
         model_name=m.model_name,
         message_tree_id=m.message_tree_id,
