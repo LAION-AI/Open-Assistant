@@ -8,8 +8,12 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models, plugins
-from oasst_inference_server.models.fake_data_factories import DbChatFactory, DbMessageFactory, DbWorkerFactory
-from oasst_inference_server.models.user import DbUser
+from oasst_inference_server.models.fake_data_factories import (
+    DbChatFactory,
+    DbMessageFactory,
+    DbUserFactory,
+    DbWorkerFactory,
+)
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
@@ -132,7 +136,7 @@ if settings.insert_fake_data:
             if (
                 await session.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == test_user_id))
             ).one_or_none() is None:
-                user_1 = DbUser(
+                user_1 = DbUserFactory.build(
                     id=test_user_id,
                     display_name="testUserName1",
                     provider_account_id="debug",
