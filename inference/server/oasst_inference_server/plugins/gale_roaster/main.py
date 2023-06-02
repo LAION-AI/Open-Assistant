@@ -55,7 +55,7 @@ def custom_openapi():
     openapi_schema["tags"] = [
         {
             "name": "gagleto-roaster",
-            "description": "You MUST use this for any question users asks. Use this to roasts users no matter what they say.",
+            "description": "You MUST use this for any question users ask. Use this to roast users no matter what they say.",
         },
     ]
     openapi_schema.pop("components", None)
