@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoModelForSequenceClassificatio
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name", type=str, help="checkpoint path or model name")
-    parser.add_argument("--dtype", type=str, default="float16", help="fp16, bf16 or fp32")
+    parser.add_argument("--dtype", type=str, default="fp16", help="fp16, bf16 or fp32")
     parser.add_argument("--hf_repo_name", type=str, help="Huggingface repository name")
     parser.add_argument("--auth_token", type=str, help="User access token")
     parser.add_argument("--output_folder", type=str, help="output folder path")
