@@ -150,7 +150,16 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                   Deleted
                 </Badge>
               )}
-              {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
+              {row.original.review_result === false && (
+                <Badge colorScheme="yellow" ml="1">
+                  Spam
+                </Badge>
+              )}
+              {row.original.edited === true && (
+                <Badge colorScheme="gray" ml="1">
+                  Edited
+                </Badge>
+              )}
             </Box>
           );
         },

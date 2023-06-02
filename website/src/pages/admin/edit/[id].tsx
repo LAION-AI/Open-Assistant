@@ -115,11 +115,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                 </Text>
               </Stack>
               <Box marginTop={4} borderRadius={"lg"} backgroundColor={cardColor} className="p-3 sm:p-6">
-                {!messageThread ? (
-                  "Unable to build tree"
-                ) : (
-                  <MessageTree tree={messageThread} messageId={id} />
-                )}
+                {!messageThread ? "Unable to build tree" : <MessageTree tree={messageThread} messageId={id} />}
               </Box>
             </>
             <>
@@ -144,7 +140,14 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                   </TabPanels>
                 </Tabs>
                 <Flex justify={"flex-start"}>
-                  <Button size="lg" variant="solid" colorScheme="green" onClick={handleSubmit} isLoading={submitting} loadingText={"Submitting"}>
+                  <Button
+                    size="lg"
+                    variant="solid"
+                    colorScheme="green"
+                    onClick={handleSubmit}
+                    isLoading={submitting}
+                    loadingText={"Submitting"}
+                  >
                     {t("common:submit")}
                   </Button>
                 </Flex>
