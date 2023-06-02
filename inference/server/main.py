@@ -6,7 +6,7 @@ import fastapi
 import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import database, deps, models
+from oasst_inference_server import database, deps, models, plugins
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
@@ -112,6 +112,10 @@ app.include_router(admin.router)
 app.include_router(chats.router)
 app.include_router(workers.router)
 app.include_router(configs.router)
+
+# mount plugins
+for app_prefix, sub_app in plugins.plugin_apps.items():
+    app.mount(path=settings.plugins_path_prefix + app_prefix, app=sub_app)
 
 
 @app.on_event("startup")

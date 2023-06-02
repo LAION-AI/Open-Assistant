@@ -3,7 +3,7 @@ import platform
 import random
 import uuid
 from datetime import datetime
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Literal, Union
 
 import psutil
 import pydantic
@@ -161,19 +161,12 @@ class PluginConfig(pydantic.BaseModel):
     legal_info_url: str | None = None
     endpoints: list[PluginOpenAPIEndpoint] | None = None
 
-    def __getitem__(self, key: str) -> Any:
-        return getattr(self, key)
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        setattr(self, key, value)
-
 
 class PluginEntry(pydantic.BaseModel):
     url: str
     enabled: bool = True
     plugin_config: PluginConfig | None = None
-    # NOTE: Idea, is to have OA internal plugins as trusted,
-    # and all other plugins as untrusted by default(until proven otherwise)
+    # Idea is for OA internal plugins to be trusted, others untrusted by default
     trusted: bool | None = False
 
 
@@ -208,6 +201,7 @@ class WorkParameters(pydantic.BaseModel):
         default_factory=make_seed,
     )
     plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
+    plugin_max_depth: int = 4
 
 
 class ReportType(str, enum.Enum):
@@ -335,6 +329,15 @@ class SafePromptResponse(WorkerResponseBase):
     safety_rots: str
 
 
+class PluginIntermediateResponse(WorkerResponseBase):
+    response_type: Literal["plugin_intermediate"] = "plugin_intermediate"
+    text: str = ""
+    current_plugin_thought: str
+    current_plugin_action_taken: str
+    current_plugin_action_input: str
+    current_plugin_action_response: str
+
+
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
@@ -395,6 +398,7 @@ WorkerResponse = Annotated[
         InternalFinishedMessageResponse,
         InternalErrorResponse,
         SafePromptResponse,
+        PluginIntermediateResponse,
     ],
     pydantic.Field(discriminator="response_type"),
 ]

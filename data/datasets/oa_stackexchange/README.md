@@ -39,9 +39,9 @@ This dataset is taken from https://archive.org/details/stackexchange.
 
 There's a single parquet file combining all stackexchange sites. The threads
 have been filtered as follows: only threads with an accepted answer, for which
-both the question and response is less than 1000 characters have been choosen.
+both the question and response is less than 1000 characters have been chosen.
 Other answers, or questions without accepted answers, or long entries have been
-droppped.
+dropped.
 
 Each row consists of
 

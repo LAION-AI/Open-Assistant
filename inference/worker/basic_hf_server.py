@@ -5,13 +5,13 @@ import threading
 from queue import Queue
 
 import fastapi
+import hf_stopping
 import hf_streamer
 import interface
 import torch
 import transformers
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from hf_stopping import SequenceStoppingCriteria
 from loguru import logger
 from oasst_shared import model_configs
 from settings import settings
@@ -85,7 +85,9 @@ def model_thread():
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 stopping_criteria = (
-                    transformers.StoppingCriteriaList([SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)])
+                    transformers.StoppingCriteriaList(
+                        [hf_stopping.SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)]
+                    )
                     if stop_sequences
                     else None
                 )

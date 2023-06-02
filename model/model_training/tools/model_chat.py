@@ -86,7 +86,7 @@ def talk(human_input: str, history: List[Tuple[str, str]], sep_token: str, prefi
     return prefix
 
 
-def process_output(output):
+def process_output(output, method, bot_name):
     if method == "v2":
         answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]

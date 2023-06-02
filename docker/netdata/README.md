@@ -2,7 +2,7 @@
 
 [Netdata](https://github.com/netdata/netdata) is an open source monitoring tool.
 
-This folder contains some configfuration files used to set up various netdata
+This folder contains some configuration files used to set up various netdata
 collectors we want to use like Redis, Postgres, etc.
 
 - [`./go.d/postgres.conf`](./go.d/postgres.conf) - Config for Netdata

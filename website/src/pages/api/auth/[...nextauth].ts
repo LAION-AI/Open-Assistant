@@ -139,7 +139,7 @@ const authOptions: AuthOptions = {
     async signIn({ user, account, isNewUser }) {
       if (isNewUser && account.provider === "email" && !user.name) {
         // only generate a username if the user is new and they signed up with email and they don't have a name
-        // although the name already assigned in the jwt callback, this is to ensure notthing breaks, and we should never reach here.
+        // although the name already assigned in the jwt callback, this is to ensure nothing breaks, and we should never reach here.
         await prisma.user.update({
           data: {
             name: generateUsername(),
