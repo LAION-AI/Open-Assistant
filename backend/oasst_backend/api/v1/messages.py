@@ -14,7 +14,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
-from starlette.status import HTTP_202_ACCEPTED, HTTP_204_NO_CONTENT
+from starlette.status import HTTP_200_OK, HTTP_202_ACCEPTED, HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -339,7 +339,7 @@ def undelete_message(
     pr.undelete_deleted_message(message_id)
 
 
-@router.post("/{message_id}/edit", status_code=HTTP_202_ACCEPTED)
+@router.post("/{message_id}/edit", status_code=HTTP_200_OK)
 def edit_message(
     *,
     message_id: UUID,

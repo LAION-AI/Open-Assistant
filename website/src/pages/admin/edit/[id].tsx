@@ -15,21 +15,22 @@ import {
 } from "@chakra-ui/react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminArea } from "src/components/AdminArea";
 import { AdminLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTree } from "src/components/Messages/MessageTree";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { get, put } from "src/lib/api";
+import { get } from "src/lib/api";
+import { post } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { Message, MessageWithChildren } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
-import { useBoolean } from "@chakra-ui/react";
-import { useRouter } from "next/router";
+import useSWRMutation from "swr/mutation";
 
 const RenderedMarkdown = lazy(() => import("../../../components/Messages/RenderedMarkdown"));
 
@@ -38,7 +39,11 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
   const router = useRouter();
 
   const [messageText, setMessageText] = useState("");
-  const [submitting, setSubmitting] = useBoolean(false);
+  const { trigger: submitEdit, isMutating: submitting } = useSWRMutation(API_ROUTES.ADMIN_EDIT_MESSAGE(id), post, {
+    onSuccess: () => {
+      router.push(ROUTES.ADMIN_MESSAGE_DETAIL(id));
+    },
+  });
   const { data, isLoading, error } = useSWRImmutable<{ tree: MessageWithChildren | null; message?: Message }>(
     `/api/admin/messages/${id}/tree`,
     get,
@@ -60,7 +65,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
     [messageText]
   );
 
-  const getThreadFromTree = (tree: MessageWithChildren | null, targetMessageId: string) => {
+  const getThreadFromTree = useCallback((tree: MessageWithChildren | null, targetMessageId: string) => {
     if (!tree) {
       return null;
     }
@@ -73,15 +78,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
       .map((child) => getThreadFromTree(child, targetMessageId))
       .filter((child) => child);
     return filtered_children.length ? { ...tree, children: filtered_children } : null;
-  };
-
-  const handleSubmit = async () => {
-    setSubmitting.on();
-    await put(API_ROUTES.ADMIN_EDIT_MESSAGE(id), { arg: messageText });
-    setSubmitting.off();
-
-    router.push(ROUTES.ADMIN_MESSAGE_DETAIL(id));
-  };
+  }, []);
 
   const messageThread = getThreadFromTree(data?.tree, id);
   const titleColor = useColorModeValue("gray.800", "gray.300");
@@ -144,7 +141,9 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                     size="lg"
                     variant="solid"
                     colorScheme="green"
-                    onClick={handleSubmit}
+                    onClick={async () => {
+                      await submitEdit({ arg: messageText });
+                    }}
                     isLoading={submitting}
                     loadingText={"Submitting"}
                   >
@@ -169,7 +168,7 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   props: {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: params!.id,
-    ...(await serverSideTranslations(locale, ["common", "message", "labelling", "tasks"])),
+    ...(await serverSideTranslations(locale)),
   },
 });
 

@@ -141,22 +141,22 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
               ></Avatar>
               {renderText}
               {!row.original.parent_id && (
-                <Badge colorScheme="green" ml="1">
+                <Badge colorScheme="green" ms="1">
                   Root
                 </Badge>
               )}
               {row.original.deleted && (
-                <Badge colorScheme="red" ml="1">
+                <Badge colorScheme="red" ms="1">
                   Deleted
                 </Badge>
               )}
               {row.original.review_result === false && (
-                <Badge colorScheme="yellow" ml="1">
+                <Badge colorScheme="yellow" ms="1">
                   Spam
                 </Badge>
               )}
-              {row.original.edited === true && (
-                <Badge colorScheme="gray" ml="1">
+              {row.original.edited && (
+                <Badge colorScheme="gray" ms="1">
                   Edited
                 </Badge>
               )}

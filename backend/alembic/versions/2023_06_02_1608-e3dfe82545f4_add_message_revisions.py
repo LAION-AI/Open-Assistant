@@ -1,8 +1,8 @@
 """add_message_revisions
 
-Revision ID: d373dfca02db
+Revision ID: e3dfe82545f4
 Revises: 1b6e3ae16e9d
-Create Date: 2023-06-02 10:33:44.914561
+Create Date: 2023-06-02 16:08:10.545377
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "d373dfca02db"
+revision = "e3dfe82545f4"
 down_revision = "1b6e3ae16e9d"
 branch_labels = None
 depends_on = None
@@ -29,7 +29,6 @@ def upgrade() -> None:
             "created_date", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
         ),
         sa.Column("previous_revision_id", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("payload_type", sqlmodel.sql.sqltypes.AutoString(length=200), nullable=False),
         sa.ForeignKeyConstraint(
             ["message_id"],
             ["message.id"],

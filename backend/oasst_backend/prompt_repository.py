@@ -171,17 +171,9 @@ class PromptRepository:
         created_date: datetime,
         previous_revision_id: UUID,
         payload: db_payload.MessagePayload,
-        payload_type: str = None,
     ) -> MessageRevision:
-        if payload_type is None:
-            if payload is None:
-                payload_type = "null"
-            else:
-                payload_type = type(payload).__name__
-
         message_revision = MessageRevision(
             payload=payload,
-            payload_type=payload_type,
             message_id=message_id,
             user_id=user_id,
             created_date=created_date,
@@ -352,7 +344,6 @@ class PromptRepository:
             created_date=current_message.created_date,
             previous_revision_id=current_message.previous_revision_id,
             payload=current_message.payload,
-            payload_type=current_message.payload_type,
         )
 
         # update message with new data
