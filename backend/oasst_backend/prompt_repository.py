@@ -19,6 +19,7 @@ from oasst_backend.models import (
     MessageEmbedding,
     MessageEmoji,
     MessageReaction,
+    MessageRevision,
     MessageToxicity,
     MessageTreeState,
     Task,
@@ -161,6 +162,33 @@ class PromptRepository:
         )
         self.db.add(message)
         return message
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def insert_revision(
+        self,
+        message_id: UUID,
+        user_id: UUID,
+        created_date: datetime,
+        previous_revision_id: UUID,
+        payload: db_payload.MessagePayload,
+        payload_type: str = None,
+    ) -> MessageRevision:
+        if payload_type is None:
+            if payload is None:
+                payload_type = "null"
+            else:
+                payload_type = type(payload).__name__
+
+        message_revision = MessageRevision(
+            payload=payload,
+            payload_type=payload_type,
+            message_id=message_id,
+            user_id=user_id,
+            created_date=created_date,
+            previous_revision_id=previous_revision_id,
+        )
+        self.db.add(message_revision)
+        return message_revision
 
     def _validate_task(
         self,
@@ -313,6 +341,30 @@ class PromptRepository:
             f"text[:100]='{user_message.text[:100]}', role='{user_message.role}', lang='{user_message.lang}'"
         )
         return user_message
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def revise_message(self, message_id: UUID, new_content: str):
+        # store current content as revision
+        current_message = self.fetch_message(message_id)
+        current_content_revision = self.insert_revision(
+            message_id=message_id,
+            user_id=current_message.user_id,
+            created_date=current_message.created_date,
+            previous_revision_id=current_message.previous_revision_id,
+            payload=current_message.payload,
+            payload_type=current_message.payload_type,
+        )
+
+        # update message with new data
+        updated_message_data = {
+            "user_id": self.user_id,
+            "created_date": utcnow(),
+            "previous_revision_id": current_content_revision.id,
+            "payload": PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
+        }
+
+        query = update(Message).where(Message.id == message_id).values(**updated_message_data)
+        self.db.execute(query)
 
     @managed_tx_method(CommitMode.FLUSH)
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:

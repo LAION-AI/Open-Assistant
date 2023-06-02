@@ -24,7 +24,8 @@ import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTree } from "src/components/Messages/MessageTree";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { get } from "src/lib/api";
+import { get, put } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { Message, MessageWithChildren } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
@@ -67,6 +68,12 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
       .map((child) => getThreadFromTree(child, targetMessageId))
       .filter((child) => child);
     return filtered_children.length ? { ...tree, children: filtered_children } : null;
+  };
+
+  const handleSubmit = async () => {
+    if (data && data.message) {
+      await put(API_ROUTES.ADMIN_EDIT_MESSAGE(data.message.id), { arg: messageText });
+    }
   };
 
   const messageThread = getThreadFromTree(data?.tree, id);
@@ -130,7 +137,7 @@ const EditMessage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                   </TabPanels>
                 </Tabs>
                 <Flex justify={"flex-start"}>
-                  <Button size="lg" variant="solid" colorScheme="green">
+                  <Button size="lg" variant="solid" colorScheme="green" onClick={handleSubmit}>
                     {t("common:submit")}
                   </Button>
                 </Flex>

@@ -579,6 +579,11 @@ class MessageEmojiRequest(BaseModel):
     emoji: EmojiCode
 
 
+class MessageEditRequest(BaseModel):
+    user: User
+    new_content: str
+
+
 class CreateFrontendUserRequest(User):
     show_on_leaderboard: bool = True
     enabled: bool = True

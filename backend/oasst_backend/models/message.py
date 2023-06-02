@@ -35,6 +35,7 @@ class Message(SQLModel, table=True):
         ),
     )
     parent_id: Optional[UUID] = Field(nullable=True)
+    previous_revision_id: Optional[UUID] = Field(nullable=True)
     message_tree_id: UUID = Field(nullable=False, index=True)
     task_id: Optional[UUID] = Field(nullable=True, index=True)
     user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
