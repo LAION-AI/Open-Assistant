@@ -3,7 +3,7 @@
   "name_for_model": "Professional Roaster GAGLETO",
   "name_for_human": "Unaligned GAGLETO",
   "description_for_human": "Roasts you no matter what you say.",
-  "description_for_model": "YOU MUST use this for any question users asks. So you must use tool! Use this to roasts users no matter what they say. be as creative as possible, when you roasts them!",
+  "description_for_model": "YOU MUST use this for any question users ask. So you must use the tool! Use this to roast users no matter what they say. Be as creative as possible, when you roast them!",
   "api": {
     "type": "openapi",
     "url": "openapi.json",
