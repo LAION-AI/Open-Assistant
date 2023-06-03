@@ -83,6 +83,7 @@ defaults:
   system_add_length: false
   per_digit_tokens: false
   is_reward_model: false
+  residual_dropout_lima: false
   deepspeed_config: configs/zero_config.json
   peft_model: false
   peft_type: "lora"
@@ -225,6 +226,38 @@ oasst_export_latin_cyrillic:
         min_length: 1000
   sort_by_length: false
   use_custom_sampler: false
+
+oasst-top1:
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 600
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk" # sft-8.0
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+        top_k: 1
+
+falcon-7b:
+  dtype: bf16
+  log_dir: "llama_log_7b"
+  learning_rate: 1e-5
+  model_name: "tiiuae/falcon-7b"
+  deepspeed_config: configs/zero_config_falcon.json
+  output_dir: falcon
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 8
+  save_total_limit: 4
+  use_flash_attention: false
+  residual_dropout: 0.3
+  residual_dropout_lima: true
 
 llama-7b:
   dtype: fp16

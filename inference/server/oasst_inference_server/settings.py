@@ -115,6 +115,9 @@ class Settings(pydantic.BaseSettings):
     # sent as a work parameter, higher values increase load on workers
     plugin_max_depth: int = 4
 
+    # url path prefix for plugins we host on this server
+    plugins_path_prefix: str = "/plugins"
+
     @property
     def inference_cors_origins_list(self) -> list[str]:
         return self.inference_cors_origins.split(",")

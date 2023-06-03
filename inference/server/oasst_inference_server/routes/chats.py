@@ -244,6 +244,17 @@ async def message_events(
                         ).json(),
                     }
 
+                if response_packet.response_type == "plugin_intermediate":
+                    logger.info(f"Received plugin intermediate response {chat_id}")
+                    yield {
+                        "data": chat_schema.PluginIntermediateResponseEvent(
+                            current_plugin_thought=response_packet.current_plugin_thought,
+                            current_plugin_action_taken=response_packet.current_plugin_action_taken,
+                            current_plugin_action_input=response_packet.current_plugin_action_input,
+                            current_plugin_action_response=response_packet.current_plugin_action_response,
+                        ).json(),
+                    }
+
                 if response_packet.response_type == "internal_error":
                     yield {
                         "data": chat_schema.ErrorResponseEvent(
@@ -292,6 +303,22 @@ async def handle_create_vote(
         return fastapi.Response(status_code=500)
 
 
+@router.post("/{chat_id}/messages/{message_id}/message_evals")
+async def handle_create_message_eval(
+    message_id: str,
+    inferior_message_request: chat_schema.MessageEvalRequest,
+    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+) -> fastapi.Response:
+    try:
+        await ucr.add_message_eval(
+            message_id=message_id, inferior_message_ids=inferior_message_request.inferior_message_ids
+        )
+        return fastapi.Response(status_code=200)
+    except Exception:
+        logger.exception("Error setting messages as inferior")
+        return fastapi.Response(status_code=500)
+
+
 @router.post("/{chat_id}/messages/{message_id}/reports")
 async def handle_create_report(
     message_id: str,
@@ -322,6 +349,7 @@ async def handle_update_chat(
             title=request.title,
             hidden=request.hidden,
             allow_data_use=request.allow_data_use,
+            active_thread_tail_message_id=request.active_thread_tail_message_id,
         )
     except Exception:
         logger.exception("Error when updating chat")
