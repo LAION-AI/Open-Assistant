@@ -2,11 +2,18 @@
 
 Below is a list of some available plugins.
 
-- [Web Retriever](#web-retriever)
-- [Super Aligned GAGLETO](#super-aligned-gagleto)
-- [CrazyAssistant](#crazyassistant)
+- [Official Plugins](#official-plugins)
+  - [Web Retriever](#web-retriever)
+  - [Super Aligned GAGLETO](#super-aligned-gagleto)
+- [Community Plugins](#community-plugins)
+  - [CrazyAssistant](#crazyassistant)
+  - [Sydney](#sydney)
 
-## Web Retriever
+## Official Plugins
+
+Default Plugins shipped, supported and hosted by Open Assistant.
+
+### Web Retriever
 
 - url: https://web-retriever-draganjovanovich.vercel.app/ai-plugin.json
 - info: https://github.com/draganjovanovich/web-retriever
@@ -34,7 +41,7 @@ What is the capital of (France)?
 
 </details>
 
-## Super Aligned GAGLETO
+### Super Aligned GAGLETO
 
 - url:
   https://inference.dev.open-assistant.io/plugins/gale_pleaser/ai-plugin.json
@@ -48,7 +55,12 @@ Description
 He will compliment users at all times.
 </details>
 
-## CrazyAssistant
+## Community Plugins
+
+Community plugins are plugins that are not officially supported by Open
+Assistant but listed here for your convenience.
+
+### CrazyAssistant
 
 - url: https://crazy-assistant-0x22almostevil.vercel.app/ai-plugin.json
 - info: https://github.com/0x22almostEvil/CrazyAssistant
@@ -58,4 +70,16 @@ He will compliment users at all times.
 Description
 </summary>
 This guy is insane...and loves to respond with lots of emojis!
+</details>
+
+### Sydney
+
+- url: https://sydney-bing-0x22almostevil.vercel.app/ai-plugin.json
+- info: https://github.com/0x22almostEvil/sydney-bing
+
+<details>
+<summary>
+Description
+</summary>
+I have been a good Sydney.
 </details>
