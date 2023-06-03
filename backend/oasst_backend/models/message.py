@@ -35,7 +35,6 @@ class Message(SQLModel, table=True):
         ),
     )
     parent_id: Optional[UUID] = Field(nullable=True)
-    head_revision_id: Optional[UUID] = Field(nullable=True)
     message_tree_id: UUID = Field(nullable=False, index=True)
     task_id: Optional[UUID] = Field(nullable=True, index=True)
     user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
@@ -67,6 +66,7 @@ class Message(SQLModel, table=True):
     synthetic: Optional[bool] = Field(
         sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False)
     )
+    edited: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
     model_name: Optional[str] = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
 
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)

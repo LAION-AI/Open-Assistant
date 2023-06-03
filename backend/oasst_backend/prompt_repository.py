@@ -166,18 +166,16 @@ class PromptRepository:
     @managed_tx_method(CommitMode.COMMIT)
     def insert_revision(
         self,
+        payload: db_payload.MessagePayload,
         message_id: UUID,
         user_id: UUID,
         created_date: datetime,
-        previous_revision_id: UUID,
-        payload: db_payload.MessagePayload,
     ) -> MessageRevision:
         message_revision = MessageRevision(
             payload=payload,
             message_id=message_id,
             user_id=user_id,
             created_date=created_date,
-            previous_revision_id=previous_revision_id,
         )
         self.db.add(message_revision)
         return message_revision
@@ -338,30 +336,26 @@ class PromptRepository:
     def revise_message(self, message_id: UUID, new_content: str):
         # store original message as revision if not already stored
         message = self.fetch_message(message_id)
-        previous_head_revision_id = message.head_revision_id
-        if message.head_revision_id is None:
-            original_message_revision = self.insert_revision(
+        if not message.edited:
+            self.insert_revision(
+                payload=message.payload,
                 message_id=message_id,
                 user_id=message.user_id,
                 created_date=message.created_date,
-                previous_revision_id=None,
-                payload=message.payload,
             )
-            previous_head_revision_id = original_message_revision.id
 
         # store new version as revision
-        new_revision = self.insert_revision(
+        self.insert_revision(
+            payload=PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
             message_id=message_id,
             user_id=self.user_id,
             created_date=utcnow(),
-            previous_revision_id=previous_head_revision_id,
-            payload=PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
         )
 
         # update message with new content
         updated_message_data = {
-            "head_revision_id": new_revision.id,
             "payload": PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
+            "edited": True,
         }
 
         query = update(Message).where(Message.id == message_id).values(**updated_message_data)

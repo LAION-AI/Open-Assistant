@@ -23,4 +23,3 @@ class MessageRevision(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
-    previous_revision_id: Optional[UUID] = Field(sa_column=sa.Column(sa.ForeignKey("message_revision.id")))
