@@ -194,19 +194,21 @@ export class OasstApiClient {
   }
 
   async fetch_message_edits(message_id: string) {
-    return this.get<{
-      id: string;
-      messageId: string;
+    return this.get<
+      {
+        id: string;
+        messageId: string;
 
-      content: string;
-      lang: string;
+        content: string;
+        lang: string;
 
-      additions: number;
-      deletions: number;
+        additions: number;
+        deletions: number;
 
-      positiveReviews: number;
-      negativeReviews: number;
-    }[]>(`/api/v1/messages/${message_id}/edits`);
+        positiveReviews: number;
+        negativeReviews: number;
+      }[]
+    >(`/api/v1/messages/${message_id}/edits`);
   }
 
   /**

@@ -1,4 +1,21 @@
-import { Badge, Box, Card, CardBody, Divider, Flex, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, useColorMode, useColorModeValue } from "@chakra-ui/react";
+import {
+  Badge,
+  Box,
+  Card,
+  CardBody,
+  Divider,
+  Flex,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useColorMode,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { Change } from "diff";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
@@ -34,90 +51,82 @@ interface EditedContentMesageTableEntryProps {
 }
 
 const EditedContentMesageTableEntry: FC<EditedContentMesageTableEntryProps> = ({ edit }) => {
-  return <BaseMessageEntry
-    hideAvatar
-    style={{
-      width: '100%',
-    }}
-    content={edit.content}
-  >
-    <Flex
-      justifyContent='end'
-      mt="2"
-      alignItems="center"
+  return (
+    <BaseMessageEntry
+      hideAvatar
+      style={{
+        width: "100%",
+      }}
+      content={edit.content}
     >
-      <MessageInlineEmojiRow>
-        <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
-          {edit.lang}
-        </Badge>
-        <MessageEmojiButton
-          emoji={{ name: '+1', count: edit.positiveReviews }}
-          checked={false}
-          userReacted
-          userIsAuthor={false}
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          onClick={() => { }}
-        />
+      <Flex justifyContent="end" mt="2" alignItems="center">
+        <MessageInlineEmojiRow>
+          <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
+            {edit.lang}
+          </Badge>
+          <MessageEmojiButton
+            emoji={{ name: "+1", count: edit.positiveReviews }}
+            checked={false}
+            userReacted
+            userIsAuthor={false}
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onClick={() => {}}
+          />
 
-        <MessageEmojiButton
-          emoji={{ name: '-1', count: edit.negativeReviews }}
-          checked={false}
-          userReacted
-          userIsAuthor={false}
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          onClick={() => { }}
-        />
-      </MessageInlineEmojiRow>
-    </Flex>
+          <MessageEmojiButton
+            emoji={{ name: "-1", count: edit.negativeReviews }}
+            checked={false}
+            userReacted
+            userIsAuthor={false}
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onClick={() => {}}
+          />
+        </MessageInlineEmojiRow>
+      </Flex>
 
-    <div className=''></div>
-  </BaseMessageEntry>;
+      <div className=""></div>
+    </BaseMessageEntry>
+  );
 };
 
 interface EditingTableProps {
   edits: Edit[];
 }
 
-const EditingTable: FC<EditingTableProps> = ({ edits }) => <TableContainer>
-  <Table>
-    <Thead>
-      <Tr>
-        <Th rowSpan={3}>Edited content</Th>
-        <Th textAlign='center'>Deletions</Th>
-        <Th textAlign='center'>Additions</Th>
-      </Tr>
-    </Thead>
-    <Tbody>
-      {edits.map(edit => (
-        <Tr key={edit.id}>
-          <Td rowSpan={3}>
-            <EditedContentMesageTableEntry
-              edit={edit}
-            />
-          </Td>
-          <Td textAlign='center'>
-            <Badge
-              colorScheme='red'
-              marginInline='auto'
-              p={3}
-              variant='outline'
-              fontSize="x-large"
-            > -{edit.deletions} </Badge>
-          </Td>
-          <Td textAlign='center'>
-            <Badge
-              colorScheme='green'
-              p={3}
-              variant='outline'
-              marginInline='auto'
-              fontSize="x-large"
-            > +{edit.additions} </Badge>
-          </Td>
+const EditingTable: FC<EditingTableProps> = ({ edits }) => (
+  <TableContainer>
+    <Table>
+      <Thead>
+        <Tr>
+          <Th rowSpan={3}>Edited content</Th>
+          <Th textAlign="center">Deletions</Th>
+          <Th textAlign="center">Additions</Th>
         </Tr>
-      ))}
-    </Tbody>
-  </Table>
-</TableContainer>;
+      </Thead>
+      <Tbody>
+        {edits.map((edit) => (
+          <Tr key={edit.id}>
+            <Td rowSpan={3}>
+              <EditedContentMesageTableEntry edit={edit} />
+            </Td>
+            <Td textAlign="center">
+              <Badge colorScheme="red" marginInline="auto" p={3} variant="outline" fontSize="x-large">
+                {" "}
+                -{edit.deletions}{" "}
+              </Badge>
+            </Td>
+            <Td textAlign="center">
+              <Badge colorScheme="green" p={3} variant="outline" marginInline="auto" fontSize="x-large">
+                {" "}
+                +{edit.additions}{" "}
+              </Badge>
+            </Td>
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  </TableContainer>
+);
 
 const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["message", "common"]);
@@ -149,12 +158,10 @@ const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getSer
               </HStack>
             </Stack>*/}
 
-            <div className='message-being-edited'>
+            <div className="message-being-edited">
               {isLoading && !data && <MessageLoading></MessageLoading>}
               {error && "Unable to load edits of message"}
-              {data && data.message && <MessageTableEntry
-                message={data.message}
-              />}
+              {data && data.message && <MessageTableEntry message={data.message} />}
             </div>
 
             <Divider marginBlock={5} />
@@ -162,7 +169,7 @@ const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getSer
             <EditingTable
               edits={[
                 {
-                  id: '',
+                  id: "",
                   messageId: data?.message?.id,
 
                   lang: data?.message?.lang,
@@ -172,8 +179,8 @@ const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getSer
                   deletions: 1,
 
                   negativeReviews: 1,
-                  positiveReviews: 2
-                }
+                  positiveReviews: 2,
+                },
               ]}
             />
           </CardBody>

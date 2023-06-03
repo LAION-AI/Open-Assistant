@@ -312,7 +312,8 @@ const MessageActions = ({
           <MenuItem
             onClick={() =>
               handleCopy(
-                `${window.location.protocol}//${window.location.host}${locale === "en" ? "" : `/${locale}`
+                `${window.location.protocol}//${window.location.host}${
+                  locale === "en" ? "" : `/${locale}`
                 }/messages/${id}`
               )
             }

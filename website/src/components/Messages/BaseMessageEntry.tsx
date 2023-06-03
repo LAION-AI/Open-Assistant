@@ -40,17 +40,19 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       _dark={{ outlineColor: colors.dark.active }}
       {...containerProps}
     >
-      {!props.hideAvatar && <Avatar
-        borderColor="blackAlpha.200"
-        _dark={{
-          borderColor: "whiteAlpha.200",
-        }}
-        size={{ base: "xs", md: "sm" }}
-        mr={{ base: 0, md: 2 }}
-        mt={{ base: 0, md: `6px` }}
-        mb={{ base: 1.5, md: 0 }}
-        {...avatarProps}
-      />}
+      {!props.hideAvatar && (
+        <Avatar
+          borderColor="blackAlpha.200"
+          _dark={{
+            borderColor: "whiteAlpha.200",
+          }}
+          size={{ base: "xs", md: "sm" }}
+          mr={{ base: 0, md: 2 }}
+          mt={{ base: 0, md: `6px` }}
+          mb={{ base: 1.5, md: 0 }}
+          {...avatarProps}
+        />
+      )}
       <Box
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
