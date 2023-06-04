@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-import httpx
+import aiohttp
 import PyPDF2
 import yaml
 from bs4 import BeautifulSoup
@@ -19,6 +19,7 @@ from starlette.responses import FileResponse
 CHAR_LIMIT = 1585  # TODO: increase these values after long-context support has been added
 IMAGES_CHAR_LIMIT = 300
 MAX_DOWNLOAD_SIZE = 4 * 1024 * 1024
+MAX_CHUNK_SIZE = 1024 * 1024
 
 IMAGES_SUFIX = """, and I will also include images formatted like this:
 ![](image url)
@@ -46,7 +47,7 @@ def extract_image_links(text: str):
 def detect_content_type(content: bytes) -> str:
     if content.startswith(b"%PDF-"):
         return "application/pdf"
-    elif (content).upper().startswith(b"<!DOCTYPE HTML") or content.startswith(b"<html"):
+    elif (content).lstrip().upper().startswith(b"<!DOCTYPE HTML") or content.startswith(b"<html"):
         return "text/html"
     elif content.startswith(b"{") or content.startswith(b"["):
         try:
@@ -90,6 +91,9 @@ def truncate_paragraphs(paragraphs, max_length):
     current_length = 0
 
     for paragraph in paragraphs:
+        if len(paragraph) == 0:
+            continue
+        paragraph = paragraph.strip()
         if current_length + len(paragraph) <= max_length:
             truncated_paragraphs.append(paragraph)
             current_length += len(paragraph)
@@ -107,20 +111,24 @@ async def get_url_content(url: str = Query(..., description="url to fetch conten
     try:
         buffer = io.BytesIO()
         encoding: str | None
-        async with httpx.AsyncClient(follow_redirects=True) as client:
-            async with client.stream("GET", url) as response:
+        content_type: str | None
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
                 response.raise_for_status()  # Raise an exception for HTTP errors
+                try:
+                    encoding = response.get_encoding()
+                except RuntimeError:
+                    encoding = None
+                content_type = response.content_type
 
-                encoding = response.encoding
-                if "Content-Length" in response.headers:
-                    total = int(response.headers["Content-Length"])
-                    if total > MAX_DOWNLOAD_SIZE:
-                        error_message = (
-                            f"Sorry, the file at {url} is too large.\nYou should report this message to the user!"
-                        )
-                        return JSONResponse(content={"error": error_message}, status_code=500)
+                if response.content_length is not None and response.content_length > MAX_DOWNLOAD_SIZE:
+                    error_message = (
+                        f"Sorry, the file at {url} is too large.\nYou should report this message to the user!"
+                    )
+                    return JSONResponse(content={"error": error_message}, status_code=500)
 
-                async for chunk in response.aiter_bytes():
+                async for chunk in response.content.iter_chunked(MAX_CHUNK_SIZE):
                     buffer.write(chunk)
                     if buffer.tell() > MAX_DOWNLOAD_SIZE:
                         error_message = (
@@ -129,7 +137,8 @@ async def get_url_content(url: str = Query(..., description="url to fetch conten
                         return JSONResponse(content={"error": error_message}, status_code=500)
 
         content_bytes: bytes = buffer.getvalue()
-        content_type: str = detect_content_type(content_bytes)
+        if content_type is None or content_type == "application/octet-stream":
+            content_type = detect_content_type(content_bytes)
         buffer.seek(0)
 
         def decode_text() -> str:
@@ -157,8 +166,8 @@ async def get_url_content(url: str = Query(..., description="url to fetch conten
             if not paragraphs:
                 paragraphs = [p.get_text(strip=True) for p in soup.find_all("span")]
 
-            text = truncate_paragraphs(paragraphs, CHAR_LIMIT)
-            text = " ".join(text)
+            paragraphs = truncate_paragraphs(paragraphs, CHAR_LIMIT)
+            text = "\n".join(paragraphs)
 
             for p in soup.find_all("p"):
                 parent = p.parent
@@ -249,3 +258,13 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+
+if __name__ == "__main__":
+    # simple built-in test
+    import asyncio
+
+    # url = "https://arxiv.org/abs/2304.07327"
+    url = "https://arxiv.org/pdf/2304.07327"
+    x = asyncio.run(get_url_content(url))
+    print(x.status_code, x.body)
