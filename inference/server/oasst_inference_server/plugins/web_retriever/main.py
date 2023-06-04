@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from loguru import logger
+from starlette.responses import FileResponse
 
 # In total, the text + image links + prompts should be <= 2048
 CHAR_LIMIT = 1585  # TODO: increase these values after long-context support has been added
@@ -212,10 +213,7 @@ Thought: I now know the answer{IMAGES_SUFIX if len(images) > 0 else "."}
 
 @app.get("/icon.png", include_in_schema=False)
 async def api_icon():
-    icon_path = folder_path / "icon.png"
-    with icon_path.open("rb") as f:
-        icon = f.read()
-    return Response(content=icon, media_type="image/png")
+    return FileResponse(folder_path / "icon.png")
 
 
 @app.get("/ai-plugin.json", include_in_schema=False)
