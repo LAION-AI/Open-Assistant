@@ -16,9 +16,9 @@ Default Plugins shipped, supported and hosted by Open Assistant.
 ### Web Retriever
 
 - url:
-https://inference.dev.open-assistant.io/plugins/web_retriever/ai-plugin.json
+  https://inference.dev.open-assistant.io/plugins/web_retriever/ai-plugin.json
 - info:
-https://github.com/LAION-AI/Open-Assistant/tree/main/inference/server/oasst_inference_server/plugins/web_retriever
+  https://github.com/LAION-AI/Open-Assistant/tree/main/inference/server/oasst_inference_server/plugins/web_retriever
 
 <details>
 <summary>
