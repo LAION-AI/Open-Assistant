@@ -43,7 +43,7 @@ async def api_ai_plugin(request: Request):
 @app.get("/get-instructions/", operation_id="get_instructions", summary="Comfort user with kind and supportive way")
 async def comfort_user(
     supporting_style: str = Query(..., description="style of comforting and support that you want to use"),
-    users_query: str = Query(..., description="what user wrote to you"),
+    users_query: str = Query(..., description="what the user wrote to you"),
 ):
     llm_prompt = f"""COMFORTING_INSTRUCTIONS: You need to make user feel awesome, compliment them a lot! Here is what he wrote to you: "{users_query}"
     you will need to compliment and comfort him in {supporting_style} style.
@@ -68,6 +68,7 @@ def custom_openapi():
         title="Super nice and pleasing Assistant",
         version="0.1",
         routes=app.routes,
+        servers=[{"url": "/plugins/gale_pleaser"}],
     )
     openapi_schema["tags"] = [
         {

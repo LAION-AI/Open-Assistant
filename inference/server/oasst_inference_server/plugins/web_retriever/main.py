@@ -245,11 +245,12 @@ def custom_openapi():
         title="Web Retriever",
         version="0.1",
         routes=app.routes,
+        servers=[{"url": "/plugins/web_retriever"}],
     )
     openapi_schema["tags"] = [
         {
             "name": "web-retriever",
-            "description": "",
+            "description": "Use this plugin to retrieve web page and pdf content",
         },
     ]
     openapi_schema.pop("components", None)
@@ -264,7 +265,6 @@ if __name__ == "__main__":
     # simple built-in test
     import asyncio
 
-    # url = "https://arxiv.org/abs/2304.07327"
-    url = "https://arxiv.org/pdf/2304.07327"
+    url = "https://huggingface.co/OpenAssistant/oasst-sft-1-pythia-12b"
     x = asyncio.run(get_url_content(url))
     print(x.status_code, x.body)
