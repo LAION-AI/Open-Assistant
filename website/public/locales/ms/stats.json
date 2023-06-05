@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Digugurkan gred rendah",
+  "assistant": "Assistant",
+  "backlog_ranking": "Kedudukan tunggakan",
+  "choose_a_language": "Pilih bahasa",
+  "count": "Kiraan",
+  "growing": "Berkembang",
+  "halted_by_moderator": "Dihentikan oleh moderator",
+  "human_messages_by_lang": "Mesej manusia mengikut bahasa",
+  "human_messages_by_role": "Mesej manusia mengikut peranan",
+  "initial_prompt_review": "Semakan segera awal",
+  "language_stats": "Bahasa",
+  "message_trees_by_state": "Mesej pokok mengikut negeri",
+  "message_trees_states_by_lang": "Mesej keadaan pokok mengikut bahasa",
+  "prompt_lottery_waiting": "Menunggu loteri segera",
+  "prompter": "Prompter",
+  "ranking": "Kedudukan",
+  "ready_for_export": "Sedia untuk dieksport",
+  "stats": "Statistik",
+  "users_accepted_tos": "Terma yang diterima pengguna"
+}
