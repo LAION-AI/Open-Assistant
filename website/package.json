@@ -62,7 +62,7 @@
     "next": "^13.4.2",
     "next-auth": "^4.22.1",
     "next-i18next": "^13.2.2",
-    "nodemailer": "^6.9.2",
+    "nodemailer": "^6.9.3",
     "pino": "^8.14.1",
     "postcss-focus-visible": "^7.1.0",
     "react": "^18.2.0",
