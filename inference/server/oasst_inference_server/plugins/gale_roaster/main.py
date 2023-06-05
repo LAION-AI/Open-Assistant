@@ -51,6 +51,7 @@ def custom_openapi():
         title="Professional Roaster mockery",
         version="0.1",
         routes=app.routes,
+        servers=[{"url": "/plugins/gale_roaster"}],
     )
     openapi_schema["tags"] = [
         {
