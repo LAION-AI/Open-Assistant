@@ -7,6 +7,7 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from oasst_backend.celery_worker import app
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, Message
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
@@ -14,7 +15,7 @@ from oasst_backend.user_repository import User
 from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import utcnow
-from sqlalchemy import func
+from sqlalchemy import func, update
 from sqlmodel import select
 
 startup_time: datetime = utcnow()
@@ -102,10 +103,17 @@ def update_user_streak() -> None:
             if timedelta.days > 0:
                 # Update only greater than 24 hours . Do nothing
                 logger.info("Process timedelta greater than 24h")
-                statement = select(User)
-                result = session.exec(statement).all()
-                if result is not None:
-                    for user in result:
+                batch_size = settings.USER_STREAK_BATCH_SIZE  # Adjust the batch size as per your requirements
+
+                statement = select(User).execution_options(yield_per=batch_size)
+                num_of_partitions = 0
+                for partition in session.scalars(statement).partitions():
+                    num_users = 0
+                    user_list = []
+                    num_of_partitions = num_of_partitions + 1
+                    for i, user in enumerate(partition):
+                        num_users += 1
+                        user.streak_days += 1
                         last_activity_date = user.last_activity_date
                         streak_last_day_date = user.streak_last_day_date
                         # set NULL streak_days to 0
@@ -127,9 +135,23 @@ def update_user_streak() -> None:
                             if streak_delta.days > 0:
                                 user.streak_days += 1
                                 user.streak_last_day_date = current_time
-                        session.add(user)
-                        session.commit()
+                        user_list.append(user)
 
+                    logger.info(f"Total users in partition {i } : {num_users}")
+                    # Bulk update the streak information
+                    update_statement = (
+                        update(User)
+                        .where(User.id.in_([user.id for user in user_list]))
+                        .values(
+                            streak_days=User.streak_days,
+                            streak_last_day_date=User.streak_last_day_date,
+                        )
+                    )
+                    session.execute(update_statement)
+                    session.flush()
+                    logger.info(f"Flushed partition {i}")
+                session.commit()
+                logger.info("User streak updated successfully! for {num_of_partitions} partitions")
             else:
                 logger.info("Not yet 24hours since the process started! ...")
         logger.info("User streak end...")

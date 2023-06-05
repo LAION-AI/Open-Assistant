@@ -277,6 +277,8 @@ class Settings(BaseSettings):
     DISCORD_API_KEY: str | None = None
     DISCORD_CHANNEL_ID: str | None = None
 
+    USER_STREAK_BATCH_SIZE: int = 1000
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
