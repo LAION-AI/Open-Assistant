@@ -1,8 +1,8 @@
 """add_message_revisions
 
-Revision ID: 99e7dedef5e5
+Revision ID: ffa8c33d129c
 Revises: 1b6e3ae16e9d
-Create Date: 2023-06-03 16:31:37.894615
+Create Date: 2023-06-05 15:02:39.683151
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "99e7dedef5e5"
+revision = "ffa8c33d129c"
 down_revision = "1b6e3ae16e9d"
 branch_labels = None
 depends_on = None
@@ -23,9 +23,9 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column(
-            "created_date", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
+            "created_date", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=True
         ),
         sa.ForeignKeyConstraint(
             ["message_id"],
@@ -37,6 +37,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(op.f("ix_message_revision_message_id"), "message_revision", ["message_id"], unique=False)
     op.add_column("message", sa.Column("edited", sa.Boolean(), server_default=sa.text("false"), nullable=False))
     op.drop_index("idx_search_vector", table_name="message")
     op.create_index("ix_search_vector", "message", ["search_vector"], unique=False, postgresql_using="gin")
@@ -48,5 +49,6 @@ def downgrade() -> None:
     op.drop_index("ix_search_vector", table_name="message", postgresql_using="gin")
     op.create_index("idx_search_vector", "message", ["search_vector"], unique=False)
     op.drop_column("message", "edited")
+    op.drop_index(op.f("ix_message_revision_message_id"), table_name="message_revision")
     op.drop_table("message_revision")
     # ### end Alembic commands ###

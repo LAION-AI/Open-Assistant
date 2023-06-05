@@ -18,8 +18,8 @@ class MessageRevision(SQLModel, table=True):
     payload: Optional[PayloadContainer] = Field(
         sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=True)
     )
-    message_id: UUID = Field(sa_column=sa.Column(sa.ForeignKey("message.id"), nullable=False))
-    user_id: UUID = Field(sa_column=sa.Column(sa.ForeignKey("user.id"), nullable=False))
+    message_id: UUID = Field(sa_column=sa.Column(sa.ForeignKey("message.id"), nullable=False, index=True))
+    user_id: Optional[UUID] = Field(sa_column=sa.Column(sa.ForeignKey("user.id"), nullable=True))
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
     )
