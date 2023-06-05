@@ -15,8 +15,8 @@ Default Plugins shipped, supported and hosted by Open Assistant.
 
 ### Web Retriever
 
-- url: https://web-retriever-draganjovanovich.vercel.app/ai-plugin.json
-- info: https://github.com/draganjovanovich/web-retriever
+- url: https://inference.dev.open-assistant.io/plugins/web_retriever/ai-plugin.json
+- info: https://github.com/LAION-AI/Open-Assistant/tree/main/inference/server/oasst_inference_server/plugins/web_retriever
 
 <details>
 <summary>
@@ -58,7 +58,10 @@ He will compliment users at all times.
 ## Community Plugins
 
 Community plugins are plugins that are not officially supported by Open
-Assistant but listed here for your convenience.
+Assistant but developed by members of the Open Assistant community and
+listed here for your convenience. For a more extensive list of public
+available plugins see the GitHub repository at
+[Targed/GPT-Plugins](https://github.com/Targed/GPT-Plugins).
 
 ### CrazyAssistant
 
