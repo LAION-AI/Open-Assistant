@@ -211,6 +211,19 @@ async def handle_worker(
                                     response=worker_response,
                                 )
                                 await _update_session(worker_response.metrics)
+                            case "safe_prompt":
+                                logger.info("Received safe prompt response")
+                                worker_response = cast(inference.SafePromptResponse, worker_response)
+                                await handle_safe_prompt_response(
+                                    response=worker_response,
+                                    work_request_map=work_request_map,
+                                )
+                            case "plugin_intermediate":
+                                worker_response = cast(inference.PluginIntermediateResponse, worker_response)
+                                await handle_plugin_intermediate_response(
+                                    work_request_map=work_request_map,
+                                    response=worker_response,
+                                )
                             case _:
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
@@ -331,6 +344,19 @@ async def handle_token_response(
     work_response_container.num_responses += 1
 
 
+async def handle_plugin_intermediate_response(
+    response: inference.PluginIntermediateResponse,
+    work_request_map: WorkRequestContainerMap,
+):
+    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    message_queue = queueing.message_queue(
+        deps.redis_client,
+        message_id=work_response_container.message_id,
+    )
+    await message_queue.enqueue(response.json())
+    work_response_container.num_responses += 1
+
+
 async def handle_generated_text_response(
     response: inference.GeneratedTextResponse,
     work_request_map: WorkRequestContainerMap,
@@ -343,6 +369,7 @@ async def handle_generated_text_response(
             message = await cr.complete_work(
                 message_id=message_id,
                 content=response.text,
+                used_plugin=response.used_plugin,
             )
             logger.info(f"Completed work for {message_id=}")
         message_packet = inference.InternalFinishedMessageResponse(
@@ -385,6 +412,27 @@ async def handle_general_error_response(
     response: inference.GeneralErrorResponse,
 ):
     logger.warning(f"Got general error {response=}")
+
+
+async def handle_safe_prompt_response(
+    response: inference.SafePromptResponse,
+    work_request_map: WorkRequestContainerMap,
+):
+    """
+    Handle the case where the worker informs the server that the safety model has intervened and modified the user prompt to be safe.
+    """
+    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    message_id = work_response_container.message_id
+
+    async with deps.manual_create_session() as session:
+        cr = chat_repository.ChatRepository(session=session)
+        message = await cr.get_assistant_message_by_id(message_id)
+        prompt = await cr.get_prompter_message_by_id(message.parent_id)
+        prompt.safe_content = response.safe_prompt
+        prompt.safety_level = response.safety_parameters.level
+        prompt.safety_label = response.safety_label
+        prompt.safety_rots = response.safety_rots
+        await session.commit()
 
 
 async def handle_timeout(message: inference.MessageRead):

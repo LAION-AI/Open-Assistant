@@ -1,7 +1,7 @@
 # Grafana
 
 [Grafana](https://github.com/grafana/grafana) is used to visualize custom
-observabiltiy metrics and much more.
+observability metrics and much more.
 
 This folder contains various configuration files for Grafana.
 

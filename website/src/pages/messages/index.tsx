@@ -1,11 +1,11 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import UserMessageConversation from "src/components/UserMessageConversation";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { getLocaleDisplayName } from "src/lib/languages";
@@ -67,6 +67,6 @@ const MessagesDashboard = () => {
   );
 };
 
-MessagesDashboard.getLayout = getDashboardLayout;
+MessagesDashboard.getLayout = DashboardLayout;
 
 export default MessagesDashboard;

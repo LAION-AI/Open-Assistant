@@ -19,6 +19,14 @@ jobs:
       context: .
       dockerfile: docker/Dockerfile.backend
       build-args: ""
+  build-backend-worker:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-backend-worker
+      context: .
+      dockerfile: docker/Dockerfile.backend-worker
+      build-args: ""
   build-web:
     uses: ./.github/workflows/docker-build.yaml
     needs: pre-commit
@@ -51,14 +59,6 @@ jobs:
       context: .
       dockerfile: docker/inference/Dockerfile.worker-full
       build-args: ""
-  build-inference-worker-llama:
-    uses: ./.github/workflows/docker-build.yaml
-    needs: pre-commit
-    with:
-      image-name: oasst-inference-worker-llama
-      context: .
-      dockerfile: docker/inference/Dockerfile.worker-llama
-      build-args: ""
   build-inference-worker-hf:
     uses: ./.github/workflows/docker-build.yaml
     needs: pre-commit
@@ -86,6 +86,7 @@ jobs:
   deploy-to-node:
     needs:
       - build-backend
+      - build-backend-worker
       - build-web
       - build-bot
       - build-inference-server

@@ -319,10 +319,11 @@ export class OasstApiClient {
     user_id: string,
     is_enabled: boolean,
     notes: string,
-    show_on_leaderboard: boolean
+    show_on_leaderboard: boolean,
+    display_name: string
   ): Promise<void> {
     await this.put(
-      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}`
+      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}&display_name=${display_name}`
     );
   }
 
@@ -419,7 +420,7 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  // TODO: add update-able fields eg: enbaled, notes, show_on_leaderboard, etc..
+  // TODO: add update-able fields eg: enabled, notes, show_on_leaderboard, etc..
   upsert_frontend_user(user: BackendUserCore) {
     // the backend does a upsert operation with this call
     return this.post<BackendUser>(`/api/v1/frontend_users/`, user);
@@ -449,6 +450,7 @@ export class OasstApiClient {
     desc?: boolean;
     lang?: string;
     include_user?: boolean;
+    search_query?: string;
   }) {
     return this.get<FetchMessagesCursorResponse>("/api/v1/messages/cursor", {
       ...rest,

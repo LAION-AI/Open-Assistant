@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/backend/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Open-Assistant REST Backend
 
 ## Backend Development Setup
@@ -10,6 +12,9 @@ a database. The default settings are already configured to connect to the
 database at `localhost:5432`. (See
 [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend)
 if you face any docker problems).
+
+> **Note:** when running on MacOS with an M1 chip you have to use:
+> `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 Python 3.10 is required. It is recommended to use `pyenv` which will recognise
 the `.python-version` in the project root directory.
@@ -64,16 +69,16 @@ docs via something like
 without having to actually set up and run a development backend.
 
 ```bash
-# save openapi.json to docs/docs/api
-wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
+# save openapi.json to docs/docs/api/
+wget localhost:8080/api/v1/openapi.json -O docs/docs/api/backend-openapi.json
 ```
 
 Note: The api docs should be automatically updated by the
-`test-api-contract.yaml` workflow.
+`test-api-contract.yaml` workflow. (TODO)
 
 ## Running Celery Worker(s) for API and periodic tasks
 
-Celery workers are used for Huggiface API calls like toxicity and feature
+Celery workers are used for Huggingface API calls like toxicity and feature
 extraction. Celery Beat along with worker is used for periodic tasks like user
 streak update
 

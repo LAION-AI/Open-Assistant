@@ -23,6 +23,13 @@ class DbMessage(SQLModel, table=True):
     content: str | None = Field(None)
     error: str | None = Field(None)
 
+    safe_content: str | None = Field(None)
+    safety_level: int | None = Field(None)
+    safety_label: str | None = Field(None)
+    safety_rots: str | None = Field(None)
+
+    used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
     work_begin_at: datetime.datetime | None = Field(None)
@@ -59,6 +66,11 @@ class DbMessage(SQLModel, table=True):
             score=self.score,
             work_parameters=self.work_parameters,
             reports=[r.to_read() for r in self.reports],
+            safe_content=self.safe_content,
+            safety_level=self.safety_level,
+            safety_label=self.safety_label,
+            safety_rots=self.safety_rots,
+            used_plugin=self.used_plugin,
         )
 
 
@@ -73,8 +85,11 @@ class DbChat(SQLModel, table=True):
     title: str | None = Field(None)
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
+    active_thread_tail_message_id: str | None = Field(None)
 
     hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+
+    allow_data_use: bool = Field(True, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(
@@ -83,6 +98,7 @@ class DbChat(SQLModel, table=True):
             modified_at=self.modified_at,
             title=self.title,
             hidden=self.hidden,
+            allow_data_use=self.allow_data_use,
         )
 
     def to_read(self) -> chat_schema.ChatRead:
@@ -93,6 +109,8 @@ class DbChat(SQLModel, table=True):
             title=self.title,
             messages=[m.to_read() for m in self.messages],
             hidden=self.hidden,
+            allow_data_use=self.allow_data_use,
+            active_thread_tail_message_id=self.active_thread_tail_message_id,
         )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
@@ -110,3 +128,13 @@ class DbReport(SQLModel, table=True):
 
     def to_read(self) -> inference.Report:
         return inference.Report(id=self.id, report_type=self.report_type, reason=self.reason)
+
+
+class DbMessageEval(SQLModel, table=True):
+    __tablename__ = "message_evaluation"
+
+    id: str = Field(default_factory=uuid7str, primary_key=True)
+    chat_id: str = Field(..., foreign_key="chat.id", index=True)
+    user_id: str = Field(..., foreign_key="user.id", index=True)
+    selected_message_id: str = Field(..., foreign_key="message.id")
+    inferior_message_ids: list[str] = Field(default_factory=list, sa_column=sa.Column(pg.JSONB))

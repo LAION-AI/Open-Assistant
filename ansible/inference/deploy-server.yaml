@@ -10,7 +10,7 @@
   tasks:
     - name: Create network
       community.docker.docker_network:
-        name: "oasst-inference-{{ stack_name }}"
+        name: "oasst-{{ stack_name }}"
         state: present
         driver: bridge
 
@@ -33,7 +33,7 @@
         state: started
         recreate: "{{ (stack_name == 'dev') | bool }}"
         restart_policy: always
-        network_mode: "oasst-inference-{{ stack_name }}"
+        network_mode: "oasst-{{ stack_name }}"
         healthcheck:
           test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
           interval: 2s
@@ -52,12 +52,12 @@
     - name: Create postgres containers
       community.docker.docker_container:
         name: "oasst-inference-{{ stack_name }}-postgres"
-        image: postgres
+        image: ghcr.io/laion-ai/open-assistant/oasst-postgres
         state: started
         pull: true
         recreate: "{{ (stack_name == 'dev') | bool }}"
         restart_policy: always
-        network_mode: "oasst-inference-{{ stack_name }}"
+        network_mode: "oasst-{{ stack_name }}"
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD:
@@ -91,7 +91,7 @@
         recreate: true
         pull: true
         restart_policy: always
-        network_mode: "oasst-inference-{{ stack_name }}"
+        network_mode: "oasst-{{ stack_name }}"
         env:
           POSTGRES_HOST: "oasst-inference-{{ stack_name }}-postgres"
           POSTGRES_PASSWORD:
@@ -155,5 +155,14 @@
           GUNICORN_WORKERS:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_GUNICORN_WORKERS') |
             default(1, true) }}"
+          CHAT_MAX_MESSAGES:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_CHAT_MAX_MESSAGES') |
+            default('', true) }}"
+          MESSAGE_MAX_LENGTH:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_MESSAGE_MAX_LENGTH') |
+            default('', true) }}"
+          PLUGIN_MAX_DEPTH:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_PLUGIN_MAX_DEPTH') |
+            default(4, true) }}"
         ports:
           - "{{ server_port }}:8080"

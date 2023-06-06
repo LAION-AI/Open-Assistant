@@ -29,7 +29,8 @@ from oasst_backend.models import (
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
+from oasst_backend.utils import discord
+from oasst_backend.utils.database_utils import CommitMode, db_lang_to_postgres_ts_lang, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
@@ -252,7 +253,7 @@ class PromptRepository:
                     )
                 if not ts.active:
                     logger.warning(
-                        f"Received messsage for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
+                        f"Received message for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
                     )
 
             if check_duplicate and not settings.DEBUG_ALLOW_DUPLICATE_TASKS:
@@ -545,6 +546,8 @@ class PromptRepository:
                     message = self.handle_message_emoji(
                         message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
                     )
+
+                    discord.send_new_report_message(message=message, label_text=text_labels.text, user_id=self.user_id)
 
                 # update existing record for repeated updates (same user no task associated)
                 existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
@@ -949,6 +952,7 @@ class PromptRepository:
         review_result: Optional[bool] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
+        search_query: Optional[str] = None,
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
@@ -1015,6 +1019,14 @@ class PromptRepository:
 
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
+
+            if search_query is not None:
+                qry = qry.filter(
+                    Message.search_vector.match(
+                        search_query,
+                        postgresql_regconfig=db_lang_to_postgres_ts_lang(lang),
+                    ),
+                )
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
@@ -1260,6 +1272,53 @@ WHERE message.id = cc.id;
         qry = self.db.query(FlaggedMessage)
         if max_count is not None:
             qry = qry.limit(max_count)
+
+        return qry.all()
+
+    def fetch_flagged_messages_by_created_date(
+        self,
+        gte_created_date: Optional[datetime] = None,
+        gt_id: Optional[UUID] = None,
+        lte_created_date: Optional[datetime] = None,
+        lt_id: Optional[UUID] = None,
+        desc: bool = False,
+        limit: Optional[int] = 100,
+    ) -> list[FlaggedMessage]:
+        qry = self.db.query(FlaggedMessage)
+
+        if gte_created_date is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date > gte_created_date,
+                        and_(FlaggedMessage.created_date == gte_created_date, FlaggedMessage.message_id > gt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date >= gte_created_date)
+        elif gt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_created_date is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date < lte_created_date,
+                        and_(FlaggedMessage.created_date == lte_created_date, FlaggedMessage.message_id < lt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date <= lte_created_date)
+        elif lt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if desc:
+            qry = qry.order_by(FlaggedMessage.created_date.desc(), FlaggedMessage.message_id.desc())
+        else:
+            qry = qry.order_by(FlaggedMessage.created_date.asc(), FlaggedMessage.message_id.asc())
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
 

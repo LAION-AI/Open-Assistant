@@ -4,8 +4,8 @@ import {
   ButtonStyle,
   ButtonBuilder,
 } from "discord.js";
-import { createInferenceClient } from "../modules/inference/client.js";
 import redis from "../modules/redis.js";
+import chatFN from "../modules/chat.js";
 
 export default {
   disablePing: null,
@@ -23,10 +23,16 @@ export default {
         .setName("model")
         .setDescription("The model you want to use for the AI.")
         .setRequired(false)
-        .addChoices({
-          name: "OA_SFT_Llama_30B",
-          value: "OA_SFT_Llama_30B",
-        })
+        .addChoices(
+          {
+            name: "OA_SFT_Llama_30B",
+            value: "OA_SFT_Llama_30B",
+          },
+          {
+            name: "oasst-sft-4-pythia-12b",
+            value: "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+          }
+        )
     )
     .addStringOption((option) =>
       option
@@ -73,71 +79,110 @@ export default {
       model = interaction.options.getString("model");
       preset = interaction.options.getString("preset");
     }
-    if (!model)
-      model = process.env.OPEN_ASSISTANT_DEFAULT_MODEL || "OA_SFT_Llama_30B";
+    if (!model) {
+      let userModel = await redis.get(`model_${interaction.user.id}`);
+      if (userModel) {
+        model = userModel;
+      } else {
+        model = process.env.OPEN_ASSISTANT_DEFAULT_MODEL || "OA_SFT_Llama_30B";
+        redis.set(`model_${interaction.user.id}`, model);
+      }
+    } else {
+      redis.set(`model_${interaction.user.id}`, model);
+    }
     if (!preset) preset = "k50";
     // sleep for  30s
 
-    const OA = await createInferenceClient(
-      interaction.user.username,
-      interaction.user.id
-    );
+    if (model.includes("Llama")) {
+      try {
+        let chat = await redis.get(`chat_${interaction.user.id}`);
+        let chatId = chat ? chat.split("_")[0] : null;
+        let parentId = chat ? chat.split("_")[1] : null;
+        let { assistant_message, OA } = await chatFN(
+          model,
+          interaction.user,
+          message,
+          chatId,
+          parentId,
+          presets,
+          preset
+        );
+        await redis.set(
+          `chat_${interaction.user.id}`,
+          `${chatId}_${assistant_message.id}`
+        );
 
-    try {
-      let chat = await redis.get(`chat_${interaction.user.id}`);
-      let chatId = chat ? chat.split("_")[0] : null;
-      let parentId = chat ? chat.split("_")[1] : null;
-      if (!chatId) {
-        let chat = await OA.create_chat();
-        chatId = chat.id;
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setLabel(`👍`)
+            .setCustomId(`vote_${assistant_message.id}_up`),
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setLabel(`👎`)
+            .setCustomId(`vote_${assistant_message.id}_down`),
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(false)
+            .setLabel(
+              `${model.replaceAll("OpenAssistant/", "").replaceAll("_", "")}`
+            )
+            .setCustomId(`model_${assistant_message.id}`)
+        );
+        // using events
+        let events = await OA.stream_events({
+          chat_id: chatId,
+          message_id: assistant_message.id,
+        });
+        events.on("data", async (c) => {
+          /*  let string = JSON.parse(c);
+          if (!string.queue_position) {
+            await commandType.reply(interaction, {
+              content: `${string} <a:loading:1051419341914132554>`,
+              components: [],
+            });
+          }*/
+        });
+        events.on("end", async (c) => {
+          let msg = await OA.get_message(chatId, assistant_message.id);
+          await commandType.reply(interaction, {
+            content: msg.content,
+            components: [row],
+          });
+        });
+      } catch (err: any) {
+        console.log(err);
+        // get details of the error
+        await commandType.reply(
+          interaction,
+          `There was an error while executing this command! ${err.message}`
+        );
       }
-      let prompter_message = await OA.post_prompter_message({
-        chat_id: chatId,
-        content: message,
-        parent_id: parentId,
-      });
-
-      let assistant_message = await OA.post_assistant_message({
-        chat_id: chatId,
-        model_config_name: model,
-        parent_id: prompter_message.id,
-        sampling_parameters: presets[preset],
-      });
-      await redis.set(
-        `chat_${interaction.user.id}`,
-        `${chatId}_${assistant_message.id}`
+    } else {
+      let { assistant_message, error } = await chatFN(
+        model,
+        interaction.user,
+        message
       );
-
+      if (error) {
+        await commandType.reply(
+          interaction,
+          `There was an error while executing this command! ${error}`
+        );
+      }
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Secondary)
-          .setLabel(`👍`)
-          .setCustomId(`vote_${assistant_message.id}_up`),
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
-          .setLabel(`👎`)
-          .setCustomId(`vote_${assistant_message.id}_down`)
+          .setDisabled(false)
+          .setLabel(
+            `${model.replaceAll("OpenAssistant/", "").replaceAll("_", "")}`
+          )
+          .setCustomId(`model_${interaction.user.id}`)
       );
-      // using events
-      let events = await OA.stream_events({
-        chat_id: chatId,
-        message_id: assistant_message.id,
+      await commandType.reply(interaction, {
+        content: assistant_message,
+        components: [row],
       });
-      events.on("data", async (c) => {});
-      events.on("end", async (c) => {
-        let msg = await OA.get_message(chatId, assistant_message.id);
-        await commandType.reply(interaction, {
-          content: msg.content,
-          components: [row],
-        });
-      });
-    } catch (err: any) {
-      console.log(err);
-      // get details of the error
-      await commandType.reply(
-        interaction,
-        `There was an error while executing this command! ${err.message}`
-      );
     }
   },
 };

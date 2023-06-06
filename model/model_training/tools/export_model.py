@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoModelForSequenceClassificatio
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name", type=str, help="checkpoint path or model name")
-    parser.add_argument("--dtype", type=str, default="float16", help="float16 or float32")
+    parser.add_argument("--dtype", type=str, default="fp16", help="fp16, bf16 or fp32")
     parser.add_argument("--hf_repo_name", type=str, help="Huggingface repository name")
     parser.add_argument("--auth_token", type=str, help="User access token")
     parser.add_argument("--output_folder", type=str, help="output folder path")
@@ -17,6 +17,12 @@ def parse_args():
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--reward_model", action="store_true", default=False)
     parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
+    parser.add_argument(
+        "--trust_remote_code",
+        action="store_true",
+        default=False,
+        help="allow custom model code (required for Falcon)",
+    )
     return parser.parse_args()
 
 
@@ -48,8 +54,7 @@ def main():
     print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
 
     if args.rl_checkpoint:
-        model = AutoModelForCausalLM.from_pretrained(args.model_name, cache_dir=args.cache_dir)
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
 
         print(f"Loading RL checkpoint: {args.rl_checkpoint}...")
         checkpoint_state = torch.load(args.rl_checkpoint, map_location="cpu")["module"]
@@ -58,14 +63,23 @@ def main():
         for param_name in ("v_head.0.weight", "v_head.0.bias", "v_head.2.weight", "v_head.2.bias"):
             checkpoint_state.pop(param_name, None)
 
-        model.load_state_dict(checkpoint_state)
+        # resolve inconsistencies in the vocab size
+        target_size = checkpoint_state[list(filter(lambda x: "embed" in x, list(checkpoint_state.keys())))[0]].shape[0]
+        model.resize_token_embeddings(target_size)
+
+        print(model.load_state_dict(checkpoint_state))
 
     elif args.reward_model:
         model = AutoModelForSequenceClassification.from_pretrained(
             args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
         )
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_name,
+            torch_dtype=torch_dtype,
+            cache_dir=args.cache_dir,
+            trust_remote_code=args.trust_remote_code,
+        )
     print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
 
     print("Model architecture:")

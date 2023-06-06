@@ -37,6 +37,7 @@ ENV PATH="${PATH}:${APP_LIBS}/bin"
 ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
 
 ENV PORT="8080"
+ENV PROMETHEUS_MULTIPROC_DIR="/tmp/oasst-inference-prometheus-metrics"
 
 RUN adduser               \
       --disabled-password \
@@ -44,6 +45,8 @@ RUN adduser               \
       "${APP_USER}"
 
 USER ${APP_USER}
+
+RUN mkdir -p "${PROMETHEUS_MULTIPROC_DIR}"
 
 WORKDIR ${APP_ROOT}
 
@@ -53,6 +56,7 @@ COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alemb
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alembic.ini .
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/oasst_inference_server oasst_inference_server
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/main.py .
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/export.py .
 
 
 
@@ -61,16 +65,18 @@ ARG APP_USER
 
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared ${SHARED_LIBS_BASE}/oasst-shared
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-data ${SHARED_LIBS_BASE}/oasst-data
 
 USER root
 RUN --mount=type=cache,target=/var/cache/pip,from=build \
     pip install                  \
       --cache-dir=/var/cache/pip \
-      -e "${SHARED_LIBS_BASE}/oasst-shared"
+      -e "${SHARED_LIBS_BASE}/oasst-shared" "${SHARED_LIBS_BASE}/oasst-data"
 USER ${APP_USER}
 
 
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
+VOLUME [ "${APP_BASE}/lib/oasst-data" ]
 
 
 CMD uvicorn main:app --reload --host 0.0.0.0 --port "${PORT}"
@@ -82,11 +88,12 @@ ARG APP_USER
 
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-data /tmp/lib/oasst-data
 RUN --mount=type=cache,target=/var/cache/pip,from=dev \
     pip install                  \
       --cache-dir=/var/cache/pip \
       --target="${APP_LIBS}"     \
-      /tmp/lib/oasst-shared
+      /tmp/lib/oasst-shared /tmp/lib/oasst-data
 
 COPY --chown="${APP_USER}:${APP_USER}" ./inference/server/server_main.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

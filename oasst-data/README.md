@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/oasst-data/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Open Assistant Data Module (oasst_data)
 
 ## Installation of oasst_data
@@ -143,7 +145,7 @@ messages are those which have a `review_result` that is `false`.
 
 Conversation threads are a linear lists of messages. THese objects can be
 identified by the presence of the `"thread_id"` property which contains the UUID
-of the last messsage of the the thread (which can be used to reconstruct the
+of the last message of the the thread (which can be used to reconstruct the
 thread by returning the list of ancestor messages up to the prompt root
 message). The message_id of the first message is normally also the id of the
 message-tree that contains the thread.

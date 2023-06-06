@@ -1,0 +1,49 @@
+{
+  "default": {
+    "generate_args": {
+      "max_new_tokens": 400,
+      "min_new_tokens": 1,
+      "do_sample": true,
+      "temperature": 0.7,
+      "repetition_penalty": 1.2
+    },
+    "bot_name": "Assistant",
+    "human_name": "User",
+    "add_prefix_tokens": false
+  },
+  "configurations": [
+    {
+      "name": "k50",
+      "generate_args": {
+        "top_k": 50,
+        "top_p": 0.95
+      }
+    },
+    {
+      "name": "k50_serious",
+      "generate_args": {
+        "top_k": 50,
+        "top_p": 0.95
+      },
+      "system_profile": {
+        "lang": "en",
+        "quality": 0.8,
+        "creativity": 0.3,
+        "humor": 0.0
+      }
+    },
+    {
+      "name": "k50_creative",
+      "generate_args": {
+        "top_k": 50,
+        "top_p": 0.95
+      },
+      "system_profile": {
+        "lang": "en",
+        "quality": 0.6,
+        "creativity": 0.9,
+        "humor": 0.6
+      }
+    }
+  ]
+}

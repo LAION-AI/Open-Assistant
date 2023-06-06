@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Container } from "src/components/Container";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const BrbPage = () => {
   return (

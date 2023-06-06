@@ -2,12 +2,14 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
+  GetChatsParams,
   GetChatsResponse,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
   InferenceUpdateChatParams,
   ModelInfo,
+  PluginEntry,
   TrustedClient,
 } from "src/types/Chat";
 import type { Readable } from "stream";
@@ -33,8 +35,10 @@ export class OasstInferenceClient {
     return this.request("/auth/trusted", { method: "POST" });
   }
 
-  get_my_chats(): Promise<GetChatsResponse> {
-    return this.request("/chats");
+  get_my_chats(params: GetChatsParams): Promise<GetChatsResponse> {
+    const searchParams = new URLSearchParams(params as Record<string, string>);
+
+    return this.request(`/chats?${searchParams.toString()}`);
   }
 
   async create_chat(): Promise<ChatItem> {
@@ -53,8 +57,14 @@ export class OasstInferenceClient {
     }
   }
 
-  get_chat(chat_id: string): Promise<ChatItem> {
-    return this.request(`/chats/${chat_id}`);
+  async get_chat(chat_id: string): Promise<ChatItem | null> {
+    try {
+      return await this.request(`/chats/${chat_id}`);
+    } catch (err) {
+      if (err instanceof AxiosError && err.response.status === 404) {
+        return null;
+      }
+    }
   }
 
   get_message(chat_id: string, message_id: string): Promise<InferenceMessage> {
@@ -88,6 +98,21 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}/votes`, { method: "POST", data: { score } });
   }
 
+  message_eval({
+    chat_id,
+    message_id,
+    inferior_message_ids,
+  }: {
+    chat_id: string;
+    message_id: string;
+    inferior_message_ids: string[];
+  }) {
+    return this.request(`/chats/${chat_id}/messages/${message_id}/message_evals`, {
+      method: "POST",
+      data: { inferior_message_ids },
+    });
+  }
+
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
@@ -98,6 +123,19 @@ export class OasstInferenceClient {
 
   delete_account() {
     return this.request(`/account/`, { method: "DELETE" });
+  }
+
+  get_plugins() {
+    try {
+      return this.request<PluginEntry[]>("/configs/builtin_plugins");
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  }
+
+  get_plugin_config({ plugin }: { plugin: PluginEntry }) {
+    return this.request<PluginEntry>("/configs/plugin_config", { method: "POST", data: plugin });
   }
 }
 

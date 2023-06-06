@@ -117,17 +117,91 @@ class SamplingParameters(pydantic.BaseModel):
     max_new_tokens: int = 1024
 
 
+class PluginApiType(pydantic.BaseModel):
+    type: str
+    url: str
+    has_user_authentication: bool | None = False
+    # NOTE: Some plugins using this field,
+    # instead of has_user_authentication
+    is_user_authenticated: bool | None = False
+
+
+class PluginAuthType(pydantic.BaseModel):
+    type: str
+
+
+class PluginOpenAPIParameter(pydantic.BaseModel):
+    name: str
+    in_: str
+    description: str
+    required: bool
+    schema_: object
+
+
+class PluginOpenAPIEndpoint(pydantic.BaseModel):
+    path: str
+    type: str
+    summary: str
+    operation_id: str
+    url: str
+    params: list[PluginOpenAPIParameter]
+    payload: dict | None = None
+
+
+class PluginConfig(pydantic.BaseModel):
+    schema_version: str
+    name_for_model: str
+    name_for_human: str
+    description_for_human: str
+    description_for_model: str
+    api: PluginApiType
+    auth: PluginAuthType
+    logo_url: str | None = None
+    contact_email: str | None = None
+    legal_info_url: str | None = None
+    endpoints: list[PluginOpenAPIEndpoint] | None = None
+
+
+class PluginEntry(pydantic.BaseModel):
+    url: str
+    enabled: bool = True
+    plugin_config: PluginConfig | None = None
+    # Idea is for OA internal plugins to be trusted, others untrusted by default
+    trusted: bool | None = False
+
+
+class PluginExecutionDetails(pydantic.BaseModel):
+    inner_monologue: list[str]
+    final_tool_output: str
+    final_prompt: str
+    final_generation_assisted: bool
+    achieved_depth: int | None = None
+    error_message: str | None = None
+    status: Literal["success", "failure"]
+
+
+class PluginUsed(pydantic.BaseModel):
+    name: str | None = None
+    url: str | None = None
+    trusted: bool | None = None
+    execution_details: PluginExecutionDetails
+
+
 def make_seed() -> int:
     return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
 
 
 class WorkParameters(pydantic.BaseModel):
     model_config: ModelConfig
-    sampling_parameters: SamplingParameters = pydantic.Field(default_factory=SamplingParameters)
+    sampling_parameters: SamplingParameters = pydantic.Field(
+        default_factory=SamplingParameters,
+    )
     do_sample: bool = True
     seed: int = pydantic.Field(
         default_factory=make_seed,
     )
+    plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
+    plugin_max_depth: int = 4
 
 
 class ReportType(str, enum.Enum):
@@ -143,7 +217,7 @@ class Vote(pydantic.BaseModel):
 
 class Report(pydantic.BaseModel):
     id: str
-    type: ReportType
+    report_type: ReportType
     reason: str
 
 
@@ -169,6 +243,11 @@ class MessageRead(pydantic.BaseModel):
     reports: list[Report] = []
     # work parameters will be None on user prompts
     work_parameters: WorkParameters | None
+    safe_content: str | None
+    safety_level: int | None
+    safety_label: str | None
+    safety_rots: str | None
+    used_plugin: PluginUsed | None = None
 
     @property
     def is_assistant(self) -> bool:
@@ -207,7 +286,9 @@ class WorkRequest(WorkerRequestBase):
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
-    safety_parameters: SafetyParameters = pydantic.Field(default_factory=SafetyParameters)
+    safety_parameters: SafetyParameters = pydantic.Field(
+        default_factory=SafetyParameters,
+    )
 
 
 class PingRequest(WorkerRequestBase):
@@ -240,6 +321,23 @@ class PongResponse(WorkerResponseBase):
     metrics: WorkerMetricsInfo | None = None
 
 
+class SafePromptResponse(WorkerResponseBase):
+    response_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+    safety_parameters: SafetyParameters
+    safety_label: str
+    safety_rots: str
+
+
+class PluginIntermediateResponse(WorkerResponseBase):
+    response_type: Literal["plugin_intermediate"] = "plugin_intermediate"
+    text: str = ""
+    current_plugin_thought: str
+    current_plugin_action_taken: str
+    current_plugin_action_input: str
+    current_plugin_action_response: str
+
+
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
@@ -252,6 +350,7 @@ class GeneratedTextResponse(WorkerResponseBase):
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
     metrics: WorkerMetricsInfo | None = None
+    used_plugin: PluginUsed | None = None
 
 
 class InternalFinishedMessageResponse(WorkerResponseBase):
@@ -298,6 +397,8 @@ WorkerResponse = Annotated[
         PongResponse,
         InternalFinishedMessageResponse,
         InternalErrorResponse,
+        SafePromptResponse,
+        PluginIntermediateResponse,
     ],
     pydantic.Field(discriminator="response_type"),
 ]

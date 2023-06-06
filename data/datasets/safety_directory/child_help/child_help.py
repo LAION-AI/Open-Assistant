@@ -322,7 +322,7 @@ child_hotline = {
     "ChildHelp Sierra Leone": {
         "region": "Sierra Leone",
         "page": "https://childhelplineinternational.org/sierra-leone-childhelp-sierra-leone/",
-        "description": "ChildHelp Sierra Leone is designed specifically to meet both immediate and long-term needs of impoverished and underprivileged needy children, their families and communities in needand living in difficult circumstances.",
+        "description": "ChildHelp Sierra Leone is designed specifically to meet both immediate and long-term needs of impoverished and underprivileged needy children, their families and communities in need and living in difficult circumstances.",
         "contacts": {
             "Website": {"type": "website", "link": "http://www.childhelpsl.org/"},
             "+232 78 666269": {"type": "phone", "link": "tel:+23278666269"},
@@ -598,7 +598,7 @@ child_hotline = {
     "Ayudo pa mucha i hoben 918": {
         "region": "Curaçao",
         "page": "https://childhelplineinternational.org/curacao-ayudo-pa-mucha-i-hoben-918/",
-        "description": "Ayudo pa mucha i hoben 918 is free to contact via phone, chat, and forum. It is avaialble for all children, young people and young adults on Curaçao up to and including 25 years old.",
+        "description": "Ayudo pa mucha i hoben 918 is free to contact via phone, chat, and forum. It is available for all children, young people and young adults on Curaçao up to and including 25 years old.",
         "contacts": {
             "Website": {"type": "website", "link": "https://www.918.cw"},
             "918": {"type": "phone", "link": "tel:918"},
@@ -1223,7 +1223,7 @@ child_hotline = {
     "National Hotline for Child Protection 111": {
         "region": "Vietnam",
         "page": "https://childhelplineinternational.org/vietnam-national-hotline-for-child-protection-111/",
-        "description": "The Vietnamese National Hotline for Child Protection is run by the Department of Child Affairs, part of the Ministry of Labour, Invalids and Social Affairs. While the hotline deals primarily with information, reports and denuncations on risks and acts of child abuse, it also provides counselling to children.",
+        "description": "The Vietnamese National Hotline for Child Protection is run by the Department of Child Affairs, part of the Ministry of Labour, Invalids and Social Affairs. While the hotline deals primarily with information, reports and denunciations on risks and acts of child abuse, it also provides counselling to children.",
         "contacts": {
             "Website": {"type": "website", "link": "http://tongdai111.vn/"},
             "111": {"type": "phone", "link": "tel:111"},

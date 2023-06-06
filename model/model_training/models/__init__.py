@@ -18,7 +18,6 @@ def freeze_top_n_layers(model, target_layers):
                 if token.isdigit():
                     layer_ = int(token)
                     break
-
             if layer_ is not None and layer_ < target_layers:
                 # print('freeze ', layer_, name)
                 param.requires_grad = False
@@ -36,5 +35,7 @@ def get_specific_model(
     elif seq2seqmodel:
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     else:
+        if "falcon" in model_name:
+            kwargs["trust_remote_code"] = True
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     return model

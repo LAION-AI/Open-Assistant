@@ -5,6 +5,7 @@
     "unchanged_title": "ללא שינוי",
     "unchanged_message": "האם את(ה) בטוח(ה) שתרצה להמשיך?"
   },
+  "no_more_tasks": "נראה שלא נמצאו משימות.",
   "random": {
     "label": "אני מרגיש בר מזל",
     "desc": "עזור לנו לשפר את Open Assistant על ידי התחלת משימה אקראית."
@@ -81,5 +82,8 @@
     "overview": "קרא את השיחה הבאה ולאחר מכן ענה על השאלה לגבי התשובה האחרונה בדיון."
   },
   "submitted_as": "זה יוגש ב{{submit_lang}}",
-  "writing_wrong_langauge_a_b": "נראה שאתה כותב ב{{detected_lang}} אבל זה יישלח ב{{submit_lang}}."
+  "tab_write": "כתוב",
+  "tab_preview": "תצוגה מקדימה",
+  "writing_wrong_langauge_a_b": "נראה שאתה כותב ב{{detected_lang}} אבל זה יישלח ב{{submit_lang}}.",
+  "not_rankable": "כל התשובות אינן נכונות עובדתית ולא ניתן לדרג אותן"
 }

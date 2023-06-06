@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React from "react";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { Pencil } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { UserStats } from "src/components/Account/UserStats";
@@ -43,7 +43,7 @@ export default function Account() {
             <Divider />
             <Grid gridTemplateColumns="repeat(2, max-content)" alignItems="center" gap={6} py={4}>
               <Text as="b">{t("username")}</Text>
-              <Flex gap={2}>
+              <Flex gap={2} style={{ overflow: "hidden" }}>
                 {session.user.name ?? t("no_username")}
                 <Link href="/account/edit">
                   <Icon boxSize={5} as={Pencil} size="1em" />

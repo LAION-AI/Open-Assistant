@@ -1,4 +1,4 @@
-git+https://github.com/LAION-AI/blade2blade@8fd43bcbc5ff35fd59663c77ef08b3ec6c239dd4#egg=blade2blade
+blade2blade
 fastapi
 loguru
 pydantic

@@ -1,4 +1,5 @@
 {
+  "aborted_low_grade": "Abgebrochen - niedrige Bewertung",
   "assistant": "Assistent",
   "backlog_ranking": "Backlog-Ranking",
   "choose_a_language": "Wähle eine Sprache",
@@ -7,7 +8,7 @@
   "halted_by_moderator": "Von Moderator angehalten",
   "human_messages_by_lang": "Menschen-Nachrichten nach Sprache",
   "human_messages_by_role": "Menschen-Nachrichten nach Rolle",
-  "initial_prompt_review": "Initial-Prompts geprüft",
+  "initial_prompt_review": "Initiale Prompt-Prüfung",
   "language_stats": "Sprache",
   "message_trees_by_state": "Nachrichtenbäume nach Status",
   "message_trees_states_by_lang": "Nachrichtenbaumstatus nach Sprache",

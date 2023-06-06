@@ -1,0 +1,16 @@
+{
+  "default": "Ada kesalahan!",
+  "err_1000": "Jenis tugas tidak sah",
+  "err_1001": "Gagal mengakui tugas",
+  "err_1002": "Gagal tidak mengakui tugas",
+  "err_1003": "Jenis respons tidak sah",
+  "err_1004": "Permintaan interaksi gagal",
+  "err_1005": "Gagal menjana tugas",
+  "err_1006": "Tiada tugas jenis {{task_type}} tersedia pada masa ini.",
+  "err_1007": "Pertanyaan ketersediaan tugas gagal",
+  "err_1008": "Saiz mesej terlalu panjang",
+  "err_1009": "Mesej terbaharu anda mempunyai pendua",
+  "err_1010": "Teks mesej kosong",
+  "err_1011": "Anda tidak boleh membalas dua kali ke mesej yang sama",
+  "err_1012": "Anda mempunyai terlalu banyak tugas yang belum selesai. Sila cuba lagi dalam beberapa minit."
+}

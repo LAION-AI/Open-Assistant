@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+from model_training.custom_datasets.formatting import DatasetEntryRm
+from transformers.tokenization_utils_base import BatchEncoding, PaddingStrategy, PreTrainedTokenizerBase
 
 from .formatting import format_pairs, format_reply
 
@@ -18,26 +19,42 @@ class RankingDataCollator:
     min_prefix_length: int = 256
     pad_to_multiple_of: Optional[int] = None
     max_replies: Optional[int] = 5
+    use_system_tag: bool = False
+    system_property_dropout: float = 0.5
+    system_add_length: bool = True
 
-    def process_one(self, example, return_length=False):
-        messages, replies = example
-
-        if self.max_replies:
-            assert self.max_replies > 1, "max_replies parameter must be > 1 or None"
-            if len(replies) > self.max_replies:
-                replies = replies[: self.max_replies]
-
+    def process_one(
+        self,
+        example: tuple[str | list[str] | None, list[str]] | DatasetEntryRm,
+        return_length: int = False,
+    ) -> list[BatchEncoding]:
         assert self.tokenizer.eos_token
         eos = self.tokenizer.eos_token
 
-        if messages is None or len(messages) == 1 and messages[0] is None:
-            # special handling for non-dialogue datasets like Hellaswag
-            prefix = ""
-            replies = [r + eos for r in replies]
+        if isinstance(example, DatasetEntryRm):
+            prefix, replies = example.get_formatted(
+                eos_token=eos,
+                use_system_tag=self.use_system_tag,
+                system_property_dropout=self.system_property_dropout,
+                system_add_length=self.system_add_length,
+                max_replies=self.max_replies,
+            )
         else:
-            # append eos token to each messages
-            prefix = "".join(format_pairs(messages, eos_token=eos))
-            replies = [format_reply(r, eos_token=eos) for r in replies]
+            messages, replies = example
+
+            if self.max_replies:
+                assert self.max_replies > 1, "max_replies parameter must be > 1 or None"
+                if len(replies) > self.max_replies:
+                    replies = replies[: self.max_replies]
+
+            if messages is None or len(messages) == 1 and messages[0] is None:
+                # special handling for non-dialogue datasets like Hellaswag
+                prefix = ""
+                replies = [r + eos for r in replies]
+            else:
+                # append eos token to each messages
+                prefix = "".join(format_pairs(messages, eos_token=eos))
+                replies = [format_reply(r, eos_token=eos) for r in replies]
 
         prefix_tokens = self.tokenizer(prefix, padding=False, truncation=False)
         reply_tokens = [self.tokenizer(r, padding=False, truncation=False) for r in replies]
@@ -60,7 +77,9 @@ class RankingDataCollator:
 
         return reply_tokens
 
-    def __call__(self, examples):
+    def __call__(
+        self, examples: list[tuple[str | list[str] | None, list[str]]] | list[DatasetEntryRm]
+    ) -> tuple[list[BatchEncoding], list[int]]:
         flat_tokenized, cu_lens = [], [0]
         n_samples = 0
         for example in examples:
@@ -80,4 +99,4 @@ class RankingDataCollator:
 
         if "token_type_ids" in batch:
             batch.pop("token_type_ids")
-        return (batch, cu_lens)
+        return batch, cu_lens

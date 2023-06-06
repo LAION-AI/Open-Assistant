@@ -48,17 +48,22 @@ export const API_ROUTES = {
   RECENT_MESSAGES: withLang("/api/messages"),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
-  ADMIN_MESSAGE_LIST: (query: CursorPaginationState & { user_id?: string; include_user?: boolean }) =>
-    createRoute("/api/admin/messages", query),
+  ADMIN_MESSAGE_LIST: (
+    query: CursorPaginationState & { user_id?: string; include_user?: boolean; search_query?: string; lang?: string }
+  ) => createRoute("/api/admin/messages", query),
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
   LIST_CHAT: "/api/chat",
+  LIST_CHAT_WITH_PARMS: (params: RouteQuery) => createRoute(API_ROUTES.LIST_CHAT, params),
   GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
   CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
   CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
+  CHAT_MESSAGE_EVAL: `/api/chat/message_eval`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",
-  UPDATE_CHAT: (id: string) => `/api/chat`,
+  UPDATE_CHAT: () => `/api/chat`,
+  GET_PLUGIN_CONFIG: `/api/chat/plugin_config`,
+  DELETE_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
 };

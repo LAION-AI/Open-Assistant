@@ -19,6 +19,7 @@ from oasst_data import (
     LabelValues,
 )
 from oasst_shared.schemas.protocol import TextLabel
+from oasst_shared.utils import Anonymizer
 from sqlmodel import Session, func
 
 
@@ -182,7 +183,7 @@ def export_trees(
     anonymizer_seed: Optional[str] = None,
 ) -> None:
     message_labels: dict[UUID, LabelValues] = {}
-    anonymizer = tree_export.Anonymizer(anonymizer_seed) if anonymizer_seed else None
+    anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
     if user_id:
         # when filtering by user we don't have complete message trees, export as list
         result = fetch_tree_messages_and_avg_labels(
@@ -232,7 +233,7 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
-                    synthetic=None,  # pass None here (export trees, filtering happend in fetch_tree_ids)
+                    synthetic=None,  # pass None here (export trees, filtering happened in fetch_tree_ids)
                     prompts_only=prompts_only,
                     lang=None,  # pass None, trees were selected based on lang of prompt
                     review_result=review_result,
@@ -255,7 +256,7 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
-                    synthetic=None,  # pass None here (export trees, filtering happend in fetch_tree_ids)
+                    synthetic=None,  # pass None here (export trees, filtering happened in fetch_tree_ids)
                     prompts_only=prompts_only,
                     lang=None,  # pass None here, trees were selected based on lang of prompt
                     review_result=review_result,

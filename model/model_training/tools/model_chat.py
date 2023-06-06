@@ -11,7 +11,7 @@ from typing import List, Tuple
 
 import torch
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.utils import _strtobool
+from model_training.utils.utils import _strtobool
 from tokenizers import pre_tokenizers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -86,7 +86,7 @@ def talk(human_input: str, history: List[Tuple[str, str]], sep_token: str, prefi
     return prefix
 
 
-def process_output(output):
+def process_output(output, method, bot_name):
     if method == "v2":
         answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]

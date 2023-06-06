@@ -76,7 +76,7 @@ def score_update_votes(new_vote: int, consensus: npt.ArrayLike, voter_data: Vote
     consensus_ranking = np.argsort(np.argsort(consensus))
     new_points = consensus_ranking[new_vote] + voter_data.voting_points
 
-    # we need to correct for 0 indexing, if you are closer to "right" than "wrong" of the conensus,
+    # we need to correct for 0 indexing, if you are closer to "right" than "wrong" of the consensus,
     # it's a good vote
     new_good_votes = int(consensus_ranking[new_vote] > (len(consensus) - 1) / 2) + voter_data.num_good_votes
     new_num_votes = voter_data.num_votes + 1
@@ -101,11 +101,11 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
     # produces the ranking of votes, e.g. for [100,300,200] it returns [0, 2, 1],
     # since 100 is the lowest, 300 the highest and 200 the middle value
     consensus_ranking = np.arange(len(consensus)) - len(consensus) // 2 + 1
-    # expected consenus ranking (i.e. normalize the votes and multiply-sum with weightings)
+    # expected consensus ranking (i.e. normalize the votes and multiply-sum with weightings)
     delta_votes = np.sum(consensus_ranking * consensus / sum(consensus))
     new_points = delta_votes + voter_data.prompt_points
 
-    # we need to correct for 0 indexing, if you are closer to "right" than "wrong" of the conensus,
+    # we need to correct for 0 indexing, if you are closer to "right" than "wrong" of the consensus,
     # it's a good vote
     new_good_prompts = int(delta_votes > 0) + voter_data.num_good_prompts
     new_num_prompts = voter_data.num_prompts + 1
