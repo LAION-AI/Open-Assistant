@@ -15,6 +15,7 @@ from chat_chain_prompts import (
     THOUGHT_SEQ,
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
+    V2_SYSTEM_PREFIX,
 )
 from loguru import logger
 from oasst_shared.schemas import inference
@@ -37,6 +38,10 @@ def make_prompt_and_parameters(
 
     # construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
+
+    if work_request.parameters.system_prompt:
+        pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
+        messages = [pre_prompt] + messages
 
     prompt = "".join(messages) + V2_ASST_PREFIX
 
