@@ -7,16 +7,13 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from oasst_backend.celery_worker import app
-from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, Message
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.user_repository import User
 from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import utcnow
-from sqlalchemy import func, update
-from sqlmodel import select
+from sqlalchemy import func
 
 startup_time: datetime = utcnow()
 
@@ -95,65 +92,25 @@ def update_search_vectors(batch_size: int) -> None:
 
 @shared_task(name="update_user_streak")
 def update_user_streak() -> None:
+    # check if user has been active in the last 24h and update streak accordingly
     logger.info("update_user_streak start...")
     try:
         with default_session_factory() as session:
             current_time = utcnow()
-            timedelta = current_time - startup_time
-            if timedelta.days > 0:
-                # Update only greater than 24 hours . Do nothing
-                logger.info("Process timedelta greater than 24h")
-                batch_size = settings.USER_STREAK_BATCH_SIZE  # Adjust the batch size as per your requirements
+            logger.info("Process timedelta greater than 24h")
 
-                statement = select(User).execution_options(yield_per=batch_size)
-                num_of_partitions = 0
-                for partition in session.scalars(statement).partitions():
-                    num_users = 0
-                    user_list = []
-                    num_of_partitions = num_of_partitions + 1
-                    for i, user in enumerate(partition):
-                        num_users += 1
-                        user.streak_days += 1
-                        last_activity_date = user.last_activity_date
-                        streak_last_day_date = user.streak_last_day_date
-                        # set NULL streak_days to 0
-                        if user.streak_days is None:
-                            user.streak_days = 0
-                        # if the user had completed a task
-                        if last_activity_date is not None:
-                            lastactitvitydelta = current_time - last_activity_date
-                            # if the user missed consecutive days of completing a task
-                            # reset the streak_days to 0 and set streak_last_day_date to the current_time
-                            if lastactitvitydelta.days > 1 or user.streak_days is None:
-                                user.streak_days = 0
-                                user.streak_last_day_date = current_time
-                        # streak_last_day_date has a current timestamp in DB. Ideally should not be NULL.
-                        if streak_last_day_date is not None:
-                            streak_delta = current_time - streak_last_day_date
-                            # if user completed tasks on consecutive days then increment the streak days
-                            # update the streak_last_day_date to current time for the next calculation
-                            if streak_delta.days > 0:
-                                user.streak_days += 1
-                                user.streak_last_day_date = current_time
-                        user_list.append(user)
+            # Reset streak_days to 0 for users with more than one day of inactivity
+            reset_query = f"""
+                    UPDATE "user"
+                    SET streak_days = 0,
+                        streak_last_day_date = '{current_time}'
+                    WHERE ('{current_time}' - last_activity_date) > interval '1 day'
+                        OR streak_days IS NULL
+                        OR last_activity_date IS NULL
+                """
+            session.execute(reset_query)
+            session.commit()
 
-                    logger.info(f"Total users in partition {i } : {num_users}")
-                    # Bulk update the streak information
-                    update_statement = (
-                        update(User)
-                        .where(User.id.in_([user.id for user in user_list]))
-                        .values(
-                            streak_days=User.streak_days,
-                            streak_last_day_date=User.streak_last_day_date,
-                        )
-                    )
-                    session.execute(update_statement)
-                    session.flush()
-                    logger.info(f"Flushed partition {i}")
-                session.commit()
-                logger.info("User streak updated successfully! for {num_of_partitions} partitions")
-            else:
-                logger.info("Not yet 24hours since the process started! ...")
-        logger.info("User streak end...")
+        logger.info("User streak reset successfully!")
     except Exception as e:
         logger.error(str(e))
