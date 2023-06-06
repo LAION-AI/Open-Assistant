@@ -4,7 +4,6 @@ import threading
 import time
 from typing import Iterable, Literal
 
-import interface
 import lorem
 import pydantic
 import requests
@@ -13,8 +12,9 @@ import transformers
 import websocket
 from chat_chain_prompts import V2_PROMPTER_PREFIX
 from loguru import logger
+from oasst_inference_worker import interface
+from oasst_inference_worker.settings import settings
 from oasst_shared.schemas import inference
-from settings import settings
 
 shared_tokenizer_lock = threading.Lock()
 

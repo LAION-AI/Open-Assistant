@@ -5,16 +5,14 @@ import threading
 from queue import Queue
 
 import fastapi
-import hf_stopping
-import hf_streamer
-import interface
 import torch
 import transformers
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from oasst_inference_worker import hf_stopping, hf_streamer, interface
+from oasst_inference_worker.settings import settings
 from oasst_shared import model_configs
-from settings import settings
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
