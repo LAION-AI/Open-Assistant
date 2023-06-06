@@ -45,23 +45,20 @@ class SearchBarForm(FlaskForm):
 # todo: this needs to be configurable
 cache_dir = "../.cache"
 
-datasets = dict()
+datasets_dct = dict()
 
 
 # check out: https://stackoverflow.com/questions/18290142/multiple-forms-in-a-single-page-using-flask-and-wtforms
 @app.route("/", methods=["post", "get"])
 def main_page():
     ds_form = SimpleForm()
-    # dummy = [c if not check_if_dataset_is_local(c, cache_dir="../.cache") else f"{c} (local)" for c in ALL_DATASETS]
-    print(f"session keys {session.keys()}")
-    print(f"session keys {session['dataset_options']}")
     search_bar_form = SearchBarForm()
     if session.get("dataset_options") is None:
         session["dataset_options"] = [
             c if not check_if_dataset_is_local(c, cache_dir=cache_dir) else f"{c} (local)" for c in ALL_DATASETS
         ]
-    print(session["dataset_options"])
     ds_form.example.choices = [(c, c) for c in session["dataset_options"]]
+    dataset_counts = list()
 
     if ds_form.example.data and ds_form.validate_on_submit():
         session["datasets"] = list()
@@ -70,48 +67,74 @@ def main_page():
             if dataset_name not in session["datasets"]:
                 session["datasets"].append(dataset_name)
         print(ds_form.example.data)
-    # if search_bar_form.name.data and search_bar_form.validate_on_submit():
-    #     print("IN SEARCH BAR")
-    #     print(search_bar_form.name.data)
 
+    if search_bar_form.name.data and search_bar_form.validate_on_submit():
+        if session.get("datasets", {}) == {}:
+            # todo: display
+            print("Please define datasets first")
+        else:
+            # todo: find better name
+            session["search_set"] = True
+            matched_train = {}
+            matched_val = {}
+            processed_text = search_bar_form.name.data
+            print(processed_text)
+            global datasets_dct
+            for dataset_name in session["datasets"]:
+                if dataset_name not in datasets_dct:
+                    train, val = get_one_dataset(None, dataset_name.replace(" (local)", ""), mode="sft", data_path=cache_dir)
+                    if val is not None:
+                        ds_tuple = (train, val)
+                    else:
+                        ds_tuple = (train, train)
+                    datasets_dct[dataset_name] = ds_tuple
 
-    if request.method == "POST":
-        text = request.form.get("text-submit1")
-        if session.get("datasets") is not None:
-            print(f"session keys {session['datasets']}")
-        if text:
-            print(f"Found text in submit, namely {text}. Now searching for it in the datasets {session['datasets']}")
-            if session.get("datasets", {}) == {}:
-                # todo: display
-                print("Please define datasets first")
-            else:
-                matched_train = {}
-                matched_val = {}
-                processed_text = text
-                print(processed_text)
-
-                global datasets
-                for dataset_name in session["datasets"]:
-                    if dataset_name not in datasets:
-                        train, val = get_one_dataset(None, dataset_name.replace(" (local)", ""), mode="sft", data_path=cache_dir)
-                        if val is not None:
-                            ds_tuple = (train, val)
-                        else:
-                            ds_tuple = (train, train)
-                        datasets[dataset_name] = ds_tuple
-
-                for dataset_name, (train, val) in datasets.items():
-                    print(dataset_name)
-                    matched_train = iterate_over_dataset(
-                        train, strings_to_match=[processed_text], regex_strings_to_match=[]
-                    )
-                    matched_val = iterate_over_dataset(
-                        val, strings_to_match=[processed_text], regex_strings_to_match=[]
-                    )
-                    print(matched_train)
+            for dataset_name, (train, val) in datasets_dct.items():
+                print(dataset_name)
+                matched_train = iterate_over_dataset(
+                    train, strings_to_match=[processed_text], regex_strings_to_match=[]
+                )
+                matched_val = iterate_over_dataset(
+                    val, strings_to_match=[processed_text], regex_strings_to_match=[]
+                )
+                print(matched_train)
                 train_dct = {k: len(v) for k, v in matched_train.items()}
                 val_dct = {k: len(v) for k, v in matched_val.items()}
-                print(train_dct)
-                print(val_dct)
+                # todo: this needs to be inside the loop
+                dataset_counts.extend([{
+                    "dataset_name": dataset_name,
+                    "train_val": "train",
+                    "keyword": processed_text,
+                    "hits": train_dct.get(processed_text, 0),
+                },
+                {
+                    "dataset_name": dataset_name,
+                    "train_val": "val",
+                    "keyword": processed_text,
+                    "hits": val_dct.get(processed_text, 0),
+                }
+                ])
+                session['dataset_counts'] = dataset_counts
 
-    return render_template("test.html", form=ds_form)
+    # return render_template("test.html", form=ds_form)
+    return render_template("base_layout.html", form=ds_form, search_bar_form=search_bar_form, hits=dataset_counts)
+
+@app.route("/datasets/<dataset_name>", methods=["post", "get"])
+def datasets(dataset_name):
+
+    ds_form = SimpleForm()
+    search_bar_form = SearchBarForm()
+    if session.get("dataset_options") is None:
+        session["dataset_options"] = [
+            c if not check_if_dataset_is_local(c, cache_dir=cache_dir) else f"{c} (local)" for c in ALL_DATASETS
+        ]
+    ds_form.example.choices = [(c, c) for c in session["dataset_options"]]
+    dataset_counts = list()
+    dropdown_value = request.form.get('example_dropdown')
+    print(dropdown_value)
+    return render_template("datasets.html",
+                           form=ds_form,
+                           search_bar_form=search_bar_form,
+                           hits=session.get('dataset_counts', []),
+                           values=[10, 20, 50],
+                           dataset_name=dataset_name)
