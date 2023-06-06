@@ -25,6 +25,7 @@ export interface ChatItem {
   // those are not available when you first create a chat
   title?: string;
   hidden?: boolean;
+  active_thread_tail_message_id?: string;
 }
 
 export interface InferenceMessage {
@@ -80,7 +81,20 @@ interface InferenceEventPending {
   queue_size: number;
 }
 
-export type InferenceEvent = InferenceEventMessage | InferenceEventError | InferenceEventToken | InferenceEventPending;
+interface InferenceEventPluginIntermediateStep {
+  event_type: "plugin_intermediate";
+  current_plugin_thought: string;
+  current_plugin_action_taken: string;
+  current_plugin_action_response: string;
+  current_plugin_action_input: string;
+}
+
+export type InferenceEvent =
+  | InferenceEventMessage
+  | InferenceEventError
+  | InferenceEventToken
+  | InferenceEventPending
+  | InferenceEventPluginIntermediateStep;
 
 export type ModelInfo = {
   name: string;
@@ -126,6 +140,7 @@ export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
+  active_thread_tail_message_id?: string;
 }
 
 export interface PluginEntry {

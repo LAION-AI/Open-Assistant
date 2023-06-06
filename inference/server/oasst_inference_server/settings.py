@@ -116,6 +116,8 @@ class Settings(pydantic.BaseSettings):
 
     # sent as a work parameter, higher values increase load on workers
     plugin_max_depth: int = 4
+    # url path prefix for plugins we host on this server
+    plugins_path_prefix: str = "/plugins"
 
     plugin_auth_web_routing: bool = True
     plugin_auth_secret: bytes = b""

@@ -1020,10 +1020,13 @@ class PromptRepository:
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
 
-        if search_query is not None:
-            ts_lang: str = db_lang_to_postgres_ts_lang(lang)
-            ts_query = func.to_tsquery(ts_lang, search_query)
-            qry = qry.filter(ts_query.match(Message.search_vector))
+            if search_query is not None:
+                qry = qry.filter(
+                    Message.search_vector.match(
+                        search_query,
+                        postgresql_regconfig=db_lang_to_postgres_ts_lang(lang),
+                    ),
+                )
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
@@ -1269,6 +1272,53 @@ WHERE message.id = cc.id;
         qry = self.db.query(FlaggedMessage)
         if max_count is not None:
             qry = qry.limit(max_count)
+
+        return qry.all()
+
+    def fetch_flagged_messages_by_created_date(
+        self,
+        gte_created_date: Optional[datetime] = None,
+        gt_id: Optional[UUID] = None,
+        lte_created_date: Optional[datetime] = None,
+        lt_id: Optional[UUID] = None,
+        desc: bool = False,
+        limit: Optional[int] = 100,
+    ) -> list[FlaggedMessage]:
+        qry = self.db.query(FlaggedMessage)
+
+        if gte_created_date is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date > gte_created_date,
+                        and_(FlaggedMessage.created_date == gte_created_date, FlaggedMessage.message_id > gt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date >= gte_created_date)
+        elif gt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_created_date is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date < lte_created_date,
+                        and_(FlaggedMessage.created_date == lte_created_date, FlaggedMessage.message_id < lt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date <= lte_created_date)
+        elif lt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if desc:
+            qry = qry.order_by(FlaggedMessage.created_date.desc(), FlaggedMessage.message_id.desc())
+        else:
+            qry = qry.order_by(FlaggedMessage.created_date.asc(), FlaggedMessage.message_id.asc())
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
 

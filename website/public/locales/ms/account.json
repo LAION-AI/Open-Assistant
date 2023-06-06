@@ -1,0 +1,9 @@
+{
+  "delete_account": "Padamkan akaun saya",
+  "delete_account_data": "Semua data yang disumbangkan kepada OpenAssistant dengan menyelesaikan tugasan, kedudukan mesej dan sebarang perbualan menggunakan perkhidmatan sembang, akan dikekalkan. Walau bagaimanapun, semua rujukan kepada pengguna asal adalah tanpa nama.",
+  "delete_account_intro": "Memadamkan akaun memerlukan perkara berikut:",
+  "delete_account_leaderboard": "Akaun pengguna yang dipadam tidak akan muncul di papan pendahulu",
+  "delete_account_permanent": "Tindakan ini kekal dan tidak boleh dibatalkan",
+  "go_to_dashboard": "Kembali ke papan pemuka",
+  "yes_delete": "Ya, padamkan akaun saya secara kekal"
+}
