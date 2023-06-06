@@ -343,6 +343,6 @@ class UserRepository:
                 user.streak_days = 0
             else:
                 # update streak day count
-                user.streak_days = (current_time - user.last_activity_date).days
+                user.streak_days = (current_time - user.streak_last_day_date).days
 
         self.db.add(user)
