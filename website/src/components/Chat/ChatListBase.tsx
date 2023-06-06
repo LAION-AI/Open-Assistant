@@ -11,6 +11,7 @@ import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
+import { HideAllChatButton } from "./HideAllChatButton";
 
 export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }: CardProps & { allowViews?: boolean }) {
   const [view, setView] = useState<ChatListViewSelection>("visible");
@@ -91,6 +92,7 @@ export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }:
         {allowViews && (
           <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
         )}
+        <HideAllChatButton chatIds={chats.map((chat) => chat.id)} onHide={removeItemFromList}></HideAllChatButton>
       </Flex>
       <SimpleBar
         style={{ padding: "8px", maxHeight: "100%", height: "100%", minHeight: "0" }}

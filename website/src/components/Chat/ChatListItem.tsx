@@ -303,7 +303,7 @@ type ChatListItemIconButtonProps = {
   icon: LucideIcon;
 };
 
-const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButtonProps) => {
+export const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButtonProps) => {
   return (
     <Tooltip label={label}>
       <Box
