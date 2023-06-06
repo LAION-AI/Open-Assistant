@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime
+from datetime import timedelta
 from typing import Any, Dict, List
 
 from asgiref.sync import async_to_sync
@@ -12,10 +12,8 @@ from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
-from oasst_shared.utils import utcnow
-from sqlalchemy import func
-
-startup_time: datetime = utcnow()
+from oasst_shared.utils import log_timing, utcnow
+from sqlalchemy import func, text
 
 
 async def useHFApi(text, url, model_name):
@@ -91,26 +89,20 @@ def update_search_vectors(batch_size: int) -> None:
 
 
 @shared_task(name="update_user_streak")
-def update_user_streak() -> None:
-    # check if user has been active in the last 24h and update streak accordingly
-    logger.info("update_user_streak start...")
+@log_timing(level="INFO")
+def reset_user_streak() -> None:
     try:
         with default_session_factory() as session:
-            current_time = utcnow()
-            logger.info("Process timedelta greater than 24h")
-
-            # Reset streak_days to 0 for users with more than one day of inactivity
-            reset_query = f"""
-                    UPDATE "user"
-                    SET streak_days = 0,
-                        streak_last_day_date = '{current_time}'
-                    WHERE ('{current_time}' - last_activity_date) > interval '1 day'
-                        OR streak_days IS NULL
-                        OR last_activity_date IS NULL
-                """
-            session.execute(reset_query)
+            # Reset streak_days to 0 for users with more than 1.5 days of inactivity
+            streak_timeout = utcnow() - timedelta(hours=36)
+            sql_reset_query = """
+UPDATE "user"
+SET streak_days = 0,
+    streak_last_day_date = NULL
+WHERE last_activity_date < :streak_timeout
+    AND streak_last_day_date IS NOT NULL
+"""
+            session.execute(text(sql_reset_query), {"streak_timeout": streak_timeout})
             session.commit()
-
-        logger.info("User streak reset successfully!")
-    except Exception as e:
-        logger.error(str(e))
+    except Exception:
+        logger.exception("Error during user streak reset")

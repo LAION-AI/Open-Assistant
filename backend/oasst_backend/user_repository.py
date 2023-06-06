@@ -1,7 +1,6 @@
 from typing import Optional
 from uuid import UUID
 
-from loguru import logger
 from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
@@ -336,19 +335,14 @@ class UserRepository:
     def update_user_last_activity(self, user: User, update_streak: bool = False) -> None:
         current_time = utcnow()
         user.last_activity_date = current_time
-        streak_last_day_date = user.streak_last_day_date
 
         if update_streak:
-            try:
-                if user.streak_last_day_date is None:
-                    # this should only happen when the user is first created
-                    user.streak_last_day_date = user.last_activity_date
-                else:
-                    # if the user has not been active for more than a day increment it by 1
-                    if current_time.days != streak_last_day_date.days:
-                        user.streak_last_day_date = user.last_activity_date
-                        user.streak_days += 1
-            except Exception as e:
-                logger.error(f"Error updating user streak for user {user.id}: {e}")
+            if user.streak_last_day_date is None or user.streak_last_day_date > current_time:
+                # beginning new streak
+                user.streak_last_day_date = user.last_activity_date
+                user.streak_days = 0
+            else:
+                # update streak day count
+                user.streak_days = (current_time - user.last_activity_date).days
 
         self.db.add(user)
