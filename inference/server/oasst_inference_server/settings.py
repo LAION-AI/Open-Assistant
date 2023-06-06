@@ -81,6 +81,8 @@ class Settings(pydantic.BaseSettings):
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
+    # root url of the web server
+    web_root: str = "http://localhost:3000"
     # url of this server
     api_root: str = "http://localhost:8000"
 
@@ -115,6 +117,7 @@ class Settings(pydantic.BaseSettings):
     # sent as a work parameter, higher values increase load on workers
     plugin_max_depth: int = 4
 
+    plugin_auth_web_routing: bool = True
     plugin_auth_secret: bytes = b""
     plugin_auth_salt: bytes = b""
     plugin_auth_length: int = 32

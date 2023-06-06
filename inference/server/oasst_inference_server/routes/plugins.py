@@ -57,7 +57,8 @@ async def get_provider(session: database.AsyncSession, provider: str) -> models.
 
 
 def get_redirect_uri(provider: str) -> str:
-    return f"{settings.api_root}/plugins/oauth_provider/{provider}/callback"
+    root = settings.web_root if settings.plugin_auth_web_routing else settings.api_root
+    return f"{root}/plugins/oauth_provider/{provider}/callback"
 
 
 def prepare_request_content(content_type: str, data: dict):
