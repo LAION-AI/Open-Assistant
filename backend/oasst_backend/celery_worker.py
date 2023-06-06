@@ -20,7 +20,7 @@ logger.info(f"celery.conf.broker_url {app.conf.broker_url}, app.conf.result_back
 # see https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html
 app.conf.beat_schedule = {
     "reset-user-streak": {
-        "task": "reset_user_streak",
+        "task": "periodic_user_streak_reset",
         "schedule": 60.0 * 60.0 * 4,  # in seconds, every 4h
     },
     "update-search-vectors": {

@@ -7,13 +7,14 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from oasst_backend.celery_worker import app
-from oasst_backend.models import ApiClient, Message
+from oasst_backend.models import ApiClient, Message, User
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.utils import log_timing, utcnow
-from sqlalchemy import func, text
+from sqlalchemy import func
+from sqlmodel import update
 
 
 async def useHFApi(text, url, model_name):
@@ -88,21 +89,19 @@ def update_search_vectors(batch_size: int) -> None:
         logger.error(f"update_search_vectors failed with error: {str(e)}")
 
 
-@shared_task(name="update_user_streak")
+@shared_task(name="periodic_user_streak_reset")
 @log_timing(level="INFO")
-def reset_user_streak() -> None:
+def periodic_user_streak_reset() -> None:
     try:
         with default_session_factory() as session:
             # Reset streak_days to 0 for users with more than 1.5 days of inactivity
             streak_timeout = utcnow() - timedelta(hours=36)
-            sql_reset_query = """
-UPDATE "user"
-SET streak_days = 0,
-    streak_last_day_date = NULL
-WHERE last_activity_date < :streak_timeout
-    AND streak_last_day_date IS NOT NULL
-"""
-            session.execute(text(sql_reset_query), {"streak_timeout": streak_timeout})
+            reset_query = (
+                update(User)
+                .filter(User.last_activity_date < streak_timeout, User.streak_last_day_date.is_not(None))
+                .values(streak_days=0, streak_last_day_date=None)
+            )
+            session.execute(reset_query)
             session.commit()
     except Exception:
-        logger.exception("Error during user streak reset")
+        logger.exception("Error during periodic user streak reset")
