@@ -338,8 +338,8 @@ class UserRepository:
 
         if update_streak:
             if user.streak_last_day_date is None or user.streak_last_day_date > current_time:
-                # beginning new streak
-                user.streak_last_day_date = user.last_activity_date
+                # begin new streak
+                user.streak_last_day_date = current_time
                 user.streak_days = 0
             else:
                 # update streak day count
