@@ -50,6 +50,7 @@ def make_prompt_and_parameters(
         parameters.stop = [
             V2_PROMPTER_PREFIX,
             V2_ASST_PREFIX,
+            V2_SYSTEM_PREFIX,
         ]
         if eos_token:
             parameters.stop.append(eos_token)
