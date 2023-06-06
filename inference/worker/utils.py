@@ -64,7 +64,7 @@ class TokenBuffer:
             yield from self.tokens
 
 
-def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool, system_tokens: list[int] | None):
+def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
     max_input_length = worker_config.model_config.max_input_length
     if plugin_used:
         max_input_length = max_input_length - 1
