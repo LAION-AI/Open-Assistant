@@ -1,10 +1,9 @@
+import { EyeOff } from "lucide-react";
 import React, { useCallback } from "react";
-import { Button, ButtonProps } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import useSWRMutation from "swr/mutation";
 import { API_ROUTES } from "src/lib/routes";
 import { put } from "src/lib/api";
-import { useTranslation } from "react-i18next";
-import { EyeOff } from "lucide-react";
 
 import { ChatListItemIconButton } from "./ChatListItem";
 

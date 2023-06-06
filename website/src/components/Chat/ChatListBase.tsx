@@ -9,9 +9,9 @@ import SimpleBar from "simplebar-react";
 import { ChatListItem } from "./ChatListItem";
 import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
+import { HideAllChatButton } from "./HideAllChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
-import { HideAllChatButton } from "./HideAllChatButton";
 
 export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }: CardProps & { allowViews?: boolean }) {
   const [view, setView] = useState<ChatListViewSelection>("visible");
