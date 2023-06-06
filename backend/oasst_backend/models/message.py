@@ -19,7 +19,7 @@ class Message(SQLModel, table=True):
     __tablename__ = "message"
     __table_args__ = (
         Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),
-        Index("ix_search_vector", "search_vector", postgresql_using="gin"),
+        Index("idx_search_vector", "search_vector", postgresql_using="gin"),
     )
 
     def __new__(cls, *args: Any, **kwargs: Any):
