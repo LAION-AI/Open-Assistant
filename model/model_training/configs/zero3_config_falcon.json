@@ -12,7 +12,7 @@
       "total_num_steps": "auto"
     }
   },
-    "optimizer": {
+  "optimizer": {
     "type": "AdamW",
     "params": {
       "lr": "auto",
