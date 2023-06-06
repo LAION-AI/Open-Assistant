@@ -29,6 +29,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       flexDirection={{ base: "column", md: "row" }}
       alignItems="start"
       maxWidth="full"
+      width={"fit-content"}
       position="relative"
       p={{ base: 3, md: 0 }}
       borderRadius={{ base: "18px", md: 0 }}
