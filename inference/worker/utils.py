@@ -11,7 +11,7 @@ import requests
 import sseclient
 import transformers
 import websocket
-from chat_chain_prompts import V2_PROMPTER_PREFIX
+from chat_chain_prompts import V2_PROMPTER_PREFIX, V2_SYSTEM_PREFIX
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
@@ -64,7 +64,7 @@ class TokenBuffer:
             yield from self.tokens
 
 
-def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
+def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool, system_tokens: list[int] | None):
     max_input_length = worker_config.model_config.max_input_length
     if plugin_used:
         max_input_length = max_input_length - 1
@@ -80,12 +80,22 @@ def truncate_prompt(
 ):
     with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
+        prompter_prefix_id = tokenizer.convert_tokens_to_ids(V2_PROMPTER_PREFIX)
+
+    system_prompt: str | None = None
+    system_tokens: list[int] | None = None
+    if prompt.startswith(V2_SYSTEM_PREFIX):
+        system_prompt = prompt[: prompt.index(V2_PROMPTER_PREFIX)]
+        system_tokens = ids[: ids.index(prompter_prefix_id)]
 
     max_input_length = get_max_input_length(worker_config, plugin_used)
 
     if len(ids) > max_input_length:
         logger.debug(f"Prompt too long, left-truncating to {max_input_length} tokens")
-        ids = ids[-(max_input_length - 1) :]
+
+        # Maximum token allowed for the conversation, ex system prompt
+        max_conversation_length = max_input_length - len(system_tokens) if system_tokens else max_input_length
+        ids = ids[-(max_conversation_length - 1) :]
 
         with shared_tokenizer_lock:
             prompt = tokenizer.decode(ids)
@@ -93,6 +103,10 @@ def truncate_prompt(
             if V2_PROMPTER_PREFIX not in prompt:
                 prompt = V2_PROMPTER_PREFIX + prompt
                 ids = tokenizer.encode(V2_PROMPTER_PREFIX) + ids
+
+            if system_tokens:
+                prompt = system_prompt + prompt
+                ids = system_tokens + ids
 
     max_total_tokens = worker_config.model_config.max_total_length
     input_length = len(ids)
