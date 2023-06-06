@@ -13,7 +13,7 @@ export MODEL_ID=$(python get_model_config_prop.py model_id)
 export QUANTIZE=$(python get_model_config_prop.py quantized)
 
 echo "Downloading model $MODEL_ID"
-CUDA_VISIBLE_DEVICES="" python scripts/download_model_hf.py
+CUDA_VISIBLE_DEVICES="" python download_model_hf.py
 
 export MAX_PARALLEL_REQUESTS=${MAX_PARALLEL_REQUESTS:-1}
 
