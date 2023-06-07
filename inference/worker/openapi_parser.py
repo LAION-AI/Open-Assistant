@@ -141,19 +141,20 @@ def get_plugin_endpoints(api_url: str, openapi_dict: dict) -> list[inference.Plu
 def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     plugin_config = get_plugin_config(plugin_url)
 
-    if plugin_config:
-        try:
-            parsed_url = urlsplit(plugin_config.api.url)
-            if parsed_url.scheme == "":
-                api_url = urlsplit(plugin_url)._replace(path=parsed_url.path).geturl()
-            else:
-                api_url = plugin_config.api.url
+    if not plugin_config:
+        return None
 
-            openapi_dict = fetch_openapi_spec(api_url)
-            plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
-            return plugin_config
+    try:
+        parsed_url = urlsplit(plugin_config.api.url)
+        if parsed_url.scheme == "":
+            api_url = urlsplit(plugin_url)._replace(path=parsed_url.path).geturl()
+        else:
+            api_url = plugin_config.api.url
 
-        except Exception:
-            logger.debug(f"Plugin preparation error: {plugin_url}")
+        openapi_dict = fetch_openapi_spec(api_url)
+        plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
+        return plugin_config
 
-    return None
+    except Exception:
+        logger.debug(f"Plugin preparation error: {plugin_url}")
+        return None
