@@ -93,8 +93,9 @@ def truncate_prompt(
     if len(ids) > max_input_length:
         logger.debug(f"Prompt too long, left-truncating to {max_input_length} tokens")
 
+        num_system_tokens = len(system_tokens) if system_tokens else 0
         # Maximum token allowed for the conversation, ex system prompt
-        max_conversation_length = max_input_length - len(system_tokens) if system_tokens else max_input_length
+        max_conversation_length = max_input_length - num_system_tokens
         ids = ids[-(max_conversation_length - 1) :]
 
         with shared_tokenizer_lock:
