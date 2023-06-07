@@ -34,6 +34,15 @@ export interface Message extends MessageEmojis {
   user: BackendUser | null;
 }
 
+export interface MessageRevision {
+  id: string;
+  text: string;
+  message_id: string;
+  user_id: string;
+  created_date: string;
+  user_is_author: boolean;
+}
+
 export interface Conversation {
   messages: Message[];
 }
