@@ -1,6 +1,6 @@
 import { EyeOff } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import React, { useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import useSWRMutation from "swr/mutation";
 import { API_ROUTES } from "src/lib/routes";
 import { put } from "src/lib/api";
