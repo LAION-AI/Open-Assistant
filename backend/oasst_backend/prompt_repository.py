@@ -163,7 +163,7 @@ class PromptRepository:
         self.db.add(message)
         return message
 
-    @managed_tx_method(CommitMode.COMMIT)
+    @managed_tx_method(CommitMode.FLUSH)
     def insert_revision(
         self,
         payload: db_payload.MessagePayload,
@@ -332,7 +332,7 @@ class PromptRepository:
         )
         return user_message
 
-    @managed_tx_method(CommitMode.COMMIT)
+    @managed_tx_method(CommitMode.FLUSH)
     def revise_message(self, message_id: UUID, new_content: str):
         # store original message as revision if not already stored
         message = self.fetch_message(message_id)
