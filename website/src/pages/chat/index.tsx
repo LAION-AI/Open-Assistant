@@ -27,6 +27,7 @@ const ChatList = () => {
           bg: "gray.700",
         }}
         shadow="md"
+        minHeight="300px"
       />
     </>
   );
