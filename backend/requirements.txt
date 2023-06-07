@@ -20,4 +20,5 @@ scipy==1.8.1
 SQLAlchemy==1.4.41
 sqlmodel==0.0.8
 tqdm>=4.64.1
+uuid7==0.1.0
 uvicorn==0.20.0

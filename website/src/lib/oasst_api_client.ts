@@ -223,6 +223,17 @@ export class OasstApiClient {
   }
 
   /**
+   * Modify a message's content and save it's previous content as a revision
+   */
+  async edit_message(message_id: string, user: BackendUserCore, new_content: string) {
+    return this.post<void>(`/api/v1/messages/${message_id}/edit`, {
+      message_id,
+      user,
+      new_content,
+    });
+  }
+
+  /**
    * Stop message tree
    */
   async stop_tree(message_id: string): Promise<void> {

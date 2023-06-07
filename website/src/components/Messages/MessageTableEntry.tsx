@@ -19,6 +19,7 @@ import { boolean } from "boolean";
 import {
   ClipboardList,
   Copy,
+  Edit,
   Flag,
   Link,
   MessageSquare,
@@ -336,6 +337,9 @@ const MessageActions = ({
                   Undelete message
                 </MenuItem>
               )}
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_EDIT(message.id)} target="_blank" icon={<Edit />}>
+                {t("common:edit")}
+              </MenuItem>
               <MenuItem onClick={handleStop} icon={<Slash />}>
                 {t("stop_tree")}
               </MenuItem>

@@ -109,6 +109,7 @@ class Message(ConversationMessage):
     review_result: Optional[bool]
     review_count: Optional[int]
     deleted: Optional[bool]
+    edited: Optional[bool]
     model_name: Optional[str]
     message_tree_id: Optional[UUID]
     ranking_count: Optional[int]
@@ -577,6 +578,11 @@ class MessageEmojiRequest(BaseModel):
     user: User
     op: EmojiOp = EmojiOp.togggle
     emoji: EmojiCode
+
+
+class MessageEditRequest(BaseModel):
+    user: User
+    new_content: str
 
 
 class CreateFrontendUserRequest(User):
