@@ -15,6 +15,7 @@ from oasst_inference_worker.chain.chat_chain_prompts import (
     THOUGHT_SEQ,
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
+    V2_SYSTEM_PREFIX,
 )
 from oasst_inference_worker.settings import settings
 from oasst_inference_worker.utils import shared_tokenizer_lock
@@ -37,6 +38,10 @@ def make_prompt_and_parameters(
     # construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
+    if work_request.parameters.system_prompt:
+        pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
+        messages = [pre_prompt] + messages
+
     prompt = "".join(messages) + V2_ASST_PREFIX
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
@@ -44,6 +49,7 @@ def make_prompt_and_parameters(
         parameters.stop = [
             V2_PROMPTER_PREFIX,
             V2_ASST_PREFIX,
+            V2_SYSTEM_PREFIX,
         ]
         if eos_token:
             parameters.stop.append(eos_token)

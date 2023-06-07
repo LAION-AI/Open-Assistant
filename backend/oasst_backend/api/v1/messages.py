@@ -339,6 +339,21 @@ def undelete_message(
     pr.undelete_deleted_message(message_id)
 
 
+@router.post("/{message_id}/edit")
+def edit_message(
+    *,
+    message_id: UUID,
+    request: protocol.MessageEditRequest,
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+):
+    @managed_tx_function(CommitMode.COMMIT)
+    def edit_tx(session: deps.Session):
+        pr = PromptRepository(session, api_client, client_user=request.user)
+        pr.revise_message(message_id, request.new_content)
+
+    edit_tx()
+
+
 @router.post("/{message_id}/emoji", status_code=HTTP_202_ACCEPTED)
 def post_message_emoji(
     *,
