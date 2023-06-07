@@ -9,6 +9,7 @@ import SimpleBar from "simplebar-react";
 import { ChatListItem } from "./ChatListItem";
 import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
+import { HideAllChatButton } from "./HideAllChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
 
@@ -95,6 +96,7 @@ export const ChatListBase = memo(function ChatListBase({
         {allowViews && (
           <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
         )}
+        <HideAllChatButton chatIds={chats.map((chat) => chat.id)} onHide={removeItemFromList}></HideAllChatButton>
       </Flex>
       <SimpleBar style={{ padding: "8px", height: "100%", minHeight: chats.length && minHeight ? minHeight : "0" }}>
         {chats.map((chat) => (
