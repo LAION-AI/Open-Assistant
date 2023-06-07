@@ -1,8 +1,8 @@
 {
-  "create": "Crear",
+  "grab_a_task": "Agafa una tasca!",
+  "create": "Crea",
+  "evaluate": "Avalua",
+  "label": "Etiqueta",
   "dashboard": "Panell principal",
-  "evaluate": "Avaluar",
-  "go": "Anar",
-  "grab_a_task": "Pren una tasca!",
-  "label": "Etiquetar"
+  "go": "Ves"
 }

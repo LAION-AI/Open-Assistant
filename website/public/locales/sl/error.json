@@ -1,0 +1,16 @@
+{
+  "default": "Nekaj je šlo narobe!",
+  "err_1000": "Napačen tip opravila",
+  "err_1001": "Ni uspela potrditev opravila",
+  "err_1002": "Ni bilo mogoče potrditi opravila",
+  "err_1003": "Neveljaven tip odziva",
+  "err_1004": "Ni uspela Zahteva za interakcijo",
+  "err_1005": "Ni uspelo ustvarjanje opravila",
+  "err_1006": "Trenutno ni na voljo {{task_type}} opravil.",
+  "err_1007": "Ni uspela Poizvedba o razpoložljivosti opravila",
+  "err_1008": "Velikost sporočila je predolga",
+  "err_1009": "Vaša nedavna sporočila se podvajajo",
+  "err_1010": "Tekst sporočila je prazen",
+  "err_1011": "Ne morete odgovoriti dvakrat na isto sporočilo",
+  "err_1012": "Preveč nalog imate na čakanju. Poskusite znova v nekaj minutah."
+}

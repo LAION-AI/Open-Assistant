@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Flex,
   FormControl,
   FormLabel,
@@ -11,9 +12,9 @@ import {
   PopoverCloseButton,
   PopoverContent,
   PopoverTrigger,
-  Spacer,
   Table,
   TableCaption,
+  TableCellProps,
   TableContainer,
   TableRowProps,
   Tbody,
@@ -31,17 +32,28 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   Row,
+  RowData,
   useReactTable,
 } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, ReactNode, useState } from "react";
+import { ChangeEvent, ReactNode, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+
+declare module "@tanstack/table-core" {
+  // interface TableMeta<TData extends RowData> {
+  //   cellProps?: DataTableCellPropsCallback<TData>;
+  // }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    cellProps?: DataTableCellPropsCallback<TData>;
+    filterable?: boolean;
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DataTableColumnDef<T> = ColumnDef<T, any> & {
-  filterable?: boolean;
-  span?: number | ((cell: Cell<T, unknown>) => number | undefined);
+  span?: number | ((cell: Cell<T, unknown>) => number | undefined); // TODO: move to meta
 };
 
 // TODO: stricter type
@@ -51,6 +63,8 @@ export type FilterItem = {
 };
 
 export type DataTableRowPropsCallback<T> = (row: Row<T>) => TableRowProps;
+
+export type DataTableCellPropsCallback<T> = (cell: Cell<T, unknown>) => TableCellProps;
 
 export type DataTableProps<T> = {
   data: T[];
@@ -64,7 +78,10 @@ export type DataTableProps<T> = {
   disablePrevious?: boolean;
   disablePagination?: boolean;
   rowProps?: TableRowProps | DataTableRowPropsCallback<T>;
+  cellProps?: DataTableCellPropsCallback<T>;
   getSubRows?: (row: T) => T[] | undefined;
+  columnVisibility?: Record<string, boolean>;
+  isLoading?: boolean;
 };
 
 export const DataTable = <T,>({
@@ -80,6 +97,8 @@ export const DataTable = <T,>({
   disablePagination,
   rowProps,
   getSubRows,
+  columnVisibility,
+  isLoading,
 }: DataTableProps<T>) => {
   const { t } = useTranslation("leaderboard");
   const [expanded, setExpanded] = useState<ExpandedState>({});
@@ -91,6 +110,7 @@ export const DataTable = <T,>({
     getExpandedRowModel: getExpandedRowModel(),
     state: {
       expanded,
+      columnVisibility,
     },
     getSubRows,
     onExpandedChange: setExpanded,
@@ -109,12 +129,12 @@ export const DataTable = <T,>({
   return (
     <>
       {!disablePagination && (
-        <Flex mb="2">
-          <Button onClick={onPreviousClick} disabled={disablePrevious}>
+        <Flex mb="2" justifyContent="space-between" alignItems="center">
+          <Button onClick={onPreviousClick} isDisabled={disablePrevious || isLoading}>
             {t("previous")}
           </Button>
-          <Spacer />
-          <Button onClick={onNextClick} disabled={disableNext}>
+          {isLoading && <CircularProgress size="24px" isIndeterminate />}
+          <Button onClick={onNextClick} isDisabled={disableNext || isLoading}>
             {t("next")}
           </Button>
         </Flex>
@@ -124,12 +144,12 @@ export const DataTable = <T,>({
           <TableCaption pb={0}>{caption}</TableCaption>
           <Thead>
             {getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id}>
+              <Tr key={headerGroup.id} whiteSpace="normal">
                 {headerGroup.headers.map((header) => (
                   <Th key={header.id}>
                     <Box display="flex" alignItems="center">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
+                      {header.column.columnDef.meta?.filterable && (
                         <FilterModal
                           value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
                           onChange={(value) => handleFilterChange({ id: header.id, value })}
@@ -142,7 +162,7 @@ export const DataTable = <T,>({
               </Tr>
             ))}
           </Thead>
-          <Tbody>
+          <Tbody position="relative">
             {getRowModel().rows.map((row) => {
               const props = typeof rowProps === "function" ? rowProps(row) : rowProps;
               return (
@@ -174,12 +194,12 @@ const DataTableRow = <T,>({ row }: { row: Row<T> }) => {
     cell.span = spanValue;
     renderCells.push(cell);
   }
-
   return (
     <>
       {renderCells.map((cell) => {
+        const props = cell.column.columnDef.meta?.cellProps?.(cell);
         return (
-          <Td key={cell.id} colSpan={cell.span}>
+          <Td key={cell.id} {...props} colSpan={cell.span}>
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </Td>
         );
@@ -198,13 +218,13 @@ const FilterModal = ({
   value: string;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const initialFocusRef = useRef<HTMLInputElement>(null);
   const handleInputChange = useDebouncedCallback((e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   }, 500);
 
   return (
-    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+    <Popover isOpen={isOpen} onOpen={onOpen} initialFocusRef={initialFocusRef} onClose={onClose}>
       <PopoverTrigger>
         <Button variant={"unstyled"} ml="2">
           <Filter size="1em"></Filter>
@@ -216,7 +236,7 @@ const FilterModal = ({
         <PopoverBody mt="4">
           <FormControl>
             <FormLabel>{label}</FormLabel>
-            <Input onChange={handleInputChange} defaultValue={value}></Input>
+            <Input ref={initialFocusRef} onChange={handleInputChange} autoFocus defaultValue={value}></Input>
           </FormControl>
         </PopoverBody>
       </PopoverContent>

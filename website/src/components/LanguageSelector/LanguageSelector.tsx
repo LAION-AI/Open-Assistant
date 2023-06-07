@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo } from "react";
 import { useCookies } from "react-cookie";
+import { getLocaleDisplayName } from "src/lib/languages";
 
 const LanguageSelector = () => {
   const router = useRouter();
@@ -20,15 +21,11 @@ const LanguageSelector = () => {
     }
   }, [cookies, setCookie, router]);
 
-  const firstLetterUppercase = (str) => {
-    return str.charAt(0).toLocaleUpperCase() + str.slice(1);
-  };
-
   // Memo the set of locales and their display names.
   const localesAndNames = useMemo(() => {
-    return router.locales.map((locale) => ({
+    return router.locales!.map((locale) => ({
       locale,
-      name: firstLetterUppercase(new Intl.DisplayNames([locale], { type: "language" }).of(locale)),
+      name: getLocaleDisplayName(locale),
     }));
   }, [router.locales]);
 
@@ -40,12 +37,12 @@ const LanguageSelector = () => {
       await router.push(path, path, { locale });
       router.reload();
     },
-    [router]
+    [router, setCookie]
   );
 
   const { language: currentLanguage } = i18n;
   return (
-    <Select onChange={languageChanged} defaultValue={currentLanguage}>
+    <Select onChange={languageChanged} defaultValue={currentLanguage} maxW="fit-content">
       {localesAndNames.map(({ locale, name }) => (
         <option key={locale} value={locale}>
           {name}

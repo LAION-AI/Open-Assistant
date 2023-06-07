@@ -6,7 +6,7 @@ For discussion about usage of supervised data see issue
 ## Motivation
 
 An important part of making the assistant useful is to teach it to understand
-and follow instructions, and to perform large set of tasks well.
+and follow instructions, and to perform a large set of tasks well.
 
 While RLHF seems like the main ingredient, using existing supervised data might
 help.

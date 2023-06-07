@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # I’m in! Now what?
 
 [Join the OpenAssistant Contributors Discord Server!](https://ykilcher.com/open-assistant-discord),
@@ -21,7 +23,7 @@ open questions you want to discuss. Once a project coordinator has assigned the
 issue to you, start working on it.
 
 If the issue is currently unclear but you are interested, please post in Discord
-and someone can help clarify the issue with more detail.
+and someone can help clarify the issue in more detail.
 
 **Always Welcome:** Documentation markdowns in `docs/`, docstrings, diagrams of
 the system architecture, and other documentation.
@@ -50,16 +52,16 @@ contributions smoothly we recommend the following:
     [Here](https://github.com/LAION-AI/Open-Assistant/pull/658) is an example PR
     for this project to illustrate this flow.
 1.  If you're lucky, we can merge your change into `main` without any problems.
-    If there's changes to files you're working on, resolve them by :
-    1.  First try rebase as suggested
+    If there are changes to files you're working on, resolve them by:
+    1.  First try to rebase as suggested
         [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase).
-    1.  If rebase feels too painful, merge as suggested
+    1.  If rebasing feels too painful, merge as suggested
         [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge).
 1.  Once you've resolved conflicts (if any), finish the review and
     [squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits)
     your PR (when squashing try to clean up or update the individual commit
     messages to be one sensible single one).
-1.  Merge in your change and move onto a new issue or the second step of your
+1.  Merge in your change and move on to a new issue or the second step of your
     current issue.
 
 Additionally, if someone is working on an issue that interests you, ask if they
@@ -70,26 +72,25 @@ solution until a challenge comes up.
 #### Tips
 
 - At any point you can compare your feature branch to the upstream/main of
-  `LAION-AI/Open-Assistant` but using a URL like this:
+  `LAION-AI/Open-Assistant` by using a URL like this:
   https://github.com/LAION-AI/Open-Assistant/compare/main...andrewm4894:Open-Assistant:my-example-feature-branch.
   Obviously just replace `andrewm4894` with your own GitHub user name and
   `my-example-feature-branch` with whatever you called the feature branch you
   are working on, so something like
   `https://github.com/LAION-AI/Open-Assistant/compare/main...<your_github_username>:Open-Assistant:<your_branch_name>`.
   This will show the changes that would appear in a PR, so you can check this to
-  make sure it just looks like only the files you have changed or added will be
-  part of the PR.
+  make sure only the files you have changed or added will be part of the PR.
 - Try not to work on the `main` branch in your fork - ideally you can keep this
-  as just a updated copy of `main` from `LAION-AI/Open-Assistant`.
+  as just an updated copy of `main` from `LAION-AI/Open-Assistant`.
 - If your feature branch gets messed up, just update the `main` branch in your
-  fork and create a fresh new clean "feature branch" you can try again on by
-  adding your changes one by one in separate commits or all as a single commit.
+  fork and create a fresh new clean "feature branch" where you can add your
+  changes one by one in separate commits or all as a single commit.
 
 ### When does a review finish
 
 A review finishes when all blocking comments are addressed and at least one
 owning reviewer has approved the PR. Be sure to acknowledge any non-blocking
-comments either by making the request change, explaining why it's not being
+comments either by making the requested change, explaining why it's not being
 addressed now, or filing an issue to handle it later.
 
 ## Developer Setup
@@ -103,10 +104,11 @@ Meaning we'd be happy for anyone to do these tasks.**
 If you want to work on something, assign yourself to it or write a comment that
 you want to work on it and what you plan to do.
 
+- There's an [introduction for developers](docs/docs/guides/developers.md) that
+  gives an overview of the different tools and technologies used in the project.
 - To get started with development, if you want to work on the backend, have a
-  look at `scripts/backend-development/README.md`.
-- If you want to work on any frontend, have a look at
-  `scripts/frontend-development/README.md` to make a backend available.
+  look at `backend/README.md`.
+- If you want to work on any frontend, have a look at `website/README.md`.
 
 There is also a minimal implementation of a frontend in the `text-frontend`
 folder.
@@ -133,11 +135,11 @@ can run `pre-commit run --all-files` to run the pre-commit hooks on all files.
 ### Deployment
 
 Upon making a release on GitHub, all docker images are automatically built and
-pushed to ghcr.io. The docker images are tagged with the release version, and
-the `latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to
+pushed to ghcr.io. The docker images are tagged with the release version and the
+`latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to
 automatically deploy the built release to the dev machine.
 
 ### Contribute a Dataset
 
 See
-[here](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/datasets/README.md)
+[here](https://github.com/LAION-AI/Open-Assistant/blob/main/data/datasets/README.md)

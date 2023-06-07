@@ -8,18 +8,7 @@ import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
 import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable/DataTable";
-
-interface Pagination {
-  /**
-   * The user's `display_name` used for pagination.
-   */
-  cursor: string;
-
-  /**
-   * The pagination direction.
-   */
-  direction: "forward" | "back";
-}
+import { useCursorPagination } from "./DataTable/useCursorPagination";
 
 const columnHelper = createColumnHelper<User>();
 
@@ -29,16 +18,22 @@ const columns: DataTableColumnDef<User>[] = [
   }),
   columnHelper.accessor("id", {
     header: "Auth ID",
+    meta: {
+      filterable: true,
+    },
   }),
   columnHelper.accessor("auth_method", {
     header: "Auth Method",
   }),
-  {
-    ...columnHelper.accessor("display_name", {
-      header: "Name",
-    }),
-    filterable: true,
-  },
+  columnHelper.accessor("display_name", {
+    header: "Name",
+    meta: {
+      filterable: true,
+      cellProps: (x) => {
+        return { style: { overflow: "hidden" } };
+      },
+    },
+  }),
   columnHelper.accessor("role", {
     header: "Role",
   }),
@@ -56,37 +51,35 @@ const columns: DataTableColumnDef<User>[] = [
 ];
 
 export const UserTable = memo(function UserTable() {
-  const [pagination, setPagination] = useState<Pagination>({ cursor: "", direction: "forward" });
+  const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+
   const handleFilterValuesChange = (values: FilterItem[]) => {
-    setFilterValues(values);
-    setPagination((old) => ({ ...old, cursor: "" }));
+    const last = values.pop();
+    if (last) {
+      setFilterValues([last]);
+    }
+    resetCursor();
   };
+
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
-  const display_name = filterValues.find((value) => value.id === "display_name")?.value ?? "";
+
+  const filterValue = filterValues.find((value) => value.id === filterValues[filterValues.length - 1]?.id)?.value ?? "";
   const { data, error } = useSWR<FetchUsersResponse<User>>(
-    `/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`,
+    `/api/admin/users?direction=${pagination.direction}&cursor=${
+      pagination.cursor
+    }&searchDisplayName=${filterValue}&sortKey=${
+      filterValues[filterValues.length - 1]?.id === "id"
+        ? "username"
+        : filterValues[filterValues.length - 1]?.id || "display_name"
+    }`,
     get,
     {
       keepPreviousData: true,
     }
   );
-
-  const toPreviousPage = () => {
-    setPagination({
-      cursor: data?.prev || "",
-      direction: "back",
-    });
-  };
-
-  const toNextPage = () => {
-    setPagination({
-      cursor: data?.next || "",
-      direction: "forward",
-    });
-  };
 
   return (
     <Card>
@@ -95,8 +88,8 @@ export const UserTable = memo(function UserTable() {
           data={data?.items || []}
           columns={columns}
           caption="Users"
-          onNextClick={toNextPage}
-          onPreviousClick={toPreviousPage}
+          onNextClick={() => toNextPage(data)}
+          onPreviousClick={() => toPreviousPage(data)}
           disableNext={!data?.next}
           disablePrevious={!data?.prev}
           filterValues={filterValues}

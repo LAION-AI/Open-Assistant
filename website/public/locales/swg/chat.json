@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Zrig zur Chatlischde",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Chatkonfiguration",
+  "empty": "(leer)",
+  "login_message": "Om des Feature zom nutza muasch di nomml oameldea. Meld di durch oin von denne Provider oa:",
+  "max_new_tokens": "Mehr Toka ganged et",
+  "model": "Model",
+  "preset": "Vorlag",
+  "preset_custom": "Oigane Einstellunga",
+  "queue_info": "Dei Nachricht isch in dr Warteschlange, du bisch grad an dr {{ queuePosition, number, integer }}. Stelle in dr Warteschlange.",
+  "repetition_penalty": "Wiederholungs-Stroaf",
+  "temperature": "Temperatur",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typisches P",
+  "you_are_logged_in": "Du bisch oagmeldet",
+  "your_chats": "Deine Chats"
+}

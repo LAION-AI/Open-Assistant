@@ -2,3 +2,4 @@ __pycache__
 .env
 notes.txt
 venv
+celerybeat-schedule.*

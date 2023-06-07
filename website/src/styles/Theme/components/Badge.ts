@@ -6,6 +6,7 @@ export const badgeTheme = defineStyleConfig({
     px: 2,
     py: 0.5,
     fontWeight: "600",
+    textTransform: "none",
   },
   defaultProps: {
     variant: "solid",

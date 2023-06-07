@@ -25,7 +25,7 @@ def _render_message(message: dict) -> str:
 
 @app.command()
 def main(
-    backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234", random_users: int = 1, task_per_user: int = 10
+    backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234", random_users: int = 1, tasks_per_user: int = 10
 ):
     """automates tasks"""
 
@@ -255,7 +255,7 @@ def main(
                     # rerun with new task selected from above cases
                     # add a new task
                     q += 1
-                    if q == task_per_user:
+                    if q == tasks_per_user:
                         typer.echo("Task done!")
                         break
                     tasks = [_post("/api/v1/tasks/", {"type": "random", "user": USER})]

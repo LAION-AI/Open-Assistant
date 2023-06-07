@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+
+FROM nvidia/cuda:12.0.0-devel-ubuntu22.04
+
+ARG APP_RELATIVE_PATH="inference/worker"
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN cd ~ && \
+    curl -L -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
+    bash ./Miniconda3-latest-Linux-x86_64.sh -bf -p /conda
+RUN /conda/bin/conda init bash
+
+RUN /conda/bin/conda create -n oasst python=3.10 -y
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt requirements-base.txt
+COPY ./${APP_RELATIVE_PATH}/requirements-hf.txt .
+
+RUN cat requirements-base.txt requirements-hf.txt > requirements.txt
+
+RUN --mount=type=cache,target=/var/cache/pip \
+    /conda/envs/oasst/bin/pip install \
+      --cache-dir=/var/cache/pip \
+      -r requirements.txt
+
+COPY ./oasst-shared /tmp/lib/oasst-shared
+RUN --mount=type=cache,target=/var/cache/pip \
+    /conda/envs/oasst/bin/pip install \
+      --cache-dir=/var/cache/pip \
+      /tmp/lib/oasst-shared
+
+COPY ./${APP_RELATIVE_PATH}/*.py .
+
+COPY ./inference/worker/worker_hf_main.sh /entrypoint.sh
+
+CMD /bin/bash -c ". /conda/bin/activate /conda/envs/oasst/ && /entrypoint.sh"

@@ -143,7 +143,6 @@ def modify_dict_cols(j_dict):
 
 
 def process_single_file(f, processed_list):
-
     j_dict_list = []
     if f not in processed_list:
         # Check for compression type
@@ -155,7 +154,6 @@ def process_single_file(f, processed_list):
                     # Check if user key exists
                     if "delete" not in j_dict:
                         if j_dict["truncated"] is False:
-
                             j_dict = modify_dict_cols(j_dict)
 
                             j_dict_list.append(j_dict)
@@ -168,7 +166,6 @@ def process_single_file(f, processed_list):
                     # Check if user key exists
                     if "delete" not in j_dict:
                         if j_dict["truncated"] is False:
-
                             j_dict = modify_dict_cols(j_dict)
 
                             j_dict_list.append(j_dict)
@@ -192,7 +189,6 @@ def process_json(file_list, processed_max_buffer):
     temp_processed_files = []
 
     for i, f in enumerate(tqdm(file_list)):
-
         j_dict_list = process_single_file(f, processed_list)
 
         j_list.extend(j_dict_list)

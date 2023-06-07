@@ -22,10 +22,12 @@ def prepare_message(m: Message) -> protocol.Message:
         review_count=m.review_count,
         ranking_count=m.ranking_count,
         deleted=m.deleted,
+        edited=m.edited,
         synthetic=m.synthetic,
         model_name=m.model_name,
         message_tree_id=m.message_tree_id,
         rank=m.rank,
+        user=m.user.to_protocol_frontend_user() if m.user else None,
     )
 
 
@@ -44,6 +46,7 @@ def prepare_conversation_message(message: Message) -> protocol.ConversationMessa
         emojis=message.emojis or {},
         user_emojis=message.user_emojis or [],
         user_is_author=message.user_is_author,
+        synthetic=message.synthetic,
     )
 
 

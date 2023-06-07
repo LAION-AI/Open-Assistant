@@ -10,6 +10,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.discordapp.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
     ],
   },
   experimental: {

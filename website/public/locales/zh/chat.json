@@ -1,0 +1,27 @@
+{
+  "back_to_chat_list": "返回对话列表",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "对话设置",
+  "empty": "(无标题)",
+  "login_message": "为了使用该服务, 您需要使用以下方式重新登录:",
+  "max_new_tokens": "最大令牌数量",
+  "model": "模型",
+  "parameter_description": {
+    "max_new_tokens": "最大 Token(令牌) 数量: 该参数告诉模型最多应该为响应生成多少个 Token.",
+    "repetition_penalty": "Repetition penalty (重复惩罚): 该参数控制原模型输出重复 Token 的概率, 使响应充满多样性.",
+    "temperature": "Temperature (温度): 每个生成的 Token 均是从分布 p(next_token|previous_tokens) 中取得的. Temperature 参数可以使该分布更加 \"锐利\" 或 \"平均\". 将其设置为 1 意味着模型会按照默认的概率生成 Token (例子: 如果模型预测 \"XYZ\" 的生成概率为 12.3%, 那么将会原封不动的以 12.3% 的可能性生成它). 将 Temperature 降低直到 0 会使模型更加 \"贪婪\", 导致高概率 Token 变得更高, 低概率变得更低 (请注意这不是线性关系!). 而增加 Temperature 会使生成概率更加相似. 简而言之, 更低的温度意味着输出更加靠近模型所相信的答案, 更高的温度则允许模型有更多创造性和多样化的反应.",
+    "top_k": "Top-k: 类似于 Top-p 抽样, 但它不是累计最高权重的 Token 直到概率超过 'p', 而是仅抽取最有可能的 K 个 Token. Top-p 通常是最优选择因为它允许模型 '调整' 搜索半径, 但当模型不知道下一步该生成什么且 Token 处于一个均匀分布时, Top-k 将作为一个 '应急方案'.",
+    "top_p": "Top-p (Nucleus Sampling 核心采样): 该方法通过只选择 Top-p% 以上的 Token, 从而减少概率分布. 通过丢弃低概率 Token, 有助于模型约束输出, 防止出现语法错误的句子.",
+    "typical_p": "Typical p: Typical Sampling(代表抽样) 是一种信息理论技术, 考虑概率的同时, 引入一个新的 Sequence Entropy(序列熵), 及依据概率的信息含量. 这意味着 Typical Sampling 会增加被认为是 \"有趣的\" 低概率 Token 权重, 并减少被认为是 \"无聊\" 的 高概率 Token 权重."
+  },
+  "preset": "预设",
+  "preset_custom": "自定义",
+  "queue_info": "您的消息已被加入队列, 位于队列的第 {{ queuePosition, number, integer }} 位.",
+  "repetition_penalty": "Repetition penalty",
+  "temperature": "Temperature",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
+  "you_are_logged_in": "已登录对话",
+  "your_chats": "您的对话"
+}

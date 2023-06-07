@@ -1,11 +1,14 @@
-import { Tooltip } from "@chakra-ui/react";
-import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
+import { Progress, Stack, TextareaProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
 import { useTranslation } from "next-i18next";
 import React from "react";
-import { useCookies } from "react-cookie";
+import { TextareaAutosizeProps } from "react-textarea-autosize";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { LanguageAbbreviations } from "src/lib/iso6393";
+import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
+
+import { MarkDownEditor } from "../MarkdownEditor";
 
 interface TrackedTextboxProps {
   text: string;
@@ -14,17 +17,15 @@ interface TrackedTextboxProps {
     medium: number;
     goal: number;
   };
-  textareaProps?: TextareaProps;
-  onTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  textareaProps?: TextareaProps & TextareaAutosizeProps;
+  onTextChange: (value: string) => void;
 }
 
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
-  const backgroundColor = useColorModeValue("gray.100", "gray.900");
-  const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"];
-  const wordCount = (props.text.match(/\w+/g) || []).length;
+  const currentLanguage = useCurrentLocale();
+  const wordCount = (props.text.match(/\S+/g) || []).length;
 
   const detectLang = (text: string) => {
     try {
@@ -49,18 +50,13 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   }
 
   const problemColor = useColorModeValue(colors.light.problem, colors.dark.problem);
-
   return (
     <Stack direction={"column"}>
       <div style={{ position: "relative" }}>
-        <Textarea
-          backgroundColor={backgroundColor}
-          border="none"
-          data-cy="reply"
-          p="4"
+        <MarkDownEditor
           value={props.text}
           onChange={props.onTextChange}
-          {...props.textareaProps}
+          placeholder={props.textareaProps?.placeholder}
         />
         <div
           style={{
@@ -68,29 +64,28 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
             fontWeight: "bold",
             color: wrongLanguage ? problemColor : "gray",
             position: "absolute",
-            top: 0,
+            bottom: 4,
             marginTop: "0.1em",
-            left: 0, // Attach to left and right and align to end to support rtl languages
-            right: 0,
-            marginInlineEnd: "0.5em",
-            textAlign: "end",
+            left: 10,
             zIndex: 1, // Appear above the text box when it has focus
             textTransform: "uppercase",
           }}
         >
           <Tooltip
             label={t(wrongLanguage ? "writing_wrong_langauge_a_b" : "submitted_as", {
-              submit_lang: new Intl.DisplayNames(currentLanguage, { type: "language" }).of(currentLanguage),
-              detected_lang: new Intl.DisplayNames(currentLanguage, { type: "language" }).of(detectedLang),
+              submit_lang: getLocaleDisplayName(currentLanguage),
+              detected_lang: getLocaleDisplayName(detectedLang, currentLanguage),
             })}
           >
             {detectedLang}
           </Tooltip>
         </div>
       </div>
+
       <Progress
         size={"md"}
         height={"2"}
+        width={"100%"}
         rounded={"md"}
         value={wordCount}
         colorScheme={progressColor}

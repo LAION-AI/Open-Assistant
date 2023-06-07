@@ -1,9 +1,15 @@
 import { Select, SelectProps } from "@chakra-ui/react";
 import { forwardRef } from "react";
-import { ElementOf } from "src/types/utils";
+import { ValueOf } from "ts-essentials";
 
-export const roles = ["general", "admin", "banned"] as const;
-export type Role = ElementOf<typeof roles>;
+export const ROLES = {
+  GERNERAL: "general",
+  BANNED: "banned",
+  ADMIN: "admin",
+  MODERATOR: "moderator",
+} as const;
+
+export type Role = ValueOf<typeof ROLES>;
 
 type RoleSelectProps = Omit<SelectProps, "defaultValue"> & {
   defaultValue?: Role;
@@ -13,7 +19,7 @@ type RoleSelectProps = Omit<SelectProps, "defaultValue"> & {
 export const RoleSelect = forwardRef<HTMLSelectElement, RoleSelectProps>((props, ref) => {
   return (
     <Select {...props} ref={ref}>
-      {roles.map((role) => (
+      {Object.values(ROLES).map((role) => (
         <option value={role} key={role}>
           {role}
         </option>

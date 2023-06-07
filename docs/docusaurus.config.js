@@ -29,6 +29,10 @@ const config = {
     defaultLocale: "en",
     locales: ["en"],
   },
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["@docusaurus/theme-mermaid"],
 
   presets: [
     [
@@ -39,7 +43,7 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
         },
         api: {
-          path: "docs/api/openapi.json",
+          path: "docs/api/",
         },
         blog: {
           routeBasePath: "/blog",
@@ -77,6 +81,11 @@ const config = {
           {
             href: "https://open-assistant.io/",
             label: "App",
+            position: "left",
+          },
+          {
+            href: "https://open-assistant.io/chat",
+            label: "Chat",
             position: "left",
           },
           {
@@ -120,6 +129,10 @@ const config = {
               {
                 label: "GitHub",
                 href: "https://github.com/LAION-AI/Open-Assistant",
+              },
+              {
+                label: "FAQ",
+                href: "https://projects.laion.ai/Open-Assistant/docs/faq",
               },
             ],
           },

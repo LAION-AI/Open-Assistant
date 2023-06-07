@@ -1,0 +1,20 @@
+{
+  "aborted_low_grade": "Kumotut huonolaatuiset viestit",
+  "assistant": "Assistentti",
+  "backlog_ranking": "Kasautuvat sijoitukset",
+  "choose_a_language": "Valitse kieli",
+  "count": "Määrä",
+  "growing": "Kasvava",
+  "halted_by_moderator": "Ylläpitäjän keskeyttämä",
+  "human_messages_by_lang": "Ihmisten viestit kielen mukaan",
+  "human_messages_by_role": "Ihmisten viestit roolin mukaan",
+  "initial_prompt_review": "Aloitusviestien arviointi",
+  "message_trees_by_state": "Viestiketjut tilan mukaan",
+  "message_trees_states_by_lang": "Viestiketjujen tilat kielen mukaan",
+  "prompt_lottery_waiting": "Kehote arvontaa odottavat",
+  "prompter": "Käyttäjä",
+  "ranking": "Sijoitus",
+  "ready_for_export": "Valmis vientiä varten",
+  "stats": "Tilastot",
+  "users_accepted_tos": "Käyttäjät jotka ovat hyväksyneet käyttöehdot"
+}

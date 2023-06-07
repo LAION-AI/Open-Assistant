@@ -4,57 +4,98 @@ import contextlib
 import gzip
 import json
 import sys
+import uuid
 from collections import defaultdict
 from typing import Iterable, Optional, TextIO
-from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
 from oasst_backend.models import Message
 from oasst_backend.models.message_tree_state import State as TreeState
-from pydantic import BaseModel
+from oasst_data import (
+    ExportMessageEvent,
+    ExportMessageEventEmoji,
+    ExportMessageEventRanking,
+    ExportMessageEventRating,
+    ExportMessageNode,
+    ExportMessageTree,
+    LabelValues,
+)
+from oasst_shared.utils import Anonymizer
 
 
-class ExportMessageNode(BaseModel):
-    message_id: str
-    parent_id: str | None
-    text: str
-    role: str
-    lang: str | None
-    review_count: int | None
-    review_result: bool | None
-    rank: int | None
-    synthetic: bool | None
-    model_name: str | None
-    emojis: dict[str, int] | None
-    replies: list[ExportMessageNode] | None
-
-    @staticmethod
-    def prep_message_export(message: Message) -> ExportMessageNode:
-        return ExportMessageNode(
-            message_id=str(message.id),
-            parent_id=str(message.parent_id) if message.parent_id else None,
-            text=str(message.payload.payload.text),
-            role=message.role,
-            lang=message.lang,
-            review_count=message.review_count,
-            review_result=message.review_result if message.review_result or message.review_count > 2 else None,
-            synthetic=message.synthetic,
-            model_name=message.model_name,
-            emojis=message.emojis,
-            rank=message.rank,
-        )
-
-
-class ExportMessageTree(BaseModel):
-    message_tree_id: str
-    tree_state: Optional[str]
-    prompt: Optional[ExportMessageNode]
+def prepare_export_message_node(
+    message: Message,
+    labels: Optional[LabelValues] = None,
+    anonymizer: Anonymizer | None = None,
+    events: dict[str, list[ExportMessageEvent]] | None = None,
+) -> ExportMessageNode:
+    message_id = str(message.id)
+    parent_id = str(message.parent_id) if message.parent_id else None
+    user_id = str(message.user_id) if message.user_id else None
+    if anonymizer is not None:
+        message_id = anonymizer.anonymize("message", message_id)
+        parent_id = anonymizer.anonymize("message", parent_id)
+        user_id = anonymizer.anonymize("user", user_id)
+        if events is not None:
+            for event_key, event_values in events.items():
+                for event in event_values:
+                    match event_key:
+                        case "emoji":
+                            event: ExportMessageEventEmoji = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                        case "rating":
+                            event: ExportMessageEventRating = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                        case "ranking":
+                            event: ExportMessageEventRanking = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                            event.ranked_message_ids = [
+                                anonymizer.anonymize("message", m) for m in event.ranked_message_ids
+                            ]
+                            if event.ranking_parent_id is not None:
+                                event.ranking_parent_id = anonymizer.anonymize("message", event.ranking_parent_id)
+                            if event.message_tree_id is not None:
+                                event.message_tree_id = anonymizer.anonymize("message_tree", event.message_tree_id)
+                        case _:
+                            raise ValueError(f"Unknown event type {event_key}")
+    assert message_id is not None
+    return ExportMessageNode(
+        message_id=message_id,
+        parent_id=parent_id,
+        user_id=user_id,
+        created_date=message.created_date,
+        text=str(message.payload.payload.text),
+        role=message.role,
+        lang=message.lang,
+        deleted=message.deleted,
+        review_count=message.review_count,
+        review_result=message.review_result if message.review_result or message.review_count > 2 else None,
+        synthetic=message.synthetic,
+        model_name=message.model_name,
+        emojis=message.emojis,
+        rank=message.rank,
+        labels=labels,
+        events=events,
+    )
 
 
 def build_export_tree(
-    message_tree_id: UUID, message_tree_state: TreeState, messages: list[Message]
+    message_tree_id: uuid.UUID,
+    message_tree_state: TreeState,
+    messages: list[Message],
+    labels: Optional[dict[uuid.UUID, LabelValues]] = None,
+    anonymizer: Anonymizer | None = None,
+    events: dict[uuid.UUID, dict[str, list[ExportMessageEvent]]] | None = None,
 ) -> ExportMessageTree:
-    export_messages = [ExportMessageNode.prep_message_export(m) for m in messages]
+    export_messages = [
+        prepare_export_message_node(
+            m, (labels.get(m.id) if labels else None), anonymizer=anonymizer, events=events.get(m.id)
+        )
+        for m in messages
+    ]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -103,7 +144,14 @@ def write_trees_to_file(filename: str | None, trees: list[ExportMessageTree], us
             f.write("\n")
 
 
-def write_messages_to_file(filename: str | None, messages: Iterable[Message], use_compression: bool = True) -> None:
+def write_messages_to_file(
+    filename: str | None,
+    messages: Iterable[Message],
+    use_compression: bool = True,
+    labels: Optional[dict[uuid.UUID, LabelValues]] = None,
+    anonymizer: Anonymizer | None = None,
+    events: dict[uuid.UUID, dict[str, list[ExportMessageEvent]]] | None = None,
+) -> None:
     out_buff: TextIO
 
     if use_compression:
@@ -115,7 +163,10 @@ def write_messages_to_file(filename: str | None, messages: Iterable[Message], us
 
     with out_buff as f:
         for m in messages:
-            export_message = ExportMessageNode.prep_message_export(m)
+            export_message = prepare_export_message_node(
+                m, (labels.get(m.id) if labels else None), anonymizer=anonymizer, events=events.get(m.id)
+            )
+
             file_data = jsonable_encoder(export_message, exclude_none=True)
             json.dump(file_data, f)
             f.write("\n")

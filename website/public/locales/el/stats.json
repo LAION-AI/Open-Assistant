@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Αποβολή λόγω χαμηλού βαθμού",
+  "assistant": "Βοηθός",
+  "backlog_ranking": "Κατάταξη εκκρεμοτήτων",
+  "choose_a_language": "Επιλογή γλώσσας",
+  "count": "Αρίθμηση",
+  "growing": "Υπό ανάπτυξη",
+  "halted_by_moderator": "Διακόπηκε από συντονιστή",
+  "human_messages_by_lang": "Ανθρώπινα μηνύματα ανά γλώσσα",
+  "human_messages_by_role": "Ανθρώπινα μηνύματα ανά ρόλο",
+  "initial_prompt_review": "Έλεγχος αρχικού μηνύματος",
+  "language_stats": "Γλώσσα",
+  "message_trees_by_state": "Δέντρα μηνυμάτων ανά κατάσταση",
+  "message_trees_states_by_lang": "Καταστάσεις δέντρων μηνυμάτων ανά γλώσσα",
+  "prompt_lottery_waiting": "Αναμονή κλήρωσης",
+  "prompter": "Χρήστης",
+  "ranking": "Κατάταξη",
+  "ready_for_export": "Έτοιμο για εξαγωγή",
+  "stats": "Στατιστικά",
+  "users_accepted_tos": "Οι χρήστες αποδέχτηκαν τους όρους"
+}

@@ -1,15 +1,19 @@
 {
-  "name": "Open-Assistant",
+  "name": "Generic",
   "image": "mcr.microsoft.com/vscode/devcontainers/universal",
   "features": {
     "ghcr.io/devcontainers-contrib/features/pre-commit:2": {
       "version": "latest"
     }
   },
-  "postCreateCommand": "bash .devcontainer/post_create_command.sh",
+  "postCreateCommand": ".devcontainer/post_create_command.sh",
   "customizations": {
     "vscode": {
-      "extensions": ["GitHub.copilot"]
+      "extensions": [
+        "GitHub.copilot",
+        "ms-python.python",
+        "esbenp.prettier-vscode"
+      ]
     }
   }
 }

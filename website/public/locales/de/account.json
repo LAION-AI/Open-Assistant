@@ -1,0 +1,9 @@
+{
+  "delete_account": "Mein Konto löschen",
+  "delete_account_data": "Alle Daten auf Open Assistant, die durch das Lösen von Aufgaben, das einordnen von Nachrichten und alle Gespräche, die über den Chat-Dienst gespeichert wurden, werden weiterhin gespeichert. Alle Verweise auf den ursprünglichen Benutzer werden jedoch anonymisiert.",
+  "delete_account_intro": "Das Löschen des Kontos bedeutet folgendes:",
+  "delete_account_leaderboard": "Gelöschte Konto erscheinen nicht mehr in der Bestenliste.",
+  "delete_account_permanent": "Diese Aktion ist entgültig und kann nicht rückgängig gemacht werden.",
+  "go_to_dashboard": "Zurück zum Dashboard",
+  "yes_delete": "Ja, ich möchte mein Konte entgültig löschen."
+}

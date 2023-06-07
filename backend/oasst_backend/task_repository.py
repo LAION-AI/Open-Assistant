@@ -12,7 +12,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
-from sqlmodel import Session, delete, false, func, or_
+from sqlmodel import Session, delete, false, func, not_, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -83,6 +83,7 @@ class TaskRepository:
                     reply_messages=task.reply_messages,
                     ranking_parent_id=task.ranking_parent_id,
                     message_tree_id=task.message_tree_id,
+                    reveal_synthetic=task.reveal_synthetic,
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
@@ -92,6 +93,7 @@ class TaskRepository:
                     reply_messages=task.reply_messages,
                     ranking_parent_id=task.ranking_parent_id,
                     message_tree_id=task.message_tree_id,
+                    reveal_synthetic=task.reveal_synthetic,
                 )
 
             case protocol_schema.LabelInitialPromptTask:
@@ -144,15 +146,20 @@ class TaskRepository:
         return task_model
 
     @managed_tx_method(CommitMode.COMMIT)
-    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
+    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str) -> None:
         validate_frontend_message_id(frontend_message_id)
 
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
         if task is None:
             raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        if task.ack and task.frontend_message_id == frontend_message_id:
+            return  # ACK is idempotent if called with the same frontend_message_id
+
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
+
         if task.done or task.ack is not None:
             raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
@@ -222,10 +229,14 @@ class TaskRepository:
         return task
 
     def fetch_recent_reply_tasks(
-        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, skipped: bool = False, limit: int = 100
+        self,
+        max_age: timedelta = timedelta(minutes=5),
+        done: bool = False,
+        skipped: bool = False,
+        limit: int = 100,
     ) -> list[Task]:
         qry = self.db.query(Task).filter(
-            func.age(func.current_timestamp(), Task.created_date) < max_age,
+            Task.created_date > func.current_timestamp() - max_age,
             or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
         )
         if done is not None:
@@ -238,3 +249,23 @@ class TaskRepository:
 
     def delete_expired(self) -> int:
         return delete_expired_tasks(self.db)
+
+    def fetch_pending_tasks_of_user(
+        self,
+        user_id: UUID,
+        max_age: timedelta = timedelta(minutes=5),
+        limit: int = 100,
+    ) -> list[Task]:
+        qry = (
+            self.db.query(Task)
+            .filter(
+                Task.user_id == user_id,
+                Task.created_date > func.current_timestamp() - max_age,
+                not_(Task.done),
+                not_(Task.skipped),
+            )
+            .order_by(Task.created_date)
+        )
+        if limit:
+            qry = qry.limit(limit)
+        return qry.all()

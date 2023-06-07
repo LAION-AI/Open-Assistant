@@ -1,0 +1,86 @@
+defaults_rlhf:
+  rng_seed: 0xa1221f97
+  datasets: []
+  batch_size: 1
+  chunk_size: 1
+  num_rollouts: 16
+  total_steps: 10000
+  datasets_extra: []
+  cache_dir: /home/ubuntu/data_cache
+  output_dir: model_rl
+  eval_size: 500
+  num_eval_prompts: 64
+  rank_config:
+  sft_config:
+  debug: false
+  dtype: fp16
+
+oasst_export_latin_cyrillic_rlhf:
+  datasets:
+    - oasst_export:
+        #lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        lang: "en"
+        #top_k: 2
+        #input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-04-08_ready_with_prompt_lottery_en.jsonl.gz
+  sort_by_length: false
+  use_custom_sampler: false
+
+pythia_rlhf:
+  triton_host_rm: localhost:8002/andreaskoepf-oasst-rm-2-pythia-1.4b-10000
+  triton_host_sft: localhost:8005/andreaskoepf-oasst-sft-4-pythia-12b-epoch-3.5
+  rank_config:
+    is_reward_model: true
+    model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-10000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    pooling: last
+    residual_dropout: 0.01
+    use_flash_attention: false
+    dtype: fp16
+    batch_size: 8
+
+  sft_config:
+    is_reward_model: false
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
+    # model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
+    # model_name: OpenAssistant/llama_30b_sft-2_test
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    quantization: false
+    seq2seqmodel: false
+    freeze_layer:
+    num_layers_unfrozen: -1
+    residual_dropout: 0.2
+    use_flash_attention: false
+    dtype: fp16
+    batch_size: 1
+
+llama_rlhf:
+  triton_host_rm: localhost:8002/OpenAssistant-oasst-rm-2-pythia-6.9b-epoch-1
+  triton_host_sft: localhost:8005/OpenAssistant-oasst-sft-7e2-llama-30b
+  rank_config:
+    is_reward_model: true
+    model_name: OpenAssistant/oasst-rm-2-pythia-6.9b-epoch-1
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    pooling: last
+    residual_dropout: 0.0
+    use_flash_attention: false
+    dtype: fp16
+    batch_size: 8
+
+  sft_config:
+    is_reward_model: false
+    model_name: OpenAssistant/oasst-sft-7e2-llama-30b
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    quantization: false
+    seq2seqmodel: false
+    freeze_layer: 52
+    num_layers_unfrozen: -1 # we don't use this, trlx has its own implementation
+    residual_dropout: 0.0
+    use_flash_attention: true
+    dtype: fp16
+
+debug_rlhf:
+  rank_model: pythia_reward_model/checkpoint-50
+  sft_model: pythia_sft/checkpoint-10/
+  batch_size: 2
+  log_dir: test

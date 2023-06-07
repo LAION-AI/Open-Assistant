@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Badge,
   Box,
   Link,
   Menu,
@@ -16,6 +17,8 @@ import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
+import { UserScore } from "src/components/Header/UserScore";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 
 interface MenuOption {
   name: string;
@@ -31,7 +34,7 @@ export function UserMenu() {
     signOut({ callbackUrl: "/" });
   }, []);
   const { data: session, status } = useSession();
-
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
   if (!session || status !== "authenticated") {
     return null;
   }
@@ -56,7 +59,7 @@ export function UserMenu() {
     },
   ];
 
-  if (session.user.role === "admin") {
+  if (isAdminOrMod) {
     options.unshift({
       name: t("admin_dashboard"),
       href: "/admin",
@@ -68,19 +71,24 @@ export function UserMenu() {
   return (
     <Menu>
       <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
-        <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
-          <Avatar size="sm" src={session.user.image}></Avatar>
-          <Text data-cy="username" className="hidden lg:flex">
+        <Box display="flex" alignItems="center" gap="3" p="1">
+          <Avatar size="sm" src={session.user.image!} />
+          <Text data-cy="username" className="hidden lg:flex ltr:pr-2 rtl:pl-2" style={{ overflow: "hidden" }}>
             {session.user.name || "New User"}
           </Text>
         </Box>
       </MenuButton>
       <MenuList p="2" borderRadius="xl" shadow="none">
-        <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
-          <Text>{session.user.name}</Text>
-          {/* <Text color="blue.500" fontWeight="bold" fontSize="xl">
-            3,200
-          </Text> */}
+        <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="1" gap="2">
+          <Text style={{ overflow: "hidden" }}>
+            {session.user.name}
+            {isAdminOrMod ? (
+              <Badge size="xs" ml="2" fontSize="xs" textTransform="capitalize">
+                {session.user.role}
+              </Badge>
+            ) : null}
+          </Text>
+          <UserScore />
         </Box>
         <MenuDivider />
         <MenuGroup>

@@ -1,23 +1,26 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { useCookies } from "react-cookie";
-import { getDashboardLayout } from "src/components/Layout";
-import { MessageTable } from "src/components/Messages/MessageTable";
+import { DashboardLayout } from "src/components/Layout";
+import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
+import UserMessageConversation from "src/components/UserMessageConversation";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
+import { getLocaleDisplayName } from "src/lib/languages";
+import { API_ROUTES } from "src/lib/routes";
 
 const MessagesDashboard = () => {
   const { t } = useTranslation(["message"]);
   const boxBgColor = useColorModeValue("white", "gray.800");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-  const { data: messages } = useSWRImmutable("/api/messages", get, { revalidateOnMount: true });
-  const { data: userMessages } = useSWRImmutable(`/api/messages/user`, get, { revalidateOnMount: true });
+  const lang = useCurrentLocale();
+  const { data: messages } = useSWRImmutable(API_ROUTES.RECENT_MESSAGES({ lang }), get, { revalidateOnMount: true });
 
-  const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"] || "en";
+  const currentLanguage = useCurrentLocale();
+
   return (
     <>
       <Head>
@@ -28,7 +31,7 @@ const MessagesDashboard = () => {
         <Box>
           <Text className="text-2xl font-bold" pb="4">
             {t("recent_messages", {
-              language: new Intl.DisplayNames([currentLanguage], { type: "language" }).of(currentLanguage),
+              language: getLocaleDisplayName(currentLanguage),
             })}
           </Text>
           <Box
@@ -36,9 +39,13 @@ const MessagesDashboard = () => {
             boxShadow="base"
             dropShadow={boxAccentColor}
             borderRadius="xl"
-            className="p-3 sm:p-4 shadow-sm"
+            className="p-6 shadow-sm"
           >
-            {messages ? <MessageTable enableLink messages={messages} /> : <CircularProgress isIndeterminate />}
+            {messages ? (
+              <MessageConversation enableLink messages={messages} showCreatedDate />
+            ) : (
+              <CircularProgress isIndeterminate />
+            )}
           </Box>
         </Box>
         <Box>
@@ -52,7 +59,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {userMessages ? <MessageTable enableLink messages={userMessages} /> : <CircularProgress isIndeterminate />}
+            <UserMessageConversation />
           </Box>
         </Box>
       </SimpleGrid>
@@ -60,6 +67,6 @@ const MessagesDashboard = () => {
   );
 };
 
-MessagesDashboard.getLayout = getDashboardLayout;
+MessagesDashboard.getLayout = DashboardLayout;
 
 export default MessagesDashboard;

@@ -1,10 +1,12 @@
 from .api_client import ApiClient
+from .cached_stats import CachedStats
 from .flagged_message import FlaggedMessage
 from .journal import Journal, JournalIntegration
 from .message import Message
 from .message_embedding import MessageEmbedding
 from .message_emoji import MessageEmoji
 from .message_reaction import MessageReaction
+from .message_revision import MessageRevision
 from .message_toxicity import MessageToxicity
 from .message_tree_state import MessageTreeState
 from .task import Task
@@ -21,6 +23,7 @@ __all__ = [
     "Message",
     "MessageEmbedding",
     "MessageReaction",
+    "MessageRevision",
     "MessageTreeState",
     "MessageToxicity",
     "Task",
@@ -30,4 +33,5 @@ __all__ = [
     "MessageEmoji",
     "TrollStats",
     "FlaggedMessage",
+    "CachedStats",
 ]

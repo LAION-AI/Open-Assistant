@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Abgebrochen - niedrige Bewertung",
+  "assistant": "Assistent",
+  "backlog_ranking": "Backlog-Ranking",
+  "choose_a_language": "Wähle eine Sprache",
+  "count": "Count",
+  "growing": "Wachsend",
+  "halted_by_moderator": "Von Moderator angehalten",
+  "human_messages_by_lang": "Menschen-Nachrichten nach Sprache",
+  "human_messages_by_role": "Menschen-Nachrichten nach Rolle",
+  "initial_prompt_review": "Initiale Prompt-Prüfung",
+  "language_stats": "Sprache",
+  "message_trees_by_state": "Nachrichtenbäume nach Status",
+  "message_trees_states_by_lang": "Nachrichtenbaumstatus nach Sprache",
+  "prompt_lottery_waiting": "In Prompt-Lotterie",
+  "prompter": "Prompter",
+  "ranking": "Ranking",
+  "ready_for_export": "Zum Export bereit",
+  "stats": "Statistiken",
+  "users_accepted_tos": "Nutzer, die AGB akzeptiert haben"
+}

@@ -1,118 +1,133 @@
-import json
+import concurrent.futures
+import signal
+import sys
+import time
+from contextlib import closing
 
-import rel
-import requests
-import sseclient
-import typer
+import pydantic
+import transformers
+import utils
 import websocket
+import work
 from loguru import logger
-from oasst_shared.schemas import inference, protocol
+from oasst_shared import model_configs
+from oasst_shared.schemas import inference
+from settings import settings
 
-app = typer.Typer()
+
+def terminate_worker(signum, frame):
+    logger.warning(f"Signal {signum}. Terminating worker...")
+    sys.exit(0)
 
 
-@app.command()
-def main(
-    backend_url: str = "ws://localhost:8000",
-    model_name: str = "distilgpt2",
-    inference_server_url: str = "http://localhost:8001",
-):
-    def on_open(ws: websocket.WebSocket):
-        logger.info("Connected to backend, sending config...")
-        worker_config = inference.WorkerConfig(model_name=model_name)
-        ws.send(worker_config.json())
-        logger.info("Config sent, waiting for work...")
+def main():
+    signal.signal(signal.SIGINT, terminate_worker)
+    logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
-    def on_message(ws: websocket.WebSocket, message: str):
-        # TODO: what if this comes in, but one is already in progress?
-        # also need to think of enabling batching
-        work_request = inference.WorkRequest.parse_raw(message)
+    model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
+    logger.warning(f"Model config: {model_config}")
+    if model_config is None:
+        logger.error(f"Unknown model config name: {settings.model_config_name}")
+        sys.exit(2)
 
-        def _prepare_message(message: protocol.ConversationMessage) -> str:
-            prefix = "Assistant: " if message.is_assistant else "User: "
-            return prefix + message.text
+    if model_config.is_lorem:
+        tokenizer = None
+    else:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+        logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
 
-        # construct prompt
-        messages = [_prepare_message(message) for message in work_request.conversation.messages]
-
-        prefix = (
-            "The following is a conversation between a user and an assistant. "
-            "The assistant is helpful, creative, clever, and very friendly.\n"
-            "Assistant: Hello! How can I help you today?\n"
-        )
-
-        prompt = prefix + "\n".join(messages) + "\nAssistant:"
-
-        response = requests.post(
-            f"{inference_server_url}/generate_stream",
-            json={
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": work_request.max_new_tokens,
-                    "do_sample": work_request.do_sample,
-                    "top_k": work_request.top_k,
-                    "top_p": work_request.top_p,
-                    "temperature": work_request.temperature,
-                    "seed": work_request.seed,
-                    # "stop": ["\nUser:", "\nAssistant:"], # TODO: make this a bit more workable because it's mutliple tokens
-                },
-            },
-            stream=True,
-            headers={"Accept": "text/event-stream"},
-        )
-        try:
-            response.raise_for_status()
-        except requests.HTTPError:
-            logger.exception("Failed to get response from inference server")
-            logger.error(f"Response: {response.text}")
-            return
-
-        client = sseclient.SSEClient(response)
-        for event in client.events():
-            logger.debug(f"Received event: {event}")
-            data = json.loads(event.data)
-            if data["generated_text"]:
-                break
-            token = data["token"]
-            ws.send(
-                inference.WorkResponsePacket(
-                    token=inference.TokenResponse(
-                        text=token["text"],
-                        log_prob=token["logprob"],
-                        token_id=token["id"],
-                    )
-                ).json()
-            )
-        ws.send(
-            inference.WorkResponsePacket(
-                is_end=True,
-                generated_text=inference.GeneratedTextResponse(
-                    text=data["generated_text"],
-                ),
-            ).json()
-        )
-
-    def on_error(ws: websocket.WebSocket, error: Exception):
-        try:
-            raise error
-        except Exception:
-            logger.exception("Error in websocket")
-
-    def on_close(ws: websocket.WebSocket, close_status_code: int, close_msg: str):
-        logger.warning(f"Connection closed: {close_status_code=} {close_msg=}")
-
-    ws = websocket.WebSocketApp(
-        f"{backend_url}/work",
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-        on_open=on_open,
+    inference_http = utils.HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+        bearer_token=settings.bearer_token,
     )
 
-    ws.run_forever(dispatcher=rel, reconnect=5)
-    rel.signal(2, rel.abort)
-    rel.dispatch()
+    while True:
+        try:
+            if not model_config.is_lorem:
+                utils.wait_for_inference_server(inference_http)
+
+            if settings.perform_oom_test:
+                work.perform_oom_test(tokenizer)
+                sys.exit(0)
+
+            worker_config = inference.WorkerConfig(
+                model_config=model_config,
+                max_parallel_requests=settings.max_parallel_requests,
+            )
+
+            logger.warning(f"connecting to {settings.backend_url}...")
+            with closing(
+                websocket.create_connection(
+                    f"{settings.backend_url}/workers/work",
+                    header={
+                        "X-API-Key": settings.api_key,
+                        "X-Protocol-Version": inference.INFERENCE_PROTOCOL_VERSION,
+                    },
+                )
+            ) as ws:
+                logger.warning("Connected to backend, sending config...")
+                worker_info = inference.WorkerInfo(
+                    config=worker_config,
+                    hardware_info=inference.WorkerHardwareInfo(),
+                )
+                utils.send_response(ws, worker_info)
+                logger.warning("Config sent, waiting for work...")
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=worker_config.max_parallel_requests) as executor:
+                    ftrs = []
+                    while True:
+                        if ftrs:
+                            done, not_done = concurrent.futures.wait(ftrs, timeout=1)
+                            ftrs = list(not_done)
+                            for ftr in done:
+                                ftr.result()
+                        message = ws.recv()
+                        if not message:
+                            logger.warning("Connection closed, reconnecting...")
+                            break
+                        worker_request = pydantic.parse_raw_as(inference.WorkerRequest, message)
+                        match worker_request.request_type:
+                            case "work":
+                                logger.info(f"Handling work request: {worker_request.id=}")
+                                ftr = executor.submit(
+                                    work.handle_work_request, ws, tokenizer, worker_request, worker_config
+                                )
+                                ftrs.append(ftr)
+                            case "ping":
+                                utils.send_response(
+                                    ws,
+                                    inference.PongResponse(
+                                        request_id=worker_request.id, metrics=inference.WorkerMetricsInfo()
+                                    ),
+                                )
+                            case "wrong_api_key":
+                                logger.error("Your API Key seems to be wrong, please check it!")
+                                raise RuntimeError("Your API Key seems to be wrong, please check it!")
+                            case "upgrade_protocol":
+                                logger.error("Your worker is outdated, please upgrade it!")
+                                sys.exit(2)  # potentially read this status code outside
+                            case "terminate":
+                                logger.info("Received terminate, terminating worker")
+                                sys.exit(0)
+                            case "error":
+                                logger.error(f"Received error: {worker_request.error}")
+                                raise RuntimeError(f"Received error: {worker_request.error}")
+
+        except websocket.WebSocketBadStatusException as e:
+            logger.error(f"Bad status: {e.status_code=} {str(e)=}")
+            logger.error("Did you provide the correct API key?")
+            if not settings.retry_on_error:
+                sys.exit(1)
+            time.sleep(5)
+        except Exception:
+            logger.exception("Error in websocket")
+            if not settings.retry_on_error:
+                sys.exit(1)
+            logger.warning("Retrying in 5 seconds...")
+            time.sleep(5)
 
 
 if __name__ == "__main__":
-    app()
+    main()

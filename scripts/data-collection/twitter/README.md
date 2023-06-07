@@ -38,8 +38,8 @@ conversation, or at least as a prompt with replies.
   files for future processing. Note: Using polars instead of pandas due to
   performance reasons.
 - Wrote scripts that process the large dump of tweets into conversation threads
-  using the tree and node architecture. This results in aroun 17K conversation
-  threads bassed on a dump of 90M tweets.
+  using the tree and node architecture. This results in around 17K conversation
+  threads based on a dump of 90M tweets.
 - Script can output the conversation threads into a jsonl file for further
   filtering or use in models.
 

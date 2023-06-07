@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Kopieer bericht-ID",
+  "copy_message_link": "Kopieer berichtlink",
+  "label_action": "Label",
+  "label_title": "Label",
+  "message_deleted": "Bericht verwijderd",
+  "message": "Bericht",
+  "open_new_tab_action": "Open in nieuw tabblad",
+  "parent": "Ouder",
+  "reactions": "Reacties",
+  "recent_messages": "Recente berichten in {{language}}",
+  "report_action": "Rapporteren",
+  "report_placeholder": "Waarom moet dit bericht nagekeken worden?",
+  "report_title": "Rapporteren",
+  "send_report": "Verstuur",
+  "stop_tree": "Stop boom",
+  "submit_labels": "Verstuur",
+  "tree_stopped": "Boom gestopt {{id}}",
+  "view_user": "Bekijk gebruiker",
+  "your_recent_messages": "Jouw recente berichten"
+}

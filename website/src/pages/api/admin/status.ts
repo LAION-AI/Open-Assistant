@@ -1,12 +1,13 @@
-import { withRole } from "src/lib/auth";
+import { withAnyRole } from "src/lib/auth";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
+import { BackendUserCore } from "src/types/Users";
 
 /**
  * Returns tasks availability, stats, and tree manager stats.
  */
-const handler = withRole("admin", async (req, res) => {
+const handler = withAnyRole(["admin", "moderator"], async (req, res) => {
   // NOTE: why are we using a dummy user here?
-  const dummyUser = {
+  const dummyUser: BackendUserCore = {
     id: "__dummy_user__",
     display_name: "Dummy User",
     auth_method: "local",

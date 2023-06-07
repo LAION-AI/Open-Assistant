@@ -1,0 +1,9 @@
+{
+  "delete_account": "Brisanje naloga",
+  "delete_account_data": "Svi podaci koji su doprineli \"Open Assistant\" projektu u rešavanju zadataka, rangiranju poruka i svim razgovorima koji su vođeni korišćenjem usluge chat-a, biće zadržani. Međutim, sve reference na prvobitnog korisnika su anonimne.",
+  "delete_account_intro": "Brisanje naloga podrazumeva sledeće:",
+  "delete_account_leaderboard": "Nalozi izbrisanih korisnika se neće pojavljivati na rang listama",
+  "delete_account_permanent": "Ova radnja je trajna i ne može se opozvati!",
+  "go_to_dashboard": "Vratite se na kontrolnu tablu",
+  "yes_delete": "Da, trajno obriši moj nalog"
+}

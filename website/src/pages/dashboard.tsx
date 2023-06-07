@@ -1,43 +1,59 @@
-import { Flex } from "@chakra-ui/react";
+import { Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
+import Link from "next/link";
+import { XPBar } from "src/components/Account/XPBar";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
-import { ToSWrapper } from "src/components/ToSWrapper";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
+import { API_ROUTES } from "src/lib/routes";
 import useSWR from "swr";
 
 const Dashboard = () => {
-  // Adding a demonstrative call to the backend that includes the web's JWT.
-  // TODO: add CORS headers to the python backend
-  useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check`, get);
-
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation(["dashboard", "common", "tasks"]);
-  const [activeLang, setLang] = useState<string>(null);
-  const { data, mutate: fetchTasks } = useSWR<AvailableTasks>("/api/available_tasks", get, {
+  const { t } = useTranslation(["dashboard", "common", "tasks"]);
+  const { ENABLE_CHAT } = useBrowserConfig();
+  const lang = useCurrentLocale();
+  const { data } = useSWR<AvailableTasks>(API_ROUTES.AVAILABLE_TASK({ lang }), get, {
     refreshInterval: 2 * 60 * 1000, //2 minutes
-    revalidateOnMount: false, // triggered in the hook below
   });
-
-  useEffect(() => {
-    // re-fetch tasks if the language has changed
-    if (activeLang !== language) {
-      setLang(language);
-      fetchTasks();
-    }
-  }, [activeLang, setLang, language, fetchTasks]);
 
   const availableTaskTypes = useMemo(() => {
     const taskTypes = filterAvailableTasks(data ?? {});
     return { [TaskCategory.Random]: taskTypes };
   }, [data]);
+
+  const chatButtonStyle = {
+    position: "relative",
+    display: "inline-block",
+    backgroundColor: "blue.500",
+    color: "white",
+    padding: "0.5em 1em",
+    boxShadow: "0 0.5em 1em rgba(0,0,0,0.2)",
+    "&::before": {
+      content: "''",
+      position: "absolute",
+      top: "100%",
+      left: "1.25em",
+      width: 0,
+      height: 0,
+      borderTop: "-1.25em solid transparent",
+      borderBottom: "1.25em solid transparent",
+      borderLeft: "1.25em solid #3182CE",
+      transition: "all 0.3s ease-in-out",
+    },
+    "&:hover": {
+      backgroundColor: "blue.600",
+      "&::before": {
+        borderLeft: "1.25em solid #2b6cb0",
+      },
+    },
+  };
 
   return (
     <>
@@ -47,14 +63,28 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
+        {ENABLE_CHAT && (
+          <Flex direction="column" gap={4}>
+            <Heading size="lg">{t("index:try_our_assistant")}</Heading>
+            <Link href="/chat" aria-label="Chat" style={{ width: "max-content" }}>
+              <Button sx={chatButtonStyle}>{t("index:chat_with_our_assistant")}</Button>
+            </Link>
+          </Flex>
+        )}
+
         <TaskOption content={availableTaskTypes} />
+        <Card>
+          <CardBody>
+            <XPBar />
+          </CardBody>
+        </Card>
         <LeaderboardWidget />
       </Flex>
     </>
   );
 };
 
-Dashboard.getLayout = getDashboardLayout;
+Dashboard.getLayout = DashboardLayout;
 
 export default Dashboard;
 

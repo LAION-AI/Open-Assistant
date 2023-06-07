@@ -1,7 +1,8 @@
 import { Button, Flex, Tooltip } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { useCookies } from "react-cookie";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { getLocaleDisplayName } from "src/lib/languages";
 
 interface LabelFlagGroupProps {
   values: number[];
@@ -19,9 +20,8 @@ export const LabelFlagGroup = ({
   onChange,
 }: LabelFlagGroupProps) => {
   const { t } = useTranslation("labelling");
-  const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"];
-  const expectedLanguageName = new Intl.DisplayNames(currentLanguage, { type: "language" }).of(expectedLanguage);
+  const currentLanguage = useCurrentLocale();
+  const expectedLanguageName = getLocaleDisplayName(expectedLanguage, currentLanguage);
   return (
     <Flex wrap="wrap" gap="4">
       {labelNames.map((name, idx) => (

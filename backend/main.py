@@ -15,20 +15,21 @@ from loguru import logger
 from oasst_backend.api.deps import api_auth, create_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.cached_stats_repository import CachedStatsRepository
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, UserRepository
 from oasst_backend.task_repository import TaskRepository, delete_expired_tasks
-from oasst_backend.tree_manager import TreeManager
-from oasst_backend.user_repository import User
+from oasst_backend.tree_manager import TreeManager, halt_prompts_of_disabled_users
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
@@ -98,6 +99,13 @@ if settings.OFFICIAL_WEB_API_KEY:
                     frontend_type="web",
                     trusted=True,
                 )
+
+
+if settings.ENABLE_PROM_METRICS:
+
+    @app.on_event("startup")
+    async def enable_prom_metrics():
+        Instrumentator().instrument(app).expose(app)
 
 
 if settings.RATE_LIMIT:
@@ -191,7 +199,7 @@ if settings.DEBUG_USE_SEED_DATA:
                     tr.bind_frontend_message_id(task.id, msg.task_message_id)
                     message = pr.store_text_reply(
                         msg.text,
-                        msg.lang,
+                        msg.lang or "en",
                         msg.task_message_id,
                         msg.user_message_id,
                         review_count=5,
@@ -201,7 +209,9 @@ if settings.DEBUG_USE_SEED_DATA:
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
-                            root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            root_message_id=message.id,
+                            lang=message.lang,
+                            state=msg.tree_state or message_tree_state.State.GROWING,
                         )
                         session.flush()
 
@@ -275,55 +285,22 @@ def update_leader_board_total(session: Session) -> None:
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
-def update_user_streak(session: Session) -> None:
-    try:
-        current_time = utcnow()
-        timedelta = current_time - startup_time
-        if timedelta.days > 0:
-            # Update only greater than 24 hours . Do nothing
-            logger.debug("Process timedelta greater than 24h")
-            statement = select(User)
-            result = session.exec(statement).all()
-            if result is not None:
-                for user in result:
-                    last_activity_date = user.last_activity_date
-                    streak_last_day_date = user.streak_last_day_date
-                    # set NULL streak_days to 0
-                    if user.streak_days is None:
-                        user.streak_days = 0
-                    # if the user had completed a task
-                    if last_activity_date is not None:
-                        lastactitvitydelta = current_time - last_activity_date
-                        # if the user missed consecutive days of completing a task
-                        # reset the streak_days to 0 and set streak_last_day_date to the current_time
-                        if lastactitvitydelta.days > 1 or user.streak_days is None:
-                            user.streak_days = 0
-                            user.streak_last_day_date = current_time
-                    # streak_last_day_date has a current timestamp in DB. Idealy should not be NULL.
-                    if streak_last_day_date is not None:
-                        streak_delta = current_time - streak_last_day_date
-                        # if user completed tasks on consecutive days then increment the streak days
-                        # update the streak_last_day_date to current time for the next calculation
-                        if streak_delta.days > 0:
-                            user.streak_days += 1
-                            user.streak_last_day_date = current_time
-                    session.add(user)
-                    session.commit()
-
-        else:
-            logger.debug("Not yet 24hours since the process started! ...")
-
-    except Exception as e:
-        logger.error(str(e))
-    return
-
-
-@app.on_event("startup")
 @repeat_every(seconds=60 * 60)  # 1 hour
 @managed_tx_function(auto_commit=CommitMode.COMMIT)
 def cronjob_delete_expired_tasks(session: Session) -> None:
     delete_expired_tasks(session)
+    halt_prompts_of_disabled_users(session)
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.CACHED_STATS_UPDATE_INTERVAL, wait_first=True)
+@managed_tx_function(auto_commit=CommitMode.COMMIT)
+def update_cached_stats(session: Session) -> None:
+    try:
+        csr = CachedStatsRepository(session)
+        csr.update_all_cached_stats()
+    except Exception:
+        logger.exception("Error during cached stats update")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

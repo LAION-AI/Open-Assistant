@@ -1,14 +1,18 @@
+import { Story } from "@storybook/react";
 import React from "react";
 import { Task } from "src/components/Tasks/Task";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
 import { TaskContext } from "src/context/TaskContext";
 
-export default {
+import { SessionDecorator } from "../../../../.storybook/decorators";
+
+const story = {
   title: "tasks/Task",
   component: Task,
+  decorators: [SessionDecorator],
 };
 
-const Template = ({ providerValue }) => {
+const Template: Story = ({ providerValue }) => {
   return (
     <TaskContext.Provider value={providerValue}>
       <Task />
@@ -62,3 +66,5 @@ const exampleProviderValue = {
 
 export const Default = Template.bind({});
 Default.args = { providerValue: exampleProviderValue };
+
+export default story;

@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Prekinuto zbog niske ocene",
+  "assistant": "Asistent",
+  "backlog_ranking": "Rangiranje zaostatka",
+  "choose_a_language": "Izaberite jezik",
+  "count": "Broj",
+  "growing": "Raste",
+  "halted_by_moderator": "Zaustavljeno od strane moderatora",
+  "human_messages_by_lang": "Ljudske poruke po jeziku",
+  "human_messages_by_role": "Ljudske poruke po ulozi",
+  "initial_prompt_review": "Početni pregled zadatka",
+  "language_stats": "Jezik",
+  "message_trees_by_state": "Stabla poruka po stanju",
+  "message_trees_states_by_lang": "Stanja stabala poruka po jeziku",
+  "prompt_lottery_waiting": "Čekanje na lutriju zadataka",
+  "prompter": "Postavljač zadataka",
+  "ranking": "Rangiranje",
+  "ready_for_export": "Spremno za izvoz",
+  "stats": "Statistika",
+  "users_accepted_tos": "Korisnici prihvatili uslove"
+}

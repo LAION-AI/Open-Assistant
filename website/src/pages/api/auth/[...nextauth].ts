@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
+import { generateUsername } from "friendly-username-generator";
 import { NextApiRequest, NextApiResponse } from "next";
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
@@ -7,11 +8,12 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
+import GoogleProvider from "next-auth/providers/google";
 import { checkCaptcha } from "src/lib/captcha";
+import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { BackendUserCore } from "src/types/Users";
-import { generateUsername } from "friendly-username-generator";
+import { convertToBackendUserCore } from "src/lib/users";
 
 const providers: Provider[] = [];
 
@@ -35,6 +37,24 @@ if (process.env.DISCORD_CLIENT_ID) {
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    })
+  );
+}
+
+if (process.env.GOOGLE_CLIENT_ID) {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        // NOTE: adding this will case the app to ask the user
+        // to login everytime, might be a bit annoying
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     })
   );
 }
@@ -78,6 +98,14 @@ const adminUserMap = process.env.ADMIN_USERS.split(",").reduce((result, entry) =
   return result;
 }, new Map());
 
+const moderatorUserMap = process.env.MODERATOR_USERS.split(",").reduce((result, entry) => {
+  const [authType, id] = entry.split(":");
+  const s = result.get(authType) || new Set();
+  s.add(id);
+  result.set(authType, s);
+  return result;
+}, new Map());
+
 const authOptions: AuthOptions = {
   // Ensure we can store user data in a database.
   adapter: PrismaAdapter(prisma),
@@ -100,47 +128,8 @@ const authOptions: AuthOptions = {
       session.user.isNew = token.isNew;
       session.user.name = token.name;
       session.user.tosAcceptanceDate = token.tosAcceptanceDate;
+      session.inference = { isAuthenticated: !!token.inferenceTokens };
       return session;
-    },
-    /**
-     * When creating a token, fetch the user's role and inject it in the token.
-     * This let's use forward the role to the session object.
-     */
-    async jwt({ token }) {
-      const { isNew, name, role, accounts, id } = await prisma.user.findUnique({
-        where: { id: token.sub },
-        select: { name: true, role: true, isNew: true, accounts: true, id: true },
-      });
-
-      // Note: This could be cleaner and merged with src/lib/users.ts
-      const user: BackendUserCore = {
-        id: accounts.length > 0 ? accounts[0].providerAccountId : id,
-        display_name: name,
-        auth_method: accounts.length > 0 ? accounts[0].provider : "local",
-      };
-      const oasstApiClient = createApiClientFromUser(user);
-
-      let tosAcceptanceDate = null;
-      try {
-        /**
-         * when first creating a new user, the python backend is not informed about it
-         * so this call will return a 404
-         *
-         * in the frontend, when the user accepts the tos, we do a full refresh
-         * which means this function will be called again.
-         */
-        tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(user);
-      } catch (err) {
-        if (err.httpStatusCode !== 404) {
-          throw err;
-        }
-      }
-
-      token.name = name;
-      token.role = role;
-      token.isNew = isNew;
-      token.tosAcceptanceDate = tosAcceptanceDate;
-      return token;
     },
   },
   events: {
@@ -148,7 +137,9 @@ const authOptions: AuthOptions = {
      * Update the user's role after they have successfully signed in
      */
     async signIn({ user, account, isNewUser }) {
-      if (isNewUser && account.provider === "email") {
+      if (isNewUser && account.provider === "email" && !user.name) {
+        // only generate a username if the user is new and they signed up with email and they don't have a name
+        // although the name already assigned in the jwt callback, this is to ensure nothing breaks, and we should never reach here.
         await prisma.user.update({
           data: {
             name: generateUsername(),
@@ -161,9 +152,10 @@ const authOptions: AuthOptions = {
 
       // Get the admin list for the user's auth type.
       const adminForAccountType = adminUserMap.get(account.provider);
+      const moderatorForAccountType = moderatorUserMap.get(account.provider);
 
       // Return early if there's no admin list.
-      if (!adminForAccountType) {
+      if (!adminForAccountType && !moderatorForAccountType) {
         return;
       }
 
@@ -180,6 +172,17 @@ const authOptions: AuthOptions = {
           },
         });
       }
+
+      if (moderatorForAccountType.has(account.providerAccountId)) {
+        await prisma.user.update({
+          data: {
+            role: "moderator",
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
     },
   },
 };
@@ -189,12 +192,63 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     ...authOptions,
     callbacks: {
       ...authOptions.callbacks,
+      /**
+       * When creating a token, fetch the user's role and inject it in the token.
+       * This let's use forward the role to the session object.
+       */
+      async jwt({ token }) {
+        const frontendUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { name: true, role: true, isNew: true, accounts: true, id: true },
+        });
+
+        if (!frontendUser) {
+          // should never reach here
+          throw new Error("User not found");
+        }
+
+        // TODO avoid duplicate logic with the signIn event
+        if (frontendUser.isNew && !frontendUser.name) {
+          // jwt callback is called before signIn event, so we need to assign the name here otherwise the backend will refuse the request
+          frontendUser.name = generateUsername();
+          await prisma.user.update({
+            data: {
+              name: frontendUser.name,
+            },
+            where: {
+              id: frontendUser.id,
+            },
+          });
+        }
+
+        const backendUser = convertToBackendUserCore(frontendUser);
+        if (backendUser.auth_method === "discord") {
+          const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
+          discordAvatarRefresh.updateImageIfNecessary(discordAccount);
+        }
+
+        token.name = frontendUser.name;
+        token.role = frontendUser.role;
+        token.isNew = frontendUser.isNew;
+
+        // these are immutable once assigned
+        if (!token.tosAcceptanceDate || !token.backendUserId) {
+          const oasstApiClient = createApiClientFromUser(backendUser);
+
+          const frontendUser = await oasstApiClient.upsert_frontend_user(backendUser);
+          token.backendUserId = frontendUser.user_id;
+          token.tosAcceptanceDate = frontendUser.tos_acceptance_date;
+        }
+        return token;
+      },
       async signIn({ account }) {
-        if (account.provider !== "email" || !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
+        const isVerifyEmail = req.url ? req.url.includes("/api/auth/callback/email") : false;
+
+        if (account.provider !== "email" || !boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA) || isVerifyEmail) {
           return true;
         }
 
-        if (account.provider === "email" && !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN)) {
+        if (account.provider === "email" && !boolean(process.env.ENABLE_EMAIL_SIGNIN)) {
           return false;
         }
 
