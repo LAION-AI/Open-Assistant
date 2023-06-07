@@ -83,12 +83,14 @@ This is just to make entries in a batch the same size.
 Experiments are ongoing with new Open Assistant models using this format.
 
 **Note:** The `<|system|>{prefix}<|endoftext|>` is omitted entirely if `prefix`
-is empty. **Note:** I've added newlines and comment just for readability here.
-They aren't in the format.
+is empty.
 
-**Note**: That `<|system|>` refers to a specific token that the model knows about.
-If the user literally typed `<|system|>` then that would be tokenized to completely
-different non-special tokens, reducing possible attacks.
+**Note:** I've added newlines and comment just for readability here. They aren't
+in the format.
+
+**Note**: That `<|system|>` refers to a specific token that the model knows
+about. If the user literally typed `<|system|>` then that would be tokenized to
+completely different non-special tokens, reducing possible attacks.
 
 Format:
 
