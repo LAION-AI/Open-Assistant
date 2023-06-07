@@ -332,6 +332,17 @@ class UserRepository:
         return qry.all()
 
     @managed_tx_method(CommitMode.FLUSH)
-    def update_user_last_activity(self, user: User) -> None:
-        user.last_activity_date = utcnow()
+    def update_user_last_activity(self, user: User, update_streak: bool = False) -> None:
+        current_time = utcnow()
+        user.last_activity_date = current_time
+
+        if update_streak:
+            if user.streak_last_day_date is None or user.streak_last_day_date > current_time:
+                # begin new streak
+                user.streak_last_day_date = current_time
+                user.streak_days = 0
+            else:
+                # update streak day count
+                user.streak_days = (current_time - user.streak_last_day_date).days
+
         self.db.add(user)

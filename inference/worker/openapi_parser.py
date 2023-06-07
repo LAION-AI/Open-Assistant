@@ -124,9 +124,14 @@ def parse_plugin_endpoint(
 def get_plugin_endpoints(api_url: str, openapi_dict: dict) -> list[inference.PluginOpenAPIEndpoint]:
     endpoints = []
     base_url = openapi_dict.get("servers", [{}])[0].get("url")
-    paths = openapi_dict.get("paths", {})
 
-    for path, methods in paths.items():
+    if base_url is not None:
+        parsed_link = urlsplit(api_url)
+        base_url = (
+            f"{parsed_link.scheme}://{parsed_link.netloc}{base_url}" if not urlsplit(base_url).scheme else base_url
+        )
+
+    for path, methods in openapi_dict.get("paths", {}).items():
         for method, details in methods.items():
             endpoints.append(parse_plugin_endpoint(api_url, method, details, base_url, path, openapi_dict))
 
@@ -135,19 +140,21 @@ def get_plugin_endpoints(api_url: str, openapi_dict: dict) -> list[inference.Plu
 
 def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     plugin_config = get_plugin_config(plugin_url)
+
     if not plugin_config:
         return None
 
     try:
-        api_url = plugin_config.api.url
-        if not api_url.startswith("http"):
-            parsed_link = urlsplit(plugin_url)
-            base_of_url = f"{parsed_link.scheme}://{parsed_link.netloc}"
-            api_url = f"{base_of_url}/{api_url}"
+        parsed_url = urlsplit(plugin_config.api.url)
+        if parsed_url.scheme == "":
+            api_url = urlsplit(plugin_url)._replace(path=parsed_url.path).geturl()
+        else:
+            api_url = plugin_config.api.url
 
         openapi_dict = fetch_openapi_spec(api_url)
         plugin_config.endpoints = get_plugin_endpoints(api_url, openapi_dict)
         return plugin_config
+
     except Exception:
-        logger.debug(f"Error preparing plugin: {plugin_url}")
+        logger.debug(f"Plugin preparation error: {plugin_url}")
         return None
