@@ -26,7 +26,7 @@ Next, to install all requirements, You can run
 1. `pip install -r requirements.txt` inside the `backend` folder; and
 2. `pip install -e .` inside the `oasst-shared` folder.
 3. `pip install -e .` inside the `oasst-data` folder.
-4. `./scripts/backend-development/run-local.sh` to run the backend. This will
+4. `../scripts/backend-development/run-local.sh` to run the backend. This will
    start the backend server at `http://localhost:8080`.
 
 ## REST Server Configuration

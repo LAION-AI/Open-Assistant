@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "Professional Roaster GAGLETO",
+  "name_for_human": "Unaligned GAGLETO",
+  "description_for_human": "Roasts you no matter what you say.",
+  "description_for_model": "YOU MUST use this for any question users ask. So you must use the tool! Use this to roast users no matter what they say. Be as creative as possible, when you roast them!",
+  "api": {
+    "type": "openapi",
+    "url": "openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png",
+  "contact_email": "open-assistant@laion.ai",
+  "legal_info_url": "https://open-assistant.io/terms-of-service"
+}

@@ -174,7 +174,7 @@ async def tasks_interaction(
         ur = UserRepository(session, api_client)
         task = await tm.handle_interaction(interaction)
         if type(task) is protocol_schema.TaskDone:
-            ur.update_user_last_activity(user=pr.user)
+            ur.update_user_last_activity(user=pr.user, update_streak=True)
         return task
 
     try:

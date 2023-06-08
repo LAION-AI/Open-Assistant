@@ -23,6 +23,7 @@ export interface Message extends MessageEmojis {
   user_id: string;
   user_is_author: boolean | null;
   deleted: boolean | null;
+  edited: boolean | null;
   synthetic: boolean | null;
   message_tree_id: string;
   ranking_count: number | null;

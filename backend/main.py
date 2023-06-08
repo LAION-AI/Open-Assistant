@@ -32,8 +32,6 @@ from pydantic import BaseModel
 from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
 
-# from worker.scheduled_tasks import create_task
-
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
 startup_time: datetime = utcnow()
 
