@@ -88,10 +88,6 @@ is empty.
 **Note:** I've added newlines and comment just for readability here. They aren't
 in the format.
 
-**Note**: That `<|system|>` refers to a specific token that the model knows
-about. If the user literally typed `<|system|>` then that would be tokenized to
-completely different non-special tokens, reducing possible attacks.
-
 Format:
 
 ```
