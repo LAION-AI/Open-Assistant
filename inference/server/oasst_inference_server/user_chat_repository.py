@@ -9,6 +9,8 @@ from oasst_shared.schemas import inference
 
 
 class UserChatRepository(pydantic.BaseModel):
+    """Wrapper around a database session providing user-specific functionality relating to chats."""
+
     session: database.AsyncSession
     user_id: str = pydantic.Field(..., min_length=1)
 

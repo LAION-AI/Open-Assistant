@@ -4,6 +4,8 @@ from langchain.llms.base import LLM
 
 
 class HFInference(LLM):
+    """LangChain LLM implementation which uses the HF inference server configured in the worker settings."""
+
     max_new_tokens: int = 512
     top_k: int | None = None
     top_p: float | None = None
