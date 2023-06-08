@@ -30,13 +30,13 @@ export function MessageHistoryTable({ message, revisions }: MessageHistoryTableP
               user_id: message.user_id,
               user_is_author: message.user_is_author,
             },
-          ] as { text: string; created_date: string; user_id: string; user_is_author: boolean }[])
+          ] as Omit<MessageRevision, "id" | "message_id">[])
         : (revisions.map((revision) => ({
             text: revision.text,
             created_date: revision.created_date,
             user_id: revision.user_id,
             user_is_author: revision.user_is_author,
-          })) as { text: string; created_date: string; user_id: string; user_is_author: boolean }[])
+          })) as Omit<MessageRevision, "id" | "message_id">[])
       ).map(({ text, created_date, user_id, user_is_author }, index, array) => (
         <BaseMessageEntry
           key={`version-${index}`}
