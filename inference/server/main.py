@@ -56,6 +56,7 @@ def terminate_server(signum, frame):
 
 @app.on_event("startup")
 async def alembic_upgrade():
+    """Upgrades database schema based on Alembic migration scripts."""
     signal.signal(signal.SIGINT, terminate_server)
     if not settings.update_alembic:
         logger.warning("Skipping alembic upgrade on startup (update_alembic is False)")
@@ -113,7 +114,7 @@ app.include_router(chats.router)
 app.include_router(workers.router)
 app.include_router(configs.router)
 
-# mount plugins
+# mount builtin plugins to be hosted on this server
 for app_prefix, sub_app in plugins.plugin_apps.items():
     app.mount(path=settings.plugins_path_prefix + app_prefix, app=sub_app)
 

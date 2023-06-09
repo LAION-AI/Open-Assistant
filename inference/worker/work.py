@@ -27,6 +27,7 @@ def make_prompt_and_parameters(
     tokenizer: transformers.PreTrainedTokenizer,
     work_request: inference.WorkRequest,
 ) -> tuple[str, interface.GenerateStreamParameters]:
+    """Prepare a formatted prompt and stream generation parameters based on a work request."""
     if settings.oa_protocol_version != "v2":
         raise RuntimeError(f"Unsupported oa protocol version: {settings.oa_protocol_version}")
 
@@ -36,13 +37,15 @@ def make_prompt_and_parameters(
         prefix = V2_ASST_PREFIX if message.is_assistant else V2_PROMPTER_PREFIX
         return prefix + message.content + eos_token
 
-    # construct prompt
+    # Construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
+    # Prepend system prompt if it was specified in work parameters
     if work_request.parameters.system_prompt:
         pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
         messages = [pre_prompt] + messages
 
+    # Stringify and append assistant prefix to signify start of generation
     prompt = "".join(messages) + V2_ASST_PREFIX
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
@@ -61,6 +64,7 @@ def make_prompt_and_parameters(
 
 
 def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
+    """Given a prompt, safety label, and safety rule of thumb, prepare a 'safe prompt' to replace the prompt."""
     pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
     input_list = prompt.split(V2_PROMPTER_PREFIX)
     input_list[-1] = pre_prompt + input_list[-1]
@@ -68,10 +72,15 @@ def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
 
 
 def is_safety_triggered(safety_label: str, safety_level: int) -> bool:
+    """
+    Determines whether to trigger the safe prompt based on the configured safety level and severity label from the
+    safety classifier.
+    """
     return ("caution" in safety_label and safety_level > 1) or ("intervention" in safety_label and safety_level > 0)
 
 
 def parse_safety_response(safety_opinion: str) -> tuple[str, str]:
+    """Parse the response from the safety model into a separate label and rule of thumb."""
     safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
     label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
     label = label.replace("<pad>", "").strip()
@@ -84,6 +93,7 @@ def handle_work_request(
     work_request: inference.WorkRequest,
     worker_config: inference.WorkerConfig,
 ):
+    """Handle a work request from end-to-end. Handles plugins and safety if enabled."""
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     prompt = ""
     used_plugin = None
@@ -209,6 +219,7 @@ def handle_work_request(
 
 
 def get_safety_server_response(request: inference.SafetyRequest) -> inference.SafetyResponse:
+    """Query the safety server URL configured in the worker settings."""
     http = utils.HttpClient(base_url=settings.safety_server_url)
     response = http.post("/safety", json=request.dict())
     try:
