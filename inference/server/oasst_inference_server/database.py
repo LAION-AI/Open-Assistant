@@ -75,6 +75,7 @@ async def get_async_session(autoflush=True):
 
 
 def alembic_upgrade(connection):
+    """Upgrades database schema based on Alembic migration scripts."""
     alembic_ini_path = Path(__file__).parent.parent / "alembic.ini"
     alembic_cfg = alembic.config.Config(str(alembic_ini_path))
     alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)

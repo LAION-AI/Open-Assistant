@@ -4,6 +4,7 @@ from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from pydantic import PrivateAttr
 from sqlmodel import Field, SQLModel
 from uuid_extensions import uuid7
 
@@ -23,3 +24,5 @@ class MessageRevision(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
     )
+
+    _user_is_author: Optional[bool] = PrivateAttr(default=None)

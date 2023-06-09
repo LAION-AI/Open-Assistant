@@ -19,9 +19,10 @@ export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
 import { AdminLayout } from "src/components/Layout";
+import { MessageHistoryTable } from "src/components/Messages/MessageHistoryTable";
 import { MessageTree } from "src/components/Messages/MessageTree";
 import { get } from "src/lib/api";
-import { Message, MessageWithChildren } from "src/types/Conversation";
+import { Message, MessageRevision, MessageWithChildren } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
 const MessageDetail = () => {
@@ -42,6 +43,11 @@ const MessageDetail = () => {
   }>(`/api/admin/messages/${messageId}/tree`, get, {
     keepPreviousData: true,
   });
+  const {
+    data: revisions,
+    isLoading: revisionsLoading,
+    error: revisionError,
+  } = useSWRImmutable<MessageRevision[]>(`/api/admin/messages/${messageId}/history`, get, { keepPreviousData: true });
 
   return (
     <>
@@ -49,9 +55,12 @@ const MessageDetail = () => {
         <title>Open Assistant</title>
       </Head>
       <AdminArea>
-        {isLoading && !data && <CircularProgress isIndeterminate></CircularProgress>}
+        {(isLoading && !data) ||
+          (revisionsLoading && !revisions && <CircularProgress isIndeterminate></CircularProgress>)}
         {error && "Unable to load message tree"}
+        {revisionError && "Unable to load message revision history"}
         {data &&
+          revisions &&
           (data.tree === null ? (
             "Unable to build tree"
           ) : (
@@ -62,6 +71,14 @@ const MessageDetail = () => {
                 </CardHeader>
                 <CardBody>
                   <JsonCard>{data.message}</JsonCard>
+                </CardBody>
+              </Card>
+              <Card>
+                <CardHeader fontWeight="bold" fontSize="xl" pb="0">
+                  Message History
+                </CardHeader>
+                <CardBody>
+                  <MessageHistoryTable message={data?.message} revisions={revisions} />
                 </CardBody>
               </Card>
               <Card>

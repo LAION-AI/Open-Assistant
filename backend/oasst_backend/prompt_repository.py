@@ -800,6 +800,16 @@ class PromptRepository:
             query = query.filter(TextLabels.user_id == user_id)
         return query.all()
 
+    def fetch_message_revision_history(self, message_id: UUID) -> list[MessageRevision]:
+        # the revisions are sorted by time using the uuid7 id
+        revisions: list[MessageRevision] = sorted(
+            self.db.query(MessageRevision).filter(MessageRevision.message_id == message_id).all(),
+            key=lambda revision: revision.id.int >> 80,
+        )
+        for revision in revisions:
+            revision._user_is_author = self.user_id == revision.user_id
+        return revisions
+
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
         """
