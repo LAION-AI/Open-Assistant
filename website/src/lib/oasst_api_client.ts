@@ -1,4 +1,4 @@
-import type { EmojiOp, FetchMessagesCursorResponse, Message } from "src/types/Conversation";
+import type { EmojiOp, FetchMessagesCursorResponse, Message, MessageRevision } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
@@ -206,6 +206,13 @@ export class OasstApiClient {
       max_depth: number;
       origin: string;
     }>(`/api/v1/messages/${message_id}/tree/state`);
+  }
+
+  /**
+   * Returns a list of revisions assoicated with `message_id`.
+   */
+  async fetch_message_revision_history(message_id: string): Promise<MessageRevision[]> {
+    return this.get<MessageRevision[]>(`/api/v1/messages/${message_id}/history`);
   }
 
   /**
