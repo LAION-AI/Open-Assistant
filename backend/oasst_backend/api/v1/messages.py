@@ -179,6 +179,22 @@ def get_conv(
     return utils.prepare_conversation(messages)
 
 
+@router.get("/{message_id}/revision_proposals", response_model=protocol.MessageRevisionProposals)
+def get_revision_proposals(
+    *,
+    message_id: UUID,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Get all revision proposals of a given message.
+    """
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
+    edits = pr.fetch_message_revision_proposals(message_id)
+    return utils.prepare_message_revision_proposals(edits)
+
+
 @router.get("/{message_id}/tree", response_model=protocol.MessageTree)
 def get_tree(
     *,

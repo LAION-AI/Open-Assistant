@@ -3,6 +3,8 @@ from .cached_stats import CachedStats
 from .flagged_message import FlaggedMessage
 from .journal import Journal, JournalIntegration
 from .message import Message
+from .message_revision_proposal import MessageRevisionProposal
+from .message_revision_proposal_review import MessageRevisionProposalReview
 from .message_embedding import MessageEmbedding
 from .message_emoji import MessageEmoji
 from .message_reaction import MessageReaction
@@ -24,6 +26,8 @@ __all__ = [
     "MessageEmbedding",
     "MessageReaction",
     "MessageRevision",
+    "MessageRevisionProposal",
+    "MessageRevisionProposalReview",
     "MessageTreeState",
     "MessageToxicity",
     "Task",

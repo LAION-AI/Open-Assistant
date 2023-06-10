@@ -85,6 +85,37 @@ class ConversationMessage(BaseModel):
     synthetic: Optional[bool]
 
 
+class MessageRevisionProposalReview(BaseModel):
+    id: Optional[UUID]
+    reviewer_id: Optional[UUID]
+    message_edit_id: Optional[UUID]
+
+    text: Optional[str]
+    is_upvote: bool
+
+class MessageRevisionProposal(BaseModel):
+    """A proposal of editing in a message"""
+    id: Optional[UUID]
+    user_id: Optional[UUID]
+    message_id: Optional[UUID]
+
+    text: str
+    additions: int
+    deletions: int
+
+    upvotes: int
+    downvotes: int
+
+    reviews: Optional[list[MessageRevisionProposalReview]]
+
+class MessageRevisionProposals(BaseModel):
+    """Represents all of the proposed edits of a message"""
+
+    revision_proposals: list[MessageRevisionProposal] = []
+
+    def __len__(self):
+        return len(self.revision_proposals)
+
 class Conversation(BaseModel):
     """Represents a conversation between the prompter and the assistant."""
 

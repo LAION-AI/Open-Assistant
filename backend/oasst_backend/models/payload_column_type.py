@@ -1,5 +1,5 @@
 import json
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar
 
 import sqlalchemy.dialects.postgresql as pg
 from fastapi.encoders import jsonable_encoder
@@ -20,7 +20,7 @@ def payload_type(cls: Type[P]) -> Type[P]:
 
 class PayloadContainer(BaseModel):
     payload_type: str = ""
-    payload: BaseModel = None
+    payload: Optional[BaseModel] = None
 
     def __init__(self, **v):
         p = v["payload"]
