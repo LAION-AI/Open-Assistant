@@ -19,6 +19,14 @@ export const TaskInfos: TaskInfo[] = [
   },
   // create
   {
+    id: "create_prompt_reply",
+    category: TaskCategory.Create,
+    pathname: "/create/prompt_reply",
+    help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/create_prompt_reply",
+    type: TaskType.create_prompt_reply,
+    update_type: TaskUpdateType.TextReplyToMessage,
+  },
+  {
     id: "create_initial_prompt",
     category: TaskCategory.Create,
     pathname: "/create/initial_prompt",
@@ -74,6 +82,15 @@ export const TaskInfos: TaskInfo[] = [
     pathname: "/label/label_initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_prompter_reply",
     type: TaskType.label_initial_prompt,
+    mode: "full",
+    update_type: TaskUpdateType.TextLabels,
+  },
+  {
+    id: "label_create_prompt_reply",
+    category: TaskCategory.Label,
+    pathname: "/label/label_create_prompt_reply",
+    help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_create_prompt_reply",
+    type: TaskType.create_prompt_reply,
     mode: "full",
     update_type: TaskUpdateType.TextLabels,
   },
