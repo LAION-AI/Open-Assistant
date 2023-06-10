@@ -1,5 +1,6 @@
 import type { EmojiOp, FetchMessagesCursorResponse, Message, MessageRevision } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { MessageRevisionProposal } from "src/types/MessageRevisionProposal";
 import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
@@ -180,7 +181,7 @@ export class OasstApiClient {
   }
 
   /**
-   * Returns the `Message`s associated with `user_id` in the backend.
+   * Returns the `Message's associated with `user_id` in the backend.
    */
   async fetch_message(message_id: string, user: BackendUserCore): Promise<Message> {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
@@ -193,22 +194,10 @@ export class OasstApiClient {
     }>(`/api/v1/messages/${message_id}/tree`, options);
   }
 
-  async fetch_message_edits(message_id: string) {
-    return this.get<
-      {
-        id: string;
-        messageId: string;
-
-        content: string;
-        lang: string;
-
-        additions: number;
-        deletions: number;
-
-        positiveReviews: number;
-        negativeReviews: number;
-      }[]
-    >(`/api/v1/messages/${message_id}/edits`);
+  async fetch_message_revision_proposals(message_id: string) {
+    return this.get<{
+      revision_proposals: MessageRevisionProposal[]
+    }>(`/api/v1/messages/${message_id}/revision_proposals`);
   }
 
   /**

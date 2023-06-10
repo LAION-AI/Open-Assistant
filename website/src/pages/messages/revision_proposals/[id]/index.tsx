@@ -9,14 +9,10 @@ import {
   TableContainer,
   Tbody,
   Td,
-  Text,
   Th,
   Thead,
   Tr,
-  useColorMode,
-  useColorModeValue,
 } from "@chakra-ui/react";
-import { Change } from "diff";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
@@ -29,57 +25,45 @@ import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "src/components/Messages/MessageInlineEmojiRow";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { get } from "src/lib/api";
-import { Message, MessageWithChildren } from "src/types/Conversation";
+import { Message } from "src/types/Conversation";
+import { MessageRevisionProposal } from "src/types/MessageRevisionProposal";
 import useSWRImmutable from "swr/immutable";
 
-interface Edit {
-  id: string;
-  messageId: string;
-
-  content: string;
+interface RevisionProposalsTableEntryProps {
+  revision: MessageRevisionProposal;
   lang: string;
-
-  additions: number;
-  deletions: number;
-
-  positiveReviews: number;
-  negativeReviews: number;
 }
 
-interface EditedContentMesageTableEntryProps {
-  edit: Edit;
-}
-
-const EditedContentMesageTableEntry: FC<EditedContentMesageTableEntryProps> = ({ edit }) => {
+const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ revision, lang }) => {
   return (
     <BaseMessageEntry
-      hideAvatar
+      hideAvatar={true}
       style={{
         width: "100%",
       }}
-      content={edit.content}
+      content={revision.text.replaceAll('\\n', '\n').toString()}
     >
       <Flex justifyContent="end" mt="2" alignItems="center">
         <MessageInlineEmojiRow>
           <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
-            {edit.lang}
+            {lang}
           </Badge>
           <MessageEmojiButton
-            emoji={{ name: "+1", count: edit.positiveReviews }}
+            emoji={{ name: "+1", count: revision.upvotes }}
             checked={false}
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => {}}
+            onClick={() => { }}
           />
 
           <MessageEmojiButton
-            emoji={{ name: "-1", count: edit.negativeReviews }}
+            emoji={{ name: "-1", count: revision.downvotes }}
             checked={false}
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => {}}
+            onClick={() => { }}
           />
         </MessageInlineEmojiRow>
       </Flex>
@@ -89,11 +73,12 @@ const EditedContentMesageTableEntry: FC<EditedContentMesageTableEntryProps> = ({
   );
 };
 
-interface EditingTableProps {
-  edits: Edit[];
+interface RevisionProposalsTable {
+  revisions: MessageRevisionProposal[];
+  lang: string;
 }
 
-const EditingTable: FC<EditingTableProps> = ({ edits }) => (
+const RevisionProposalstable: FC<RevisionProposalsTable> = ({ revisions, lang }) => (
   <TableContainer>
     <Table>
       <Thead>
@@ -104,21 +89,21 @@ const EditingTable: FC<EditingTableProps> = ({ edits }) => (
         </Tr>
       </Thead>
       <Tbody>
-        {edits.map((edit) => (
-          <Tr key={edit.id}>
+        {revisions.map((revision) => (
+          <Tr key={revision.id}>
             <Td rowSpan={3}>
-              <EditedContentMesageTableEntry edit={edit} />
+              <RevisionProposalsTableEntry revision={revision} lang={lang} />
             </Td>
             <Td textAlign="center">
               <Badge colorScheme="red" marginInline="auto" p={3} variant="outline" fontSize="x-large">
                 {" "}
-                -{edit.deletions}{" "}
+                -{revision.deletions}{" "}
               </Badge>
             </Td>
             <Td textAlign="center">
               <Badge colorScheme="green" p={3} variant="outline" marginInline="auto" fontSize="x-large">
                 {" "}
-                +{edit.additions}{" "}
+                +{revision.additions}{" "}
               </Badge>
             </Td>
           </Tr>
@@ -128,10 +113,10 @@ const EditingTable: FC<EditingTableProps> = ({ edits }) => (
   </TableContainer>
 );
 
-const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["message", "common"]);
-  const { data, isLoading, error } = useSWRImmutable<{ tree: MessageWithChildren | null; message?: Message }>(
-    `/api/messages/${id}/tree`,
+  const { data, isLoading, error } = useSWRImmutable<{ revision_proposals: MessageRevisionProposal[]; message: Message }>(
+    `/api/messages/${id}/revision_proposals`,
     get,
     {
       keepPreviousData: true,
@@ -158,31 +143,23 @@ const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getSer
               </HStack>
             </Stack>*/}
 
-            <div className="message-being-edited">
-              {isLoading && !data && <MessageLoading></MessageLoading>}
-              {error && "Unable to load edits of message"}
-              {data && data.message && <MessageTableEntry message={data.message} />}
-            </div>
+            {isLoading && !data && <MessageLoading></MessageLoading>}
+            {error && "Unable to load the message's revision proposals!"}
+            {data && data.message && (
+              <div className="message-being-edited">
+                <MessageTableEntry message={data.message} />
+              </div>
+            )}
+
 
             <Divider marginBlock={5} />
 
-            <EditingTable
-              edits={[
-                {
-                  id: "",
-                  messageId: data?.message?.id,
-
-                  lang: data?.message?.lang,
-                  content: "I don’t think so, can you tell me?\n\nI’m glad you asked me this question.",
-
-                  additions: 2,
-                  deletions: 1,
-
-                  negativeReviews: 1,
-                  positiveReviews: 2,
-                },
-              ]}
-            />
+            {data && data.message && data.revision_proposals && (
+              <RevisionProposalstable
+                revisions={data.revision_proposals}
+                lang={data.message.lang}
+              />
+            )}
           </CardBody>
         </Card>
       </Box>
@@ -190,7 +167,7 @@ const MessageEditingDetails = ({ id }: InferGetServerSidePropsType<typeof getSer
   );
 };
 
-MessageEditingDetails.getLayout = DashboardLayout;
+MessageRevisionProposals.getLayout = DashboardLayout;
 
 export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string }> = async ({
   locale = "en",
@@ -203,4 +180,4 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   },
 });
 
-export default MessageEditingDetails;
+export default MessageRevisionProposals;

@@ -27,7 +27,7 @@ const createRoute = (path: string, query?: RouteQuery) => {
 export const ROUTES = {
   ADMIN_MESSAGE_DETAIL: (id: string) => `/admin/messages/${id}`,
   MESSAGE_DETAIL: (id: string) => `/messages/${id}`,
-  MESSAGE_EDITING_DETAILS: (id: string) => `/messages/edit/${id}`,
+  MESSAGE_REVISION_PROPOSALS: (id: string) => `/messages/revision_proposals/${id}`,
   ADMIN_USER_DETAIL: (id: string) => `/admin/manage_user/${id}`,
   CHAT: (id: string) => `/chat/${id}`,
   ADMIN_MESSAGE_EDIT: (id: string) => `/admin/edit/${id}`,

@@ -142,7 +142,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
               onLabel={showLabelPopup}
               onReport={showReportPopup}
               onEditingDetailsClicked={() => {
-                router.push(ROUTES.MESSAGE_EDITING_DETAILS(message.id));
+                router.push(ROUTES.MESSAGE_REVISION_PROPOSALS(message.id));
               }}
               message={message}
             />
