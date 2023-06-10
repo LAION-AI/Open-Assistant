@@ -1,0 +1,39 @@
+{% extends "bootstrap/base.html" %} 
+{% from "bootstrap5/form.html" import render_form %}
+{% import "bootstrap/wtf.html" as wtf %} {%
+block title %}test{% endblock %} {% block content %}
+<div class="col-md-4">
+  <form action="" method="post" novalidata>
+    {{ form.hidden_tag() }}
+    <p>{{ form.example }}<br /></p>
+
+    <input type="submit" value="Use selected datasets" />
+  </form>
+  <br />
+</div>
+
+{{ render_form(search_bar_form) }}
+
+{% if hits is defined and hits[0] is defined %}
+<table id="data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Dataset Name</th>
+        <th>Train/Validate</th>
+        <th>Keyword</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for hit in hits %}
+        <tr>
+          <td><a href="{{ url_for('datasets', dataset_name=hit['dataset_name'], train_or_val=hit['train_val'], keyword=hit['keyword']) }}">{{ hit['dataset_name'] }}</a></td>
+          <td>{{ hit["train_val"] }}</td>
+          <td>{{ hit["keyword"] }}</td>
+          <td>{{ hit["hits"] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

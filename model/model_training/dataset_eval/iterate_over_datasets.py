@@ -15,8 +15,7 @@ def check_in_dataset_row(
                 matched[exp].append(row)
         for string in strings_to_match:
             if string.lower() in row.lower():
-                string_idx = row.lower().index(string.lower())
-                matched[string].append(row[max(string_idx - 50, 0) : string_idx + 50])
+                matched[string].append(row)
         return matched
 
     if isinstance(row, str):

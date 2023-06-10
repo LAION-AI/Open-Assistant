@@ -1,0 +1,33 @@
+{% extends "bootstrap/base.html" %} 
+{% from "bootstrap5/form.html" import render_form %}
+{% import "bootstrap/wtf.html" as wtf %} {%
+block title %}test{% endblock %} {% block content %}
+
+<form class="form-inline" method="POST" action="{{ url_for('datasets', dataset_name=dataset_name, train_or_val=train_or_val, keyword=keyword) }}">
+  <select id="example_dropdown" name="example_dropdown" method="GET" action="/">
+    {% for value in values %}
+        <option value="{{value}}" SELECTED>{{value}}</option>"
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-default">Go</button>
+</form>
+<form class="form-inline" method="POST" action="{{ url_for('datasets', dataset_name=dataset_name, train_or_val=train_or_val, keyword=keyword) }}">
+  <button type="submit" class="btn btn-default">Get next examples</button>
+</form>
+{% if hit_lists is defined and hit_lists[0] is defined %}
+<table id="hit_lists_data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Sentences with Keyword</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sentence in hit_lists %}
+        <tr>
+          <td>{{ sentence.replace(keyword, '<span style="background-color: yellow;">{}</span>'.format(keyword)) | safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
