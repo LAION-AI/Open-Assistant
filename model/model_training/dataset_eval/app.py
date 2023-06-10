@@ -1,7 +1,8 @@
 ## this is just a list of datasets, later we should read this dynamically
+from collections import defaultdict
+
 from model_training.custom_datasets import OTHER, QA_DATASETS, RL_DATASETS, RM_DATASETS, SUMMARIZATION_DATASETS
 from model_training.dataset_eval.iterate_over_datasets import iterate_over_dataset
-from collections import defaultdict
 
 # todo: add all datasets
 ALL_DATASETS = [
@@ -99,7 +100,9 @@ def main_page():
                 matched["train"][dataset_name] = iterate_over_dataset(
                     train, strings_to_match=[processed_text], regex_strings_to_match=[]
                 )
-                matched["val"][dataset_name] = iterate_over_dataset(val, strings_to_match=[processed_text], regex_strings_to_match=[])
+                matched["val"][dataset_name] = iterate_over_dataset(
+                    val, strings_to_match=[processed_text], regex_strings_to_match=[]
+                )
                 train_dct = {k: len(v) for k, v in matched["train"][dataset_name].items()}
                 val_dct = {k: len(v) for k, v in matched["val"][dataset_name].items()}
                 # todo: this needs to be inside the loop
@@ -139,10 +142,14 @@ def datasets(dataset_name, keyword, train_or_val):
     if dropdown_value := request.form.get("example_dropdown") is not None:
         print(f"This is dropdown value {dropdown_value}")
         session["dropdown_value"] = dropdown_value
-    
+
     i = int(session["dropdown_value"])
     print(f"this is i {i} and {session['dropdown_value']}")
-    hit_lists = matched[train_or_val].get(dataset_name, {}).get(keyword, [])[session["counter"] * i:i * (session["counter"] + 1)]
+    hit_lists = (
+        matched[train_or_val]
+        .get(dataset_name, {})
+        .get(keyword, [])[session["counter"] * i : i * (session["counter"] + 1)]
+    )
 
     next_examples = request.form.get("next_examples")
     if next_examples is not None:
@@ -155,7 +162,7 @@ def datasets(dataset_name, keyword, train_or_val):
         hits=session.get("dataset_counts", []),
         values=[10, 20, 50],
         dataset_name=dataset_name,
-        keyword=keyword, 
+        keyword=keyword,
         train_or_val=train_or_val,
-        hit_lists=hit_lists
+        hit_lists=hit_lists,
     )
