@@ -12,7 +12,7 @@ block title %}test{% endblock %} {% block content %}
   <button type="submit" class="btn btn-default">Go</button>
 </form>
 <form class="form-inline" method="POST" action="{{ url_for('datasets', dataset_name=dataset_name, train_or_val=train_or_val, keyword=keyword) }}">
-  <button type="submit" class="btn btn-default">Get next examples</button>
+  <input type="submit" class="btn btn-default" name="next_examples">Get next examples</input>
 </form>
 {% if hit_lists is defined and hit_lists[0] is defined %}
 <table id="hit_lists_data" class="table table-striped">

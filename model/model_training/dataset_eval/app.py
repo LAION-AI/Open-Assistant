@@ -53,6 +53,8 @@ matched = defaultdict(dict)
 # check out: https://stackoverflow.com/questions/18290142/multiple-forms-in-a-single-page-using-flask-and-wtforms
 @app.route("/", methods=["post", "get"])
 def main_page():
+    session["counter"] = 0
+    session["dropdown_value"] = 10
     ds_form = SimpleForm()
     search_bar_form = SearchBarForm()
     if session.get("dataset_options") is None:
@@ -134,24 +136,17 @@ def datasets(dataset_name, keyword, train_or_val):
         ]
     hit_lists = list()
     ds_form.example.choices = [(c, c) for c in session["dataset_options"]]
-    dataset_counts = list()
-    dropdown_value = request.form.get("example_dropdown")
-    if dropdown_value is not None:
-        tt = matched[train_or_val].get(dataset_name, {}).get(keyword, [])[:int(dropdown_value)]
-        hit_lists = tt
-        print(tt)
-        print(tt[0])
-        # train_vals = matched["train"].get(dataset_name)
-        # print("This is train_vals")
-        # print(train_vals)
-        # print("DUMMPY")
-        # keys = train_vals.keys()
-        # print(keys)
-        #kk = list(keys)[:int(dropdown_value)]
-        # print(f"dropdown value: {dropdown_value} and type: {type(dropdown_value)}")
-        # print(list(islice(train_vals.items(), int(dropdown_value))))
-        # print(list(islice(train_vals, 50)))
-        # print(len(list(islice(train_vals, 50))))
+    if dropdown_value := request.form.get("example_dropdown") is not None:
+        print(f"This is dropdown value {dropdown_value}")
+        session["dropdown_value"] = dropdown_value
+    
+    i = int(session["dropdown_value"])
+    print(f"this is i {i} and {session['dropdown_value']}")
+    hit_lists = matched[train_or_val].get(dataset_name, {}).get(keyword, [])[session["counter"] * i:i * (session["counter"] + 1)]
+
+    next_examples = request.form.get("next_examples")
+    if next_examples is not None:
+        session["counter"] += 1
     print(dropdown_value)
     return render_template(
         "datasets.html",
