@@ -271,9 +271,7 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
             {t("chat:opt_out.dialog.title")}
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Text py="2">
-              {t("chat:opt_out.dialog.description")}
-            </Text>
+            <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
