@@ -41,7 +41,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
       style={{
         width: "100%",
       }}
-      content={revision.text.replaceAll('\\n', '\n').toString()}
+      content={revision.text.replaceAll("\\n", "\n").toString()}
     >
       <Flex justifyContent="end" mt="2" alignItems="center">
         <MessageInlineEmojiRow>
@@ -54,7 +54,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => { }}
+            onClick={() => {}}
           />
 
           <MessageEmojiButton
@@ -63,7 +63,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => { }}
+            onClick={() => {}}
           />
         </MessageInlineEmojiRow>
       </Flex>
@@ -115,13 +115,12 @@ const RevisionProposalstable: FC<RevisionProposalsTable> = ({ revisions, lang })
 
 const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["message", "common"]);
-  const { data, isLoading, error } = useSWRImmutable<{ revision_proposals: MessageRevisionProposal[]; message: Message }>(
-    `/api/messages/${id}/revision_proposals`,
-    get,
-    {
-      keepPreviousData: true,
-    }
-  );
+  const { data, isLoading, error } = useSWRImmutable<{
+    revision_proposals: MessageRevisionProposal[];
+    message: Message;
+  }>(`/api/messages/${id}/revision_proposals`, get, {
+    keepPreviousData: true,
+  });
 
   return (
     <>
@@ -151,14 +150,10 @@ const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof get
               </div>
             )}
 
-
             <Divider marginBlock={5} />
 
             {data && data.message && data.revision_proposals && (
-              <RevisionProposalstable
-                revisions={data.revision_proposals}
-                lang={data.message.lang}
-              />
+              <RevisionProposalstable revisions={data.revision_proposals} lang={data.message.lang} />
             )}
           </CardBody>
         </Card>

@@ -196,7 +196,7 @@ export class OasstApiClient {
 
   async fetch_message_revision_proposals(message_id: string) {
     return this.get<{
-      revision_proposals: MessageRevisionProposal[]
+      revision_proposals: MessageRevisionProposal[];
     }>(`/api/v1/messages/${message_id}/revision_proposals`);
   }
 

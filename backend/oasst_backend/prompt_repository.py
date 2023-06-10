@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
-from oasst_backend.models.message_revision_proposal import MessageRevisionProposal
 
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy.dialects.postgresql as pg
@@ -28,6 +27,7 @@ from oasst_backend.models import (
     User,
     message_tree_state,
 )
+from oasst_backend.models.message_revision_proposal import MessageRevisionProposal
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
@@ -707,24 +707,19 @@ class PromptRepository:
         if deleted is not None:
             qry = qry.filter(Message.deleted == deleted)
         return self._add_user_emojis_all(qry)
-    
-    def fetch_message_revision_proposals(
-        self,
-        message_id: UUID
-    ) -> list[MessageRevisionProposal]:
+
+    def fetch_message_revision_proposals(self, message_id: UUID) -> list[MessageRevisionProposal]:
         logger.debug(f"fetching all revision proposals of the message with id {message_id}")
         sql = """
 SELECT mrp.*, (
-    SELECT count(mrpr.id) FROM message_revision_proposal_review mrpr 
+    SELECT count(mrpr.id) FROM message_revision_proposal_review mrpr
     WHERE mrpr.message_revision_proposal_id = mrpr.id AND mrpr.is_upvote is true
 ) as upvotes, (
-    SELECT count(mrpr.id) FROM message_revision_proposal_review mrpr 
+    SELECT count(mrpr.id) FROM message_revision_proposal_review mrpr
     WHERE mrpr.message_revision_proposal_id = mrpr.id AND mrpr.is_upvote is not true
 ) as downvotes FROM message_revision_proposal mrp WHERE mrp.message_id = :message_id
         """
-        revision_proposals = (
-            self.db.execute(text(sql), params={"message_id": message_id}).all()
-        )
+        revision_proposals = self.db.execute(text(sql), params={"message_id": message_id}).all()
         return revision_proposals
 
     def check_users_recent_replies_for_duplicates(self, text: str) -> bool:

@@ -13,6 +13,6 @@ export default withoutRole("banned", async (req, res, token) => {
 
   return res.json({
     ...proposals,
-    message
+    message,
   });
 });

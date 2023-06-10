@@ -2,12 +2,13 @@ import re
 from uuid import UUID
 
 from oasst_backend.models import Message, MessageRevision
+from oasst_backend.models.message_revision_proposal import MessageRevisionProposal
 from oasst_shared.schemas import protocol
 
-from oasst_backend.models.message_revision_proposal import MessageRevisionProposal
 
-
-def prepare_message_revision_proposals(db_proposals: list[MessageRevisionProposal]) -> protocol.MessageRevisionProposals:
+def prepare_message_revision_proposals(
+    db_proposals: list[MessageRevisionProposal],
+) -> protocol.MessageRevisionProposals:
     return protocol.MessageRevisionProposals(
         revision_proposals=[
             protocol.MessageRevisionProposal(
@@ -19,8 +20,9 @@ def prepare_message_revision_proposals(db_proposals: list[MessageRevisionProposa
                 deletions=edit.deletions,
                 upvotes=edit.upvotes or 0,
                 downvotes=edit.downvotes or 0,
-                reviews=None
-            ) for edit in db_proposals
+                reviews=None,
+            )
+            for edit in db_proposals
         ]
     )
 

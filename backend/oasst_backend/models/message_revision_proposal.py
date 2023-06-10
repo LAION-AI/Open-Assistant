@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
-from pydantic import PrivateAttr
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from pydantic import PrivateAttr
 from sqlalchemy import false
 from sqlmodel import Field, Index, SQLModel
+
 
 class MessageRevisionProposal(SQLModel, table=True):
     __tablename__: str = "message_revision_proposal"
@@ -26,7 +27,7 @@ class MessageRevisionProposal(SQLModel, table=True):
     )
     message_id: UUID = Field(nullable=False, foreign_key="message.id", index=True)
     user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
-    
+
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(
             sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp(), index=True

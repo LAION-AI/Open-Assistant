@@ -93,8 +93,10 @@ class MessageRevisionProposalReview(BaseModel):
     text: Optional[str]
     is_upvote: bool
 
+
 class MessageRevisionProposal(BaseModel):
     """A proposal of editing in a message"""
+
     id: Optional[UUID]
     user_id: Optional[UUID]
     message_id: Optional[UUID]
@@ -108,6 +110,7 @@ class MessageRevisionProposal(BaseModel):
 
     reviews: Optional[list[MessageRevisionProposalReview]]
 
+
 class MessageRevisionProposals(BaseModel):
     """Represents all of the proposed edits of a message"""
 
@@ -115,6 +118,7 @@ class MessageRevisionProposals(BaseModel):
 
     def __len__(self):
         return len(self.revision_proposals)
+
 
 class Conversation(BaseModel):
     """Represents a conversation between the prompter and the assistant."""

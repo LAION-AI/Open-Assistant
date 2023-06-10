@@ -3,12 +3,12 @@ from .cached_stats import CachedStats
 from .flagged_message import FlaggedMessage
 from .journal import Journal, JournalIntegration
 from .message import Message
-from .message_revision_proposal import MessageRevisionProposal
-from .message_revision_proposal_review import MessageRevisionProposalReview
 from .message_embedding import MessageEmbedding
 from .message_emoji import MessageEmoji
 from .message_reaction import MessageReaction
 from .message_revision import MessageRevision
+from .message_revision_proposal import MessageRevisionProposal
+from .message_revision_proposal_review import MessageRevisionProposalReview
 from .message_toxicity import MessageToxicity
 from .message_tree_state import MessageTreeState
 from .task import Task
