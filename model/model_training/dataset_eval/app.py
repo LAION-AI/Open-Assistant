@@ -2,7 +2,6 @@
 from model_training.custom_datasets import OTHER, QA_DATASETS, RL_DATASETS, RM_DATASETS, SUMMARIZATION_DATASETS
 from model_training.dataset_eval.iterate_over_datasets import iterate_over_dataset
 from collections import defaultdict
-from itertools import islice
 
 # todo: add all datasets
 ALL_DATASETS = [
