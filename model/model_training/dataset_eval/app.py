@@ -40,7 +40,9 @@ class SearchBarForm(FlaskForm):
 
 
 # todo: this needs to be configurable
-cache_dir = "../.cache"
+# can be relative or absolute
+# "../.cache" also works in my case
+cache_dir = "/home/tobias/programming/Open-Assistant/model/model_training/.cache"  # "../.cache"
 
 datasets_dct = dict()
 matched = defaultdict(dict)
