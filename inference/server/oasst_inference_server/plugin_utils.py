@@ -10,6 +10,7 @@ from oasst_shared.schemas import inference
 
 
 async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout: float = 5.0):
+    """Attempt to fetch a plugin specification from the given URL once."""
     async with session.get(url, timeout=timeout) as response:
         content_type = response.headers.get("Content-Type")
 
@@ -41,6 +42,7 @@ async def attempt_fetch_plugin(session: aiohttp.ClientSession, url: str, timeout
 
 
 async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> inference.PluginConfig:
+    """Fetch a plugin specification from the given URL, with retries using exponential backoff."""
     async with aiohttp.ClientSession() as session:
         for attempt in range(retries):
             try:

@@ -2,6 +2,7 @@ aiohttp
 alembic
 asyncpg
 authlib
+beautifulsoup4 # web_retriever plugin
 cryptography==39.0.0
 fastapi[all]==0.88.0
 google-api-python-client
@@ -14,7 +15,9 @@ prometheus-fastapi-instrumentator
 psutil
 pydantic
 pynvml
+PyPDF2 # web_retriever plugin
 python-jose[cryptography]==3.3.0
+pyyaml # web_retriever plugin
 redis
 sqlmodel
 sse-starlette

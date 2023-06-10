@@ -140,6 +140,7 @@ async def create_assistant_message(
             work_parameters = inference.WorkParameters(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
+                system_prompt=request.system_prompt,
                 plugins=request.plugins,
                 plugin_max_depth=settings.plugin_max_depth,
             )

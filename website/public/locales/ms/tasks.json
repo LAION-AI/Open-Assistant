@@ -1,0 +1,97 @@
+{
+  "any_feedback_on_this_task": "Sebarang maklum balas mengenai tugas ini?",
+  "available_task_count": "{{count}} tugas yang ada",
+  "default": {
+    "unchanged_title": "Tiada perubahan",
+    "unchanged_message": "Adakah anda pasti anda ingin meneruskan?",
+    "continue_anyway": "Teruskan pula",
+    "markdownguide": "Penggayaan dengan markdown disokong"
+  },
+  "no_more_tasks": "Nampaknya tiada tugas ditemui.",
+  "random": {
+    "label": "Saya berasa bertuah",
+    "desc": "Bantu kami meningkatkan Open Assistant dengan memulakan tugas rawak."
+  },
+  "create_initial_prompt": {
+    "label": "Buat gesaan awal",
+    "desc": "Tulis gesaan awal untuk membantu Open Assistant untuk cuba membalas mesej yang pelbagai. (masuk ke loteri)",
+    "overview": "Buat mesej awal untuk dihantar kepada assistant",
+    "instruction": "Berikan gesaan awal",
+    "response_placeholder": "Tulis gesaan anda di sini...",
+    "shotcut_tip": "Petua: Anda boleh menggunakan pintasan papan kekunci untuk menyemak dan Menyerahkan respons:"
+  },
+  "reply_as_user": {
+    "label": "Balas sebagai Pengguna",
+    "desc": "Berbual dengan Open Assistant dan bantu meningkatkan respons semasa anda berinteraksi dengannya.",
+    "overview": "Memandangkan perbualan berikut, berikan balasan yang mencukupi",
+    "instruction": "Berikan balasan pengguna",
+    "response_placeholder": "Tulis jawapan anda di sini...",
+    "shotcut_tip": "Petua: Anda boleh menggunakan pintasan papan kekunci untuk menyemak dan menyerahkan respons:"
+  },
+  "reply_as_assistant": {
+    "label": "Balas sebagai Assistant",
+    "desc": "Bantu Open Assistant meningkatkan responsnya kepada perbualan dengan pengguna lain.",
+    "overview": "Memandangkan perbualan berikut, berikan balasan yang mencukupi",
+    "response_placeholder": "Tulis jawapan anda di sini...",
+    "shotcut_tip": "Petua: Anda boleh menggunakan pintasan papan kekunci untuk menyemak dan menyerahkan respons:"
+  },
+  "rank_user_replies": {
+    "label": "Balasan Pengguna Kedudukan",
+    "desc": "Bantu Open Assistant meningkatkan responsnya kepada perbualan dengan pengguna lain.",
+    "overview": "Memandangkan balasan Pengguna berikut, isihkannya dari yang terbaik hingga terburuk, terbaik menjadi yang pertama, paling teruk yang terakhir.",
+    "unchanged_title": "Perintah Tidak Berubah",
+    "unchanged_message": "Anda tidak mengubah susunan gesaan. Adakah anda pasti anda ingin meneruskan?",
+    "continue_anyway": "Teruskan"
+  },
+  "rank_assistant_replies": {
+    "label": "Balasan Assistant Kedudukan",
+    "desc": "Gesaan skor yang diberikan oleh Pembantu Terbuka berdasarkan ketepatan dan kebolehbacaan mereka.",
+    "overview": "Memandangkan Assistant berikut menjawab, menyusunnya dari yang terbaik hingga yang paling teruk, yang terbaik adalah yang pertama, paling teruk yang terakhir.",
+    "unchanged_title": "Perintah Tidak Berubah",
+    "unchanged_message": "Anda tidak mengubah susunan gesaan. Adakah anda pasti anda ingin meneruskan?",
+    "continue_anyway": "Teruskan"
+  },
+  "rank_initial_prompts": {
+    "label": "Balasan Gesaan Awal Kedudukan",
+    "desc": "Gesaan skor yang diberikan oleh Open Assistant berdasarkan ketepatan dan kebolehbacaan mereka.",
+    "overview": "Memandangkan gesaan awal berikut, menyusunnya dari yang terbaik hingga terburuk, terbaik menjadi yang pertama, paling teruk yang terakhir.",
+    "unchanged_title": "Perintah Tidak Berubah",
+    "unchanged_message": "Anda tidak mengubah susunan gesaan. Adakah anda pasti anda ingin meneruskan?",
+    "continue_anyway": "Teruskan"
+  },
+  "label_initial_prompt": {
+    "label": "Labelkan Gesaan Awal",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Sediakan label untuk gesaan."
+  },
+  "label_prompter_reply": {
+    "label": "Balas Prompter Label",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Memandangkan perbincangan berikut, berikan label untuk gesaan akhir."
+  },
+  "label_assistant_reply": {
+    "label": "Jawapan Assistant Label",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Memandangkan perbincangan berikut, berikan label untuk gesaan akhir."
+  },
+  "classify_initial_prompt": {
+    "label": "Mengklasifikasikan Gesaan Awal",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Baca gesaan berikut dan kemudian jawab soalan mengenainya."
+  },
+  "classify_prompter_reply": {
+    "label": "Mengklasifikasikan Balasan Prompter",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Baca perbualan berikut dan kemudian jawab soalan mengenai balasan terakhir dalam perbincangan."
+  },
+  "classify_assistant_reply": {
+    "label": "Mengklasifikasikan Balasan Assistant",
+    "desc": "Sediakan label untuk gesaan.",
+    "overview": "Baca perbualan berikut dan kemudian jawab soalan mengenai balasan terakhir dalam perbincangan."
+  },
+  "submitted_as": "Ini akan dikemukakan sebagai {{submit_lang}}",
+  "tab_write": "Menulis",
+  "tab_preview": "Pratonton",
+  "writing_wrong_langauge_a_b": "Anda nampaknya menulis dalam {{detected_lang}} tetapi ini akan dihantar sebagai {{submit_lang}}.",
+  "not_rankable": "Semua jawapan sebenarnya tidak betul dan tidak boleh disenaraikan"
+}

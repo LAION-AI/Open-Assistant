@@ -1,4 +1,4 @@
-import type { EmojiOp, FetchMessagesCursorResponse, Message } from "src/types/Conversation";
+import type { EmojiOp, FetchMessagesCursorResponse, Message, MessageRevision } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
@@ -227,6 +227,13 @@ export class OasstApiClient {
   }
 
   /**
+   * Returns a list of revisions assoicated with `message_id`.
+   */
+  async fetch_message_revision_history(message_id: string): Promise<MessageRevision[]> {
+    return this.get<MessageRevision[]>(`/api/v1/messages/${message_id}/history`);
+  }
+
+  /**
    * Delete a message by its id
    */
   async delete_message(message_id: string): Promise<void> {
@@ -238,6 +245,17 @@ export class OasstApiClient {
    */
   async undelete_message(message_id: string): Promise<void> {
     return this.put<void>(`/api/v1/messages/${message_id}/undelete`);
+  }
+
+  /**
+   * Modify a message's content and save it's previous content as a revision
+   */
+  async edit_message(message_id: string, user: BackendUserCore, new_content: string) {
+    return this.post<void>(`/api/v1/messages/${message_id}/edit`, {
+      message_id,
+      user,
+      new_content,
+    });
   }
 
   /**

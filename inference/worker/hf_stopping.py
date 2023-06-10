@@ -4,6 +4,8 @@ from transformers import StoppingCriteria
 
 
 class SequenceStoppingCriteria(StoppingCriteria):
+    """Enables automatic stopping of model text generation when specific text sequences are generated."""
+
     def __init__(
         self,
         tokenizer: Tokenizer,

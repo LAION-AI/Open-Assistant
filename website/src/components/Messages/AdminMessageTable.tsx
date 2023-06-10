@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import { Eye, RotateCw, Trash } from "lucide-react";
+import { Edit, Eye, RotateCw, Trash } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
@@ -141,16 +141,25 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
               ></Avatar>
               {renderText}
               {!row.original.parent_id && (
-                <Badge colorScheme="green" ml="1">
+                <Badge colorScheme="green" ms="1">
                   Root
                 </Badge>
               )}
               {row.original.deleted && (
-                <Badge colorScheme="red" ml="1">
+                <Badge colorScheme="red" ms="1">
                   Deleted
                 </Badge>
               )}
-              {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
+              {row.original.review_result === false && (
+                <Badge colorScheme="yellow" ms="1">
+                  Spam
+                </Badge>
+              )}
+              {row.original.edited && (
+                <Badge colorScheme="gray" ms="1">
+                  Edited
+                </Badge>
+              )}
             </Box>
           );
         },
@@ -234,6 +243,12 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                   isLoading={isUndeleteMutating && undeleteMessageId === id}
                 />
               )}
+              <DataTableAction
+                as={NextLink}
+                href={ROUTES.ADMIN_MESSAGE_EDIT(id)}
+                icon={Edit}
+                aria-label="Edit message"
+              />
             </HStack>
           );
         },

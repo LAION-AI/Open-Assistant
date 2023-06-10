@@ -54,6 +54,7 @@ async def get_worker_id(
     api_key: str = Depends(get_api_key),
     protocol_version: str = Depends(get_protocol_version),
 ) -> models.DbWorker:
+    """Get the ID of a worker from its API key and protocol version."""
     logger.info(f"get_worker: {api_key=}, {protocol_version=}")
     query = sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
     async with deps.manual_create_session() as session:
@@ -107,6 +108,11 @@ async def build_work_request(
     session: database.AsyncSession,
     message_id: str,
 ) -> inference.WorkRequest:
+    """
+    Build a work request based on the assistant message associated with the given ID in the database.
+    This will build a chat history based on the parents of the assistant message which will form the work request along
+    with the work parameters associated with the assistant message.
+    """
     query = (
         sqlmodel.select(models.DbMessage)
         .options(

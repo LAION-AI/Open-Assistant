@@ -30,6 +30,7 @@ export const ROUTES = {
   MESSAGE_EDITING_DETAILS: (id: string) => `/messages/edit/${id}`,
   ADMIN_USER_DETAIL: (id: string) => `/admin/manage_user/${id}`,
   CHAT: (id: string) => `/chat/${id}`,
+  ADMIN_MESSAGE_EDIT: (id: string) => `/admin/edit/${id}`,
 };
 
 export type QueryWithLang<T extends RouteQuery | undefined = undefined> = T extends undefined
@@ -49,6 +50,7 @@ export const API_ROUTES = {
   RECENT_MESSAGES: withLang("/api/messages"),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
+  ADMIN_EDIT_MESSAGE: (messageId: string) => createRoute(`/api/admin/edit_message/${messageId}`),
   ADMIN_MESSAGE_LIST: (
     query: CursorPaginationState & { user_id?: string; include_user?: boolean; search_query?: string; lang?: string }
   ) => createRoute("/api/admin/messages", query),

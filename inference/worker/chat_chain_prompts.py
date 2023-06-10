@@ -1,5 +1,6 @@
 V2_ASST_PREFIX = "<|assistant|>"
 V2_PROMPTER_PREFIX = "<|prompter|>"
+V2_SYSTEM_PREFIX = "<|system|>"
 
 ASSISTANT_PREFIX = "Open Assistant"
 HUMAN_PREFIX = "Human"

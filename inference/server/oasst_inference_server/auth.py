@@ -1,3 +1,5 @@
+"""Logic related to authorization actions."""
+
 import hashlib
 import json
 from datetime import datetime, timedelta
