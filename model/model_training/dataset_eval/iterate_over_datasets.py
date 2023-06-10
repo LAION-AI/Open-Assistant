@@ -44,4 +44,9 @@ def iterate_over_dataset(ds, strings_to_match, regex_strings_to_match):
     matched = defaultdict(list)
     for row in ds:
         check_in_dataset_row(row, matched, strings_to_match, regex_strings_to_match)
+    if len(matched) == 0:
+        for string in strings_to_match:
+            matched[string] = []
+        for regex in regex_strings_to_match:
+            matched[regex] = []
     return matched

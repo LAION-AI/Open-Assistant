@@ -1,6 +1,6 @@
 import os
 import posixpath
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 
 from datasets import load_dataset_builder
 
@@ -10,7 +10,34 @@ ds_mapping = {
     "webgpt": "openai/webgpt_comparisons",
     "soda": "allenai/soda",
     "soda_dialogue": "emozilla/soda_synthetic_dialogue",
+    "alpaca": "yahma/alpaca-cleaned",
+    "code_alpaca": "sahil2801/CodeAlpaca-20k",
 }
+
+
+def get_dataset_counts_from_matched_dict(matched: dict, datasets: list[str]) -> dict:
+    dataset_counts = []
+    for dataset in datasets:
+        train_dct = {k: len(v) for k, v in matched["train"][dataset].items()}
+        val_dct = {k: len(v) for k, v in matched["val"][dataset].items()}
+        for train_key, val_key in zip(train_dct.keys(), val_dct.keys()):
+            dataset_counts.extend(
+                [
+                    {
+                        "dataset_name": dataset,
+                        "train_val": "train",
+                        "keyword": train_key,
+                        "hits": train_dct.get(train_key, 0),
+                    },
+                    {
+                        "dataset_name": dataset,
+                        "train_val": "val",
+                        "keyword": val_key,
+                        "hits": val_dct.get(val_key, 0),
+                    },
+                ]
+            )
+    return dataset_counts
 
 
 def is_remote_url(url_or_filename: str) -> bool:
