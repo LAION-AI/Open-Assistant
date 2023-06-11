@@ -22,7 +22,9 @@ class MessageRevision(SQLModel, table=True):
     message_id: UUID = Field(sa_column=sa.Column(sa.ForeignKey("message.id"), nullable=False, index=True))
     user_id: Optional[UUID] = Field(sa_column=sa.Column(sa.ForeignKey("user.id"), nullable=True))
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(
+            sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp(), index=True
+        )
     )
 
     _user_is_author: Optional[bool] = PrivateAttr(default=None)
