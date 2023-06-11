@@ -23,7 +23,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X, FolderX } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useRef } from "react";
@@ -50,6 +49,7 @@ export const ChatListItem = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const containerElementRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
 
@@ -78,7 +78,7 @@ export const ChatListItem = ({
     <Button
       // @ts-expect-error error due to dynamically changing as prop
       ref={rootRef}
-      {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
+      // {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
       variant={isActive ? "solid" : "ghost"}
       justifyContent="start"
       py="2"
@@ -98,6 +98,7 @@ export const ChatListItem = ({
           bg: isEditing ? "transparent" : isActive ? "whiteAlpha.300" : "whiteAlpha.200",
         },
       }}
+      onClick={() => router.push(`/chat/${chat.id}`)}
     >
       {!isEditing ? (
         <Box
@@ -151,13 +152,14 @@ export const ChatListItem = ({
         }}
         gap="1.5"
         zIndex={1}
+        onClick={stopEvent}
       >
         {!isEditing && (
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
             {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
-            <div onClick={stopEvent}>
+            <Box>
               <Menu>
                 <MenuButton>
                   <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
@@ -170,7 +172,7 @@ export const ChatListItem = ({
                   </MenuList>
                 </Portal>
               </Menu>
-            </div>
+            </Box>
           </>
         )}
       </Flex>
@@ -207,26 +209,33 @@ const DeleteChatButton = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const { t } = useTranslation(["chat", "common"]);
+  const toast = useToast();
   const { trigger: triggerDelete } = useSWRMutation<any, any, any, { chat_id: string }>(
     API_ROUTES.DELETE_CHAT(chatId),
     del
   );
+
   const onDeleteCallback = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
     onDelete?.({ chatId });
+    toast({
+      title: t("chat:delete_chat_success"),
+      status: "success",
+      position: "top",
+    });
   }, [onDelete, triggerDelete, chatId]);
   const alert = (
     <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
       <AlertDialogOverlay>
-        <AlertDialogContent>
+        <AlertDialogContent my="100px">
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t("delete_chat")}
+            <Text textAlign="left">{t("delete_chat")}</Text>
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Text fontWeight="bold" py="2">
+            <Text fontWeight="bold" py="2" textAlign="left">
               {t("delete_confirmation")}
             </Text>
-            <Text py="2">{t("delete_confirmation_detail")}</Text>
+            {t("delete_confirmation_detail")}
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
@@ -288,12 +297,12 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
   );
 
   return (
-    <>
+    <Flex zIndex="var(--chakra-zIndices-popover)">
       <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
         {t("chat:opt_out.button")}
       </MenuItem>
       {alert}
-    </>
+    </Flex>
   );
 };
 

@@ -9,13 +9,19 @@ export interface TeamMemberProps {
   githubURL?: string;
   title: string;
   rootProps?: FlexProps;
+  zIndex?: string;
 }
 
-export function TeamMember({ name, url, imageURL, githubURL, title, rootProps }: TeamMemberProps) {
+export function TeamMember({ name, url, imageURL, githubURL, title, rootProps, zIndex }: TeamMemberProps) {
   const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
   return (
     <Flex gap="3" bg={contributorBackgroundColor} borderRadius="md" p="2" {...rootProps}>
-      <Avatar src={imageURL} loading="lazy" name={name} />
+      <Avatar
+        zIndex={zIndex ? zIndex : 'zIndex="var(--chakra-zIndices-base)'}
+        src={imageURL}
+        loading="lazy"
+        name={name}
+      />
       <Box>
         <Flex gap={3} fontWeight="bold">
           {url ? (

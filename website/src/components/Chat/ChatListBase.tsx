@@ -79,6 +79,7 @@ export const ChatListBase = memo(function ChatListBase({
         bg: "blackAlpha.400",
       }}
       {...props}
+      zIndex="var(--chakra-zIndices-base)"
     >
       <Flex flexDirection={["column", "row"]} alignItems="stretch" p="2" gap="3">
         <CreateChatButton
