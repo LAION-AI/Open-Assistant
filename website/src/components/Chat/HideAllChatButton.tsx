@@ -5,7 +5,7 @@ import useSWRMutation from "swr/mutation";
 import { API_ROUTES } from "src/lib/routes";
 import { put } from "src/lib/api";
 
-import { ChatListItemIconButton } from "./ChatListItem";
+import { ChatListItemIconButton, ChatListItemTextButton } from "./ChatListItem";
 
 export const HideAllChatButton = ({
   chatIds,
@@ -25,5 +25,5 @@ export const HideAllChatButton = ({
 
   const { t } = useTranslation("common");
 
-  return <ChatListItemIconButton label={t("hide_all")} icon={EyeOff} onClick={onClick} />;
+  return <ChatListItemTextButton text={"Hide All"} onClick={onClick} />;
 };

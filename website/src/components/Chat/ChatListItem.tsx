@@ -330,6 +330,31 @@ export const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIco
   );
 };
 
+type ChatListItemTextButtonProps = {
+  onClick?: () => void;
+  label?: string;
+  text: string;
+};
+
+export const ChatListItemTextButton = ({ label, onClick, text }: ChatListItemTextButtonProps) => {
+  return (
+    <Tooltip label={label}>
+      <Button
+        variant="outline"
+        colorScheme="teal"
+        aria-label={label}
+        px="3px"
+        onClick={(e: MouseEvent) => {
+          stopEvent(e);
+          onClick?.();
+        }}
+      >
+        <Text fontSize="xs">{text}</Text>
+      </Button>
+    </Tooltip>
+  );
+};
+
 const stopEvent = (e: SyntheticEvent) => {
   e.stopPropagation();
   e.preventDefault();
