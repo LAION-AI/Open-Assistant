@@ -83,7 +83,7 @@ const RevisionProposalstable: FC<RevisionProposalsTable> = ({ revisions, lang })
     <Table>
       <Thead>
         <Tr>
-          <Th rowSpan={3}>Edited content</Th>
+          <Th colSpan={3}>Edited content</Th>
           <Th textAlign="center">Deletions</Th>
           <Th textAlign="center">Additions</Th>
         </Tr>
@@ -91,7 +91,7 @@ const RevisionProposalstable: FC<RevisionProposalsTable> = ({ revisions, lang })
       <Tbody>
         {revisions.map((revision) => (
           <Tr key={revision.id}>
-            <Td rowSpan={3}>
+            <Td colSpan={3}>
               <RevisionProposalsTableEntry revision={revision} lang={lang} />
             </Td>
             <Td textAlign="center">

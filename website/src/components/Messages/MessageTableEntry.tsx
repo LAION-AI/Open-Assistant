@@ -141,7 +141,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
               userEmoji={emojiState.user_emojis}
               onLabel={showLabelPopup}
               onReport={showReportPopup}
-              onEditingDetailsClicked={() => {
+              onRevisionProposalsClicked={() => {
                 router.push(ROUTES.MESSAGE_REVISION_PROPOSALS(message.id));
               }}
               message={message}
@@ -208,14 +208,14 @@ const MessageActions = ({
   userEmoji,
   onLabel,
   onReport,
-  onEditingDetailsClicked,
+  onRevisionProposalsClicked,
   message,
 }: {
   react: (emoji: string, state: boolean) => void;
   userEmoji: string[];
   onLabel: () => void;
   onReport: () => void;
-  onEditingDetailsClicked: () => void;
+  onRevisionProposalsClicked: () => void;
   message: Message;
 }) => {
   const toast = useToast();
@@ -279,7 +279,7 @@ const MessageActions = ({
           <MenuItem onClick={onLabel} icon={<ClipboardList />}>
             {t("label_action")}
           </MenuItem>
-          <MenuItem onClick={onEditingDetailsClicked} icon={<Edit />}>
+          <MenuItem onClick={onRevisionProposalsClicked} icon={<Edit />}>
             {t("revision_proposals")}
           </MenuItem>
           <MenuItem onClick={onReport} icon={<Flag />}>
