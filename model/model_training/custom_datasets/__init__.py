@@ -19,6 +19,7 @@ from model_training.custom_datasets.qa_datasets import (
     SODADialogue,
     TranslatedQA,
     Vicuna,
+    Lima,
     WebGPT,
     load_alpaca_dataset,
 )
@@ -143,6 +144,8 @@ def get_one_dataset(
         dataset = TranslatedQA(data_path)
     elif dataset_name == "vicuna":
         dataset = Vicuna(cache_dir=data_path, **kwargs)
+    elif dataset_name == "lima":
+        dataset = Lima(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":

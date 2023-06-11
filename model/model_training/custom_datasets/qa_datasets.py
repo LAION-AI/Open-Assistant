@@ -538,6 +538,80 @@ class Vicuna(Dataset):
         dialogue = self.pairs[index]
         return dialogue
 
+class Lima(Dataset):
+    name = "lima"
+
+    @staticmethod
+    def process_vicuna_conversations(
+        data: list[dict[str, None | str]], input_max_length: int
+    ) -> tuple[list[str], list[str]] | None:
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
+            return None
+        questions = []
+        answers = []
+        for line in data["conversations"]:
+            speaker = line["from"]  # 'human' or 'gpt'
+            message = line["value"]
+            if message is None or message == "":
+                if speaker == "gpt":
+                    return None
+                elif speaker == "human":
+                    # replace empty messages with one of the following
+                    message = random.choice(["...", "Please continue", "Go on", ""])
+            # remove markdown escaping in case
+            # python-markdownify with escape_asterisks & escape_underscores True was used
+            # to pre-process the dataset.
+            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
+            message = message.replace(r"\_", "_")
+            message = message.replace(r"\*", "*")
+            message = re_single_reference_remove.sub("", message)
+
+            if role != speaker:
+                if role is not None:
+                    if role == "human":
+                        questions.append("\n".join(messages)[:input_max_length])
+                    if role == "gpt":
+                        answers.append("\n".join(messages)[:input_max_length])
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
+
+        if role is not None and len(messages) > 0:
+            if role == "human":
+                questions.append("\n".join(messages)[:input_max_length])
+            if role == "gpt":
+                answers.append("\n".join(messages)[:input_max_length])
+        return questions, answers
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
+        super().__init__()
+
+        self.pairs = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+
+        dataset = load_dataset(
+            "64bits/lima_vicuna_format",
+            cache_dir=cache_dir,
+            data_files=["lima_vicuna_format.json"],
+        )["train"]
+
+        for data in dataset:
+            if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
+                if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
+                    self.pairs.append(create_dataset_entry_qa(mode="sft", questions=qa[0], answers=qa[1], lang="en"))
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.pairs[index]
+        return dialogue
+
 
 class DatabricksDolly15k(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
