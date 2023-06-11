@@ -280,7 +280,7 @@ const MessageActions = ({
             {t("label_action")}
           </MenuItem>
           <MenuItem onClick={onEditingDetailsClicked} icon={<Edit />}>
-            {t("editing_details")}
+            {t("revision_proposals")}
           </MenuItem>
           <MenuItem onClick={onReport} icon={<Flag />}>
             {t("report_action")}
