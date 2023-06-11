@@ -30,6 +30,7 @@ import { del, put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
 import useSWRMutation from "swr/mutation";
+import Link from "next/link";
 
 export const ChatListItem = ({
   chat,
@@ -78,7 +79,7 @@ export const ChatListItem = ({
     <Button
       // @ts-expect-error error due to dynamically changing as prop
       ref={rootRef}
-      // {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
+      {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
       variant={isActive ? "solid" : "ghost"}
       justifyContent="start"
       py="2"
@@ -98,7 +99,7 @@ export const ChatListItem = ({
           bg: isEditing ? "transparent" : isActive ? "whiteAlpha.300" : "whiteAlpha.200",
         },
       }}
-      onClick={() => router.push(`/chat/${chat.id}`)}
+      // onClick={() => router.push(`/chat/${chat.id}`)}
     >
       {!isEditing ? (
         <Box
