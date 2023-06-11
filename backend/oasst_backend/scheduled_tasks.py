@@ -72,41 +72,31 @@ def update_search_vectors(batch_size: int) -> None:
     try:
         with default_session_factory() as session:
             while True:
-                query = session.query(Message)
-
-                # Subquery to obtain creation date of most recent revision for a message
-                latest_revision_date_subquery = (
-                    session.query(func.max(MessageRevision.created_date))
-                    .filter(MessageRevision.message_id == Message.id)
-                    .correlate(Message)
-                    .as_scalar()
-                )
-
-                # Outerjoin messages to their most recent revisions
-                query = query.outerjoin(
-                    MessageRevision,
-                    and_(
-                        Message.id == MessageRevision.message_id,
-                        MessageRevision.created_date == latest_revision_date_subquery,
-                    ),
-                )
-
-                # Filter for only messages where we want to update the search vector
-                # The core components are when search vector is null, or there is a revision since last vector update
-                # We also add the case where is a revision and no vector update date
-                # This accounts for messages where the vector was generated before vector update dates were added
-                query = query.filter(
-                    or_(
-                        Message.search_vector.is_(None),
-                        MessageRevision.created_date > Message.search_vector_update_date,
+                to_update: list[Message] = (
+                    session.query(Message)
+                    .outerjoin(
+                        MessageRevision,
                         and_(
-                            Message.search_vector_update_date.is_(None),
-                            MessageRevision.created_date.isnot(None),
+                            Message.id == MessageRevision.message_id,
+                            MessageRevision.created_date
+                            == session.query(func.max(MessageRevision.created_date))
+                            .filter(MessageRevision.message_id == Message.id)
+                            .as_scalar(),
                         ),
                     )
+                    .filter(
+                        or_(
+                            Message.search_vector.is_(None),
+                            MessageRevision.created_date > Message.search_vector_update_date,
+                            and_(
+                                Message.search_vector_update_date.is_(None),
+                                MessageRevision.created_date.isnot(None),
+                            ),
+                        )
+                    )
+                    .limit(batch_size)
+                    .all()
                 )
-
-                to_update: list[Message] = query.limit(batch_size).all()
 
                 if not to_update:
                     break
