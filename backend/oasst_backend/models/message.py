@@ -56,9 +56,6 @@ class Message(SQLModel, table=True):
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
 
     search_vector: Optional[str] = Field(sa_column=sa.Column(pg.TSVECTOR(), nullable=True))
-    search_vector_update_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, index=True)
-    )
 
     review_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     review_result: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=True))
