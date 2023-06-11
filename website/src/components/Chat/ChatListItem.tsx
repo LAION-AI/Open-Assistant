@@ -164,13 +164,10 @@ export const ChatListItem = ({
                 <MenuButton>
                   <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
                 </MenuButton>
-                <Portal containerRef={containerElementRef}>
-                  {/* higher z-index so that it is displayed over the mobile sidebar */}
-                  <MenuList zIndex="var(--chakra-zIndices-popover)">
-                    <OptOutDataButton chatId={chat.id} />
-                    <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
-                  </MenuList>
-                </Portal>
+                <MenuList zIndex="var(--chakra-zIndices-popover)">
+                  <OptOutDataButton chatId={chat.id} />
+                  <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+                </MenuList>
               </Menu>
             </Box>
           </>
@@ -227,15 +224,15 @@ const DeleteChatButton = ({
   const alert = (
     <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
       <AlertDialogOverlay>
-        <AlertDialogContent my="100px">
+        <AlertDialogContent my="100px" flex="column">
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
             <Text textAlign="left">{t("delete_chat")}</Text>
           </AlertDialogHeader>
-          <AlertDialogBody>
+          <AlertDialogBody wordBreak="break-word">
             <Text fontWeight="bold" py="2" textAlign="left">
               {t("delete_confirmation")}
             </Text>
-            {t("delete_confirmation_detail")}
+            <Text className="py-2">{t("delete_confirmation_detail")}</Text>
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
