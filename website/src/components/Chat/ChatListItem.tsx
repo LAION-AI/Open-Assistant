@@ -306,7 +306,8 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
   return (
     <Tooltip label={label}>
       <Box
-        as="button"
+        as="div"
+        role="button"
         aria-label={label}
         onClick={(e: MouseEvent) => {
           stopEvent(e);

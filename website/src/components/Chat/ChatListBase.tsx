@@ -115,9 +115,9 @@ export const ChatListBase = memo(function ChatListBase({
         content
       ) : (
         <SimpleBar
-          style={{ padding: "8px", height: "100%", minHeight: "0" }}
+          style={{ padding: "8px", height: "100%", minHeight: "300px" }}
           classNames={{
-            contentEl: "flex flex-col items-center overflow-y-hidden",
+            contentEl: "flex flex-col items-center overflow-y-hidden min-h-full",
           }}
         >
           {content}
