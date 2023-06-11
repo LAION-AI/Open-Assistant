@@ -538,6 +538,7 @@ class Vicuna(Dataset):
         dialogue = self.pairs[index]
         return dialogue
 
+
 class Lima(Dataset):
     name = "lima"
 
