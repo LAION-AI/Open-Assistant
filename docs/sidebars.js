@@ -49,6 +49,15 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Plugins",
+      link: {
+        type: "doc",
+        id: "plugins/README",
+      },
+      items: ["plugins/getting-started", "plugins/list"],
+    },
+    {
+      type: "category",
       label: "Tasks",
       link: {
         type: "doc",

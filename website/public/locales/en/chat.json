@@ -20,7 +20,8 @@
     "button": "Opt out of training data",
     "success_message": "You have opted out of training data.",
     "dialog": {
-      "title": "Confirm opting of training data"
+      "title": "Are you sure you want to opt this chat out of the training data?",
+      "description": "If you confirm, this chat won't be used for improving our model. Please take the time to upvote and downvote responses in other chats to help us make Open Assistant better!"
     }
   },
   "parameter_description": {
@@ -51,7 +52,7 @@
   "verified_plugin_description": "This plugin has been verified by the Open Assistant team.",
   "view_plugin": "View Plugin",
   "visible_hidden": "Visible & hidden",
-  "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice.",
+  "warning": "This Assistant is a demonstration without full internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or giving advice.",
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your Chats",
   "save_preset": "Save this preset",

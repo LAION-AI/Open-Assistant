@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoModelForSequenceClassificatio
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name", type=str, help="checkpoint path or model name")
-    parser.add_argument("--dtype", type=str, default="float16", help="float16 or float32")
+    parser.add_argument("--dtype", type=str, default="fp16", help="fp16, bf16 or fp32")
     parser.add_argument("--hf_repo_name", type=str, help="Huggingface repository name")
     parser.add_argument("--auth_token", type=str, help="User access token")
     parser.add_argument("--output_folder", type=str, help="output folder path")
@@ -17,6 +17,12 @@ def parse_args():
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--reward_model", action="store_true", default=False)
     parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
+    parser.add_argument(
+        "--trust_remote_code",
+        action="store_true",
+        default=False,
+        help="allow custom model code (required for Falcon)",
+    )
     return parser.parse_args()
 
 
@@ -68,7 +74,12 @@ def main():
             args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
         )
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_name,
+            torch_dtype=torch_dtype,
+            cache_dir=args.cache_dir,
+            trust_remote_code=args.trust_remote_code,
+        )
     print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
 
     print("Model architecture:")

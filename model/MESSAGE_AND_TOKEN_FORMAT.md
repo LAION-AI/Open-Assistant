@@ -1,13 +1,8 @@
 # Token Format
 
 When feeding text, a prompt, and answer, and so on to the model, it's not fed as
-individual letters in the way that us humans see it.
-
-Instead the input is broken into around 50,000 tokens (depending on the model).
-For example, in the `galactica-125m` model, the word "thermodynamical" is token
-49970,
-
-Each model has its own set of tokens ('vocab'), and each token has an id number.
+individual letters. Instead the input is broken into tokens. Each model has its
+own set of tokens ('vocab'), and each token has an id number.
 
 Note: If you look in the json file alongside a model and look at the vocab,
 you'll notice the strange letter Ġ. This is because the `bytes_to_unicode`
@@ -22,8 +17,6 @@ tokens, feeding that into the LLM and have it predict the next token. This
 produces a LLM model like gpt-3, galactica, etc.
 
 ## Step 1. Supervised Fine Tuning
-
-`/model/model_training`
 
 Using a pretrained LLM, we use Supervised Fine Tuning (SFT). We take
 demonstration data, in our case the Open Assistant dataset (oasst dataset)
@@ -41,8 +34,6 @@ Note, this step would generally be done only once, just to kick-start the
 process. With the two steps being done for more ongoing training.
 
 ## Step 2. Reward model (RM)
-
-`/model/reward`
 
 Volunteers vote on SFT model outputs, creating a new dataset consisting of
 comparison data. A new model is trained on this dataset. This is the reward
@@ -65,82 +56,37 @@ The most up-to-date place to look for code is here:
 
 https://github.com/Open-Assistant/oasst-model-eval/blob/main/model_eval/manual/sampling_report.py
 
-## Message Format v1
-
-Format:
-
-```
-{pre_text}
-{human_name}: {prompt}
-
-{bot_name}:
-```
-
-Example:
-
-```
-You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible
-User: hello!
-
-Joi:
-```
-
 ## Message Format v2
 
-**Note:** There is a variation where the `<prefix>` and `</prefix>` tags are
-omitted, leaving only the `pre_text`. This will be specified in the
-`config.add_prefix_tokens`.
-
-**Note:** That `<prefix>` refers to a specific token that the model knows about.
-If the user literally typed `<prefix>` then that would be tokenized to
-completely different non-special tokens, reducing possible attacks.
+This is used by most Open Assistant models.
 
 Format:
 
-```xml
-<prefix>{pre_text}</prefix><human>{prompt}<bot>
 ```
+<|prompter|>{prompt}<|endoftext|><|assistant|>
+```
+
+There is no specific prefix tag. A prefix could be placed before the first
+prompter message or in the first prompter message.
 
 Example:
 
-```xml
-<prefix>You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible</prefix><human>hello!<bot>
+```
+You are a large language model that wants to be helpful<|prompter|>Hello!<|endoftext|><|assistant|>
 ```
 
 Model will then reply, padding the ending with **zero or more** `<|endoftext|>`.
 This is just to make entries in a batch the same size.
 
-## Message Format v2.5 old
+## Message Format v2-new
 
-**Note:** There is a variation where the `<|prefix_begin|>` and `<|prefix_end|>`
-tags are omitted, leaving only the `pre_text`. This will be specified in the
-`config.add_prefix_tokens`.
-
-**Note:** That `<|prefix_begin|>` etc are special tokens, and refers to a
-specific special token that the model knows about. If the user literally typed
-`<|prefix_begin|>` then that would be tokenized to completely different
-non-special tokens, reducing possible attacks.
-
-Format:
-
-```
-<|prefix_begin|>{pre_text}<|prefix_end|><|prompter|>{prompt}<|endoftext|><|assistant|>
-```
-
-Example:
-
-```
-<|prefix_begin|>You are a large language model that wants to be helpful<|prefix_end|>
-```
-
-Model will then reply, padding the ending with **zero or more** `<|endoftext|>`.
-This is just to make entries in a batch the same size.
-
-## Message Format v2.5-new (Not currently committed at time of writing)
+Experiments are ongoing with new Open Assistant models using this format.
 
 **Note:** The `<|system|>{prefix}<|endoftext|>` is omitted entirely if `prefix`
-is empty. **Note:** I've added newlines and comment just for readability here.
-They aren't in the format.
+is empty.
+
+**Note:** I've added newlines and comment just for readability here. They aren't
+in the format.
 
 Format:
 
@@ -157,7 +103,7 @@ Format:
 Example (newlines added for readability):
 
 ```
-<|prefix_begin|>You are a large language model that wants to be helpful<|prefix_end|>
+<|system|>You are a large language model that wants to be helpful<|system|>
 <|prompter|>What is red and round?<|endoftext|><|assistant|>Hmm, a red balloon?<|endoftext|>
 <|prompter|>No, smaller<|endoftext|><|assistant|>
 ```

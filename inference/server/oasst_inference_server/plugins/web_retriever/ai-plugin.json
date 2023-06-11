@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "Web Retriever",
+  "name_for_human": "Web Retriever",
+  "description_for_human": "This plugin retrieves parts of a web page's or pdf's content for you,\nbut only web pages that have static html content, so web sites like medium, wiki etc... should work...\nAlso it only returns first ~1300 chars from the page.\nEXAMPLE USAGE: \"Please summarize this web page for me: https://en.wikipedia.org/wiki/Lorem_ipsuma\"",
+  "description_for_model": "This is a plugin that retrieves web page and pdf content for you",
+  "api": {
+    "type": "openapi",
+    "url": "openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "icon.png",
+  "contact_email": "your_email@example.com",
+  "legal_info_url": "https://example.com"
+}

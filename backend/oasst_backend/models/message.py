@@ -19,7 +19,7 @@ class Message(SQLModel, table=True):
     __tablename__ = "message"
     __table_args__ = (
         Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),
-        Index("ix_search_vector", "search_vector", postgresql_using="gin"),
+        Index("idx_search_vector", "search_vector", postgresql_using="gin"),
     )
 
     def __new__(cls, *args: Any, **kwargs: Any):
@@ -66,6 +66,7 @@ class Message(SQLModel, table=True):
     synthetic: Optional[bool] = Field(
         sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False)
     )
+    edited: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
     model_name: Optional[str] = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
 
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)

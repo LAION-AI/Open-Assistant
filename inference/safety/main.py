@@ -1,4 +1,8 @@
-# A FastAPI server to run the safety pipeline
+"""
+A simple FastAPI server which serves a `blade2blade2` safety model.
+
+See https://github.com/LAION-AI/blade2blade for context.
+"""
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -40,6 +44,7 @@ async def load_pipeline():
 
 
 async def async_predict(pipeline: Blade2Blade, inputs: str):
+    """Run predictions in a separate thread for a small server parallelism benefit."""
     return await asyncio.get_event_loop().run_in_executor(executor, pipeline.predict, inputs)
 
 

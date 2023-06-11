@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Bantuan pengumpulan data",
+  "create": "Mencipta",
+  "evaluate": "Menilai",
+  "label": "Label",
+  "dashboard": "Papan Pemuka",
+  "go": "Pergi",
+  "welcome_message": {
+    "label": "Selamat datang, {{username}}!",
+    "contributor": "Penyumbang",
+    "description": "Open Assistant ialah assistant AI sumber terbuka yang menggunakan dan melatih model bahasa lanjutan untuk memahami dan bertindak balas kepada manusia.",
+    "instruction": "Selesaikan tugas untuk membantu melatih model dan mendapatkan mata."
+  }
+}

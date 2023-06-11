@@ -1,0 +1,27 @@
+{
+  "blurb": "Kami percaya kita boleh mencipta revolusi.",
+  "blurb1": "Dengan cara yang sama bahawa Stable Diffusion membantu dunia membuat seni dan imej dengan cara yang baru, kami ingin memperbaiki dunia dengan menyediakan AI perbualan yang menakjubkan.",
+  "chat_with_our_assistant": "Berbual dengan assistant kami",
+  "description": "AI perbualan untuk semua orang. Projek sumber terbuka untuk mencipta sembang membolehkan GPT LLM yang dikendalikan oleh LAION dan penyumbang di seluruh dunia.",
+  "faq_items": {
+    "q0": "Sejauh manakah projek ini?",
+    "a0": "Kami berada di peringkat awal pembangunan, bekerja dari penyelidikan yang mantap dalam memohon RLHF kepada model bahasa yang besar.",
+    "q1": "Siapakah di belakang Open Assistant?",
+    "a1": "Open Assistant adalah projek yang dianjurkan oleh LAION dan individu di seluruh dunia yang berminat untuk membawa teknologi ini kepada semua orang.",
+    "q2": "Apakah lesen yang digunakan oleh Open Assistant?",
+    "a2": "Kod dan model dilesenkan di bawah lesen Apache 2.0.",
+    "q3": "Adakah data latihan juga akan dikeluarkan?",
+    "a3": "Ya, di bawah CC BY 4.0.",
+    "q4": "Adakah Open Assistant percuma?",
+    "a4": "Ya, Open Assistant adalah percuma untuk digunakan dan diubah suai.",
+    "q5": "Apakah perkakasan yang diperlukan untuk menjalankan model?",
+    "a5": "Akan ada versi yang akan dijalankan pada perkakasan pengguna."
+  },
+  "faq_title": "Soalan yang kerap ditanya",
+  "help_us_improve": "Bantu kami bertambah baik",
+  "hugging_face_link": "Lihat organisasi HuggingFace kami",
+  "join_us_description": "Semua projek sumber terbuka bermula dengan orang seperti anda. Sumber terbuka adalah kepercayaan bahawa jika kita bekerjasama, kita dapat bersama-sama memberikan pengetahuan dan teknologi kita kepada dunia untuk kepentingan manusia. Adakah anda masuk? Cari kami di sini:",
+  "join_us_title": "Sertai kami",
+  "subtitle": "AI perbualan untuk semua orang.",
+  "try_our_assistant": "Cuba assistant kami"
+}
