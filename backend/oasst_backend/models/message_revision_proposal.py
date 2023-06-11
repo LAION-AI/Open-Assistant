@@ -11,7 +11,9 @@ from sqlmodel import Field, Index, SQLModel
 
 class MessageRevisionProposal(SQLModel, table=True):
     __tablename__: str = "message_revision_proposal"
-    __table_args__ = (Index("ix_message_revision_proposal__user_id__message_id", "user_id", "message_id", unique=True),)
+    # this does not have unique=True because once revisions proposals are approved they are still kept
+    # this should still be unique with regards to the user_id
+    __table_args__ = (Index("ix_message_revision_proposal__user_id__message_id", "user_id", "message_id"),)
 
     def __new__(cls, *args: Any, **kwargs: Any):
         new_object = super().__new__(cls, *args, **kwargs)
