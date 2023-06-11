@@ -8,7 +8,7 @@ import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 import { get, post } from "src/lib/api";
-import { handleChatEventStream, QueueInfo, PluginIntermediateResponse } from "src/lib/chat_stream";
+import { handleChatEventStream, PluginIntermediateResponse, QueueInfo } from "src/lib/chat_stream";
 import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import {
