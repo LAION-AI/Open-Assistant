@@ -26,7 +26,6 @@ export default function Account() {
   if (!session) {
     return;
   }
-
   return (
     <>
       <Head>
@@ -50,7 +49,12 @@ export default function Account() {
                 </Link>
               </Flex>
               <Text as="b">Email</Text>
-              <Text>{session.user.email ?? t("no_email")}</Text>
+              <Flex gap={2} style={{ overflow: "hidden" }}>
+                {session.user.email ?? t("no_email")}
+                <Link href="/account/change-email">
+                  <Icon boxSize={5} as={Pencil} size="1em" />
+                </Link>
+              </Flex>
             </Grid>
             <Divider my={4} />
             <XPBar />
