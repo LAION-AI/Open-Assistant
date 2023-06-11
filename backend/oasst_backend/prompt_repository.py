@@ -356,6 +356,7 @@ class PromptRepository:
         updated_message_data = {
             "payload": PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
             "edited": True,
+            "search_vector": None,
         }
 
         query = update(Message).where(Message.id == message_id).values(**updated_message_data)
