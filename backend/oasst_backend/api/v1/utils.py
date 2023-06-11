@@ -1,7 +1,7 @@
 import re
 from uuid import UUID
 
-from oasst_backend.models import Message
+from oasst_backend.models import Message, MessageRevision
 from oasst_shared.schemas import protocol
 
 
@@ -64,6 +64,21 @@ def prepare_tree(tree: list[Message], tree_id: UUID) -> protocol.MessageTree:
         tree_messages.append(prepare_message(message))
 
     return protocol.MessageTree(id=tree_id, messages=tree_messages)
+
+
+def prepare_message_revision(revision: MessageRevision) -> protocol.MessageRevision:
+    return protocol.MessageRevision(
+        id=revision.id,
+        text=revision.payload.payload.text,
+        message_id=revision.message_id,
+        user_id=revision.user_id,
+        created_date=revision.created_date,
+        user_is_author=revision._user_is_author,
+    )
+
+
+def prepare_message_revision_list(revisions: list[MessageRevision]) -> list[protocol.MessageRevision]:
+    return [prepare_message_revision(revision) for revision in revisions]
 
 
 split_uuid_pattern = re.compile(

@@ -20,6 +20,14 @@ shared_tokenizer_lock = threading.Lock()
 
 
 class TokenBuffer:
+    """
+    A buffer for storing and managing tokens based on various conditions including stop sequences.
+
+    The TokenBuffer class accumulates tokens while keeping track of the length and manages the tokens based on the stop
+    sequences provided during initialization. Tokens can be added to the buffer and later on iterated upon finishing
+    depending on the reason.
+    """
+
     def __init__(self, stop_sequences: list[str]) -> None:
         self.stop_sequences = stop_sequences
         self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=1)
@@ -65,6 +73,7 @@ class TokenBuffer:
 
 
 def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
+    """Get the maximum possible input length based on the worker config and whether a plugin is in use."""
     max_input_length = worker_config.model_config.max_input_length
     if plugin_used:
         max_input_length = max_input_length - 1
@@ -78,6 +87,13 @@ def truncate_prompt(
     prompt: str,
     plugin_used: bool,
 ):
+    """
+    Truncate a prompt to ensure it does not exceed the maximum input length. Regardless of truncation, the system
+    prompt is always retained if it is present. If truncation removes the final prompter prefix, a new one is added.
+
+    The stream generation parameters are also updated with a maximum new tokens value which will not cause the total
+    length to exceed the maximum specified in the worker's model config.
+    """
     with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
         prompter_prefix_id = tokenizer.convert_tokens_to_ids(V2_PROMPTER_PREFIX)
@@ -123,6 +139,7 @@ def truncate_prompt(
 
 
 def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
+    """Wait for the "health" endpoint of the inference server to return status 200."""
     time_limit = time.time() + timeout
     while True:
         try:
@@ -139,7 +156,13 @@ def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
             break
 
 
-def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
+def text_to_events(
+    text: str, seed: int | None = None, pause: float = 0.0
+) -> Iterable[interface.GenerateStreamResponse]:
+    """
+    Iterate over stream generation "events" derived from the given text, where each word in the text is treated as a
+    generated "token".
+    """
     tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
@@ -184,6 +207,8 @@ def send_response(
 
 
 class HttpClient(pydantic.BaseModel):
+    """Basic HTTP client built around `requests`. Supports simple authentication."""
+
     base_url: str
     basic_auth_username: str | None = None
     basic_auth_password: str | None = None
@@ -212,7 +237,10 @@ class HttpClient(pydantic.BaseModel):
         return requests.post(self.base_url + path, auth=self.auth, **kwargs)
 
 
-def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
+def get_inference_server_stream_events(
+    request: interface.GenerateStreamRequest,
+) -> Iterable[interface.GenerateStreamResponse]:
+    """Query the model inference server specified in the worker settings and stream the generation events."""
     http = HttpClient(
         base_url=settings.inference_server_url,
         basic_auth_username=settings.basic_auth_username,

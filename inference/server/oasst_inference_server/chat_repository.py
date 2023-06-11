@@ -12,6 +12,8 @@ from oasst_shared.schemas import inference
 
 
 class ChatRepository(pydantic.BaseModel):
+    """Wrapper around a database session providing functionality relating to chats."""
+
     session: database.AsyncSession
 
     class Config:
@@ -38,6 +40,10 @@ class ChatRepository(pydantic.BaseModel):
     async def start_work(
         self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig
     ) -> models.DbMessage:
+        """
+        Update an assistant message in the database to be allocated to a specific worker.
+        The message must be in `pending` state. An exception is raised if the message has timed out or was cancelled.
+        """
         logger.debug(f"Starting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
 
@@ -65,6 +71,10 @@ class ChatRepository(pydantic.BaseModel):
         return message
 
     async def reset_work(self, message_id: str) -> models.DbMessage:
+        """
+        Update an assistant message in the database which has already been allocated to a worker to remove the
+        allocation and reset the message state to `pending`.
+        """
         logger.warning(f"Resetting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.pending
@@ -78,6 +88,7 @@ class ChatRepository(pydantic.BaseModel):
         return message
 
     async def abort_work(self, message_id: str, reason: str) -> models.DbMessage:
+        """Update an assistant message in the database to mark it as having been aborted by the allocated worker."""
         logger.warning(f"Aborting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.aborted_by_worker
@@ -88,7 +99,13 @@ class ChatRepository(pydantic.BaseModel):
         await self.session.refresh(message)
         return message
 
-    async def complete_work(self, message_id: str, content: str, used_plugin: inference.PluginUsed) -> models.DbMessage:
+    async def complete_work(
+        self, message_id: str, content: str, used_plugin: inference.PluginUsed | None
+    ) -> models.DbMessage:
+        """
+        Update an assistant message in the database to mark it as having been completed with the given content, also
+        updating the used plugin if one is specified.
+        """
         logger.debug(f"Completing work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.complete

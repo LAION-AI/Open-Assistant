@@ -1,3 +1,5 @@
+"""Script to facilitate exporting chat data from the server database."""
+
 import argparse
 import asyncio
 import contextlib

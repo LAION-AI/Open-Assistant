@@ -9,7 +9,6 @@ import {
   MenuList,
   Portal,
   SimpleGrid,
-  Text,
   Tooltip,
   useColorModeValue,
   useDisclosure,
@@ -39,7 +38,6 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
@@ -52,6 +50,7 @@ import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
+import { MessageCreateDate } from "./MessageCreateDate";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -113,7 +112,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
           {showCreatedDate ? (
-            <MessageCreateDate date={message.created_date}></MessageCreateDate>
+            <MessageCreateDate date={message.created_date} />
           ) : (
             // empty span is required to make emoji displayed at the end of row
             <span></span>
@@ -179,24 +178,6 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     );
   }
 );
-
-const me = { base: 3, md: 6 };
-
-const MessageCreateDate = ({ date }: { date: string }) => {
-  const locale = useCurrentLocale();
-  const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
-  return (
-    <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={me}>
-      {new Intl.DateTimeFormat(locale, {
-        hour: "2-digit",
-        minute: "2-digit",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(new Date(date))}
-    </Text>
-  );
-};
 
 const EmojiMenuItem = ({
   emoji,

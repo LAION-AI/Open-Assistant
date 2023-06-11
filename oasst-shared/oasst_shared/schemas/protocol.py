@@ -117,6 +117,15 @@ class Message(ConversationMessage):
     user: Optional[FrontEndUser]
 
 
+class MessageRevision(BaseModel):
+    id: UUID
+    text: str
+    message_id: UUID
+    user_id: Optional[UUID]
+    created_date: Optional[datetime]
+    user_is_author: Optional[bool]
+
+
 class MessagePage(PageResult):
     items: list[Message]
 

@@ -22,7 +22,7 @@ import {
   useOutsideClick,
   useToast,
 } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X, FolderX } from "lucide-react";
+import { Check, EyeOff, FolderX, LucideIcon, MoreHorizontal, Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -49,7 +49,6 @@ export const ChatListItem = ({
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const containerElementRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
 
@@ -106,7 +105,6 @@ export const ChatListItem = ({
           me={isActive ? "32px" : undefined}
           textOverflow="clip"
           as="span"
-          ref={containerElementRef}
         >
           {chat.title ?? t("empty")}
         </Box>
@@ -146,9 +144,7 @@ export const ChatListItem = ({
         _groupHover={{ display: "flex" }}
         position="absolute"
         alignContent="center"
-        style={{
-          insetInlineEnd: `8px`,
-        }}
+        style={{ insetInlineEnd: `8px` }}
         gap="1.5"
         zIndex={1}
       >
@@ -162,7 +158,7 @@ export const ChatListItem = ({
                 <MenuButton>
                   <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
                 </MenuButton>
-                <Portal containerRef={containerElementRef}>
+                <Portal appendToParentPortal={false} containerRef={rootRef}>
                   {/* higher z-index so that it is displayed over the mobile sidebar */}
                   <MenuList zIndex="var(--chakra-zIndices-popover)">
                     <OptOutDataButton chatId={chat.id} />
@@ -265,7 +261,7 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
       status: "success",
       position: "top",
     });
-  }, [chatId, onClose, updateChat]);
+  }, [chatId, onClose, t, toast, updateChat]);
 
   const alert = (
     <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
@@ -274,6 +270,9 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
             {t("chat:opt_out.dialog.title")}
           </AlertDialogHeader>
+          <AlertDialogBody>
+            <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
+          </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
               {t("common:cancel")}

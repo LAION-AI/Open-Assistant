@@ -11,3 +11,30 @@ line_length = 120
 [tool.black]
 line-length = 120
 target-version = ['py310']
+
+[tool.ruff]
+ line-length = 120
+ select = [
+     "E", "W",  # see: https://pypi.org/project/pycodestyle
+     "F",  # see: https://pypi.org/project/pyflakes
+ ]
+ ignore = [
+    "E501",
+    "E731",
+    "E741",  # Ambiguous variable name: ...
+    "E999",  # SyntaxError: invalid syntax. Got unexpected token Newline
+ ]
+ exclude = [
+    ".eggs",
+    ".git",
+    ".ruff_cache",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "docs"
+ ]
+ ignore-init-module-imports = true
+
+ [tool.ruff.mccabe]
+ max-complexity = 10
