@@ -142,4 +142,5 @@ details about how this works.
 
 ### From the perspective of the OA Worker
 
-(finishing this section)
+**This section is not yet written**. If you are interested in helping write it
+please get in touch on GitHub or Discord.
