@@ -14,10 +14,10 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const emailExists = await prisma.user.findFirst({
     where: {
       email: newmail,
-    }
+    },
   });
   if (emailExists) {
-    console.log('this email exists.');
+    console.log("this email exists.");
     return res.status(400).json({ message: "Invalid email" });
   }
 

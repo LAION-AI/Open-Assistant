@@ -14,7 +14,7 @@ export const getValidEmail = (Email: string, id: string): string => {
 };
 
 export const isValidEmail = async (Email: string) => {
-  if (!(Email && Email.match(validEmailRegex))){
+  if (!(Email && Email.match(validEmailRegex))) {
     return false;
   }
   // const email = await prisma.user.findFirst({

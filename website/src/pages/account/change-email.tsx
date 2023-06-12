@@ -3,7 +3,7 @@ import Head from "next/head";
 import Router from "next/router";
 import { useSession, signIn } from "next-auth/react";
 import React from "react";
-import {useRef} from "react";
+import { useRef } from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
 import { validEmailRegex } from "src/lib/email_validation";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
@@ -45,7 +45,7 @@ const EditEmailForm = () => {
         body: JSON.stringify(body),
       }).then((response) => {
         if (response.status >= 400 && response.status < 600) {
-          errors.email = {'type': 'pattern'};
+          errors.email = { type: "pattern" };
         } else {
           session.user.email = email;
           Router.push("/account");
@@ -55,8 +55,7 @@ const EditEmailForm = () => {
           //   captcha: captcha.current?.getResponse(),
           // });
         }
-      })
-
+      });
     } catch (error) {
       console.error(error);
     }
