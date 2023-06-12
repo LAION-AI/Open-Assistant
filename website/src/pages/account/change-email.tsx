@@ -1,3 +1,19 @@
+/*
+This code creates a website that allows a user to change their email address.
+The code starts by importing several React components.
+The code then defines an EditEmailForm component.
+The EditEmailForm component creates a form that allows the user to change their email address.
+The code then creates a session variable and sets it to the result of the useSession function.
+The code then creates a captcha variable and sets it to the result of the useRef function.
+The code then defines a updateUser function.
+The updateUser function updates the user's email and redirects the user to the account page.
+The code then creates a form using the useForm function.
+The form has a field that is used to enter the user's new email address.
+The form is submitted when the user clicks the submit button.
+The code then creates a SubmitButton component.
+The SubmitButton component creates a submit button that will be displayed at the end of the form.
+*/
+
 import { Button, FormControl, FormErrorMessage, Input, InputGroup } from "@chakra-ui/react";
 import Head from "next/head";
 import Router from "next/router";
