@@ -8,7 +8,6 @@ import { get } from "src/lib/api";
 import { ModelInfo, PluginEntry } from "src/types/Chat";
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import useSWRImmutable from "swr/immutable";
-import { Flex } from "@chakra-ui/react";
 
 const Chat = () => {
   const { query } = useRouter();
@@ -28,9 +27,7 @@ const Chat = () => {
       </Head>
       {modelInfos && plugins && (
         <ChatInitialDataProvider modelInfos={modelInfos} builtInPlugins={plugins}>
-          <Flex zIndex="var(--chakra-zIndices-base)">
             <ChatSection chatId={id} />
-          </Flex>
         </ChatInitialDataProvider>
       )}
     </>

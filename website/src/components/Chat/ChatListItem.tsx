@@ -200,44 +200,47 @@ const DeleteChatButton = ({
   onDelete,
 }: {
   chatId: string;
-  onDelete?: (params: { chatId: string }) => void;
+  onDelete: (params: { chatId: string }) => void;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const { t } = useTranslation(["chat", "common"]);
-  const toast = useToast();
-  const { trigger: triggerDelete } = useSWRMutation<any, any, any, { chat_id: string }>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { trigger: triggerDelete, isMutating: isDeleting } = useSWRMutation<any, any, any, { chat_id: string }>(
     API_ROUTES.DELETE_CHAT(chatId),
     del
   );
 
-  const onDeleteCallback = useCallback(async () => {
+  const router = useRouter();
+  const handleDelete = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
-    onDelete?.({ chatId });
-    toast({
-      title: t("chat:delete_chat_success"),
-      status: "success",
-      position: "top",
-    });
-  }, [onDelete, triggerDelete, chatId]);
+    if (router.query.id === chatId) {
+      // push to /chat if we are on the deleted chat
+      router.push('/chat');
+    } else {
+      onDelete({ chatId });
+      onClose();
+    }
+  }, [triggerDelete, chatId, router, onDelete, onClose]);
+
   const alert = (
     <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
       <AlertDialogOverlay>
         <AlertDialogContent my="100px" flex="column">
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            <Text textAlign="left">{t("delete_chat")}</Text>
+            <Text>{t("delete_chat")}</Text>
           </AlertDialogHeader>
           <AlertDialogBody wordBreak="break-word">
             <Text fontWeight="bold" py="2" textAlign="left">
               {t("delete_confirmation")}
             </Text>
-            <Text className="py-2">{t("delete_confirmation_detail")}</Text>
+            <Text py="2">{t("delete_confirmation_detail")}</Text>
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
               {t("common:cancel")}
             </Button>
-            <Button colorScheme="red" onClick={onDeleteCallback} ml={3}>
+            <Button colorScheme="red" onClick={handleDelete} ml={3} isLoading={isDeleting}>
               {t("common:delete")}
             </Button>
           </AlertDialogFooter>
@@ -245,6 +248,7 @@ const DeleteChatButton = ({
       </AlertDialogOverlay>
     </AlertDialog>
   );
+  
   return (
     <>
       <MenuItem onClick={onOpen} icon={<Trash size={16} />}>
@@ -272,8 +276,12 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
     });
   }, [chatId, onClose, t, toast, updateChat]);
 
-  const alert = (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+  return (
+    <>
+      <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
+        {t("chat:opt_out.button")}
+      </MenuItem>
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
@@ -293,15 +301,7 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
         </AlertDialogContent>
       </AlertDialogOverlay>
     </AlertDialog>
-  );
-
-  return (
-    <Flex zIndex="var(--chakra-zIndices-popover)">
-      <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
-        {t("chat:opt_out.button")}
-      </MenuItem>
-      {alert}
-    </Flex>
+    </>
   );
 };
 

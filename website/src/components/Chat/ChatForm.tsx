@@ -68,7 +68,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, f
           }}
           style={{ resize: "none" }}
         />
-        <Flex position="absolute" className="ltr:right-0 rtl:left-0 top-0 h-full items-center px-4" gap="2">
+        <Flex position="absolute" zIndex="10" className="ltr:right-0 rtl:left-0 top-0 h-full items-center px-4" gap="2">
           <ChatConfigMobileTrigger />
           {isSending ? (
             <CircularProgress isIndeterminate size="20px" />
