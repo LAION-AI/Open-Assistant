@@ -395,6 +395,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return RMLoss(beta=score_l2_reg)
     elif loss == "RMCLSLoss":
         return RMCLSLoss()
+    elif loss == "BCELoss":
+        return torch.nn.BCEWithLogitsLoss()
     else:
         raise ValueError(f"Loss {loss} not supported")
 

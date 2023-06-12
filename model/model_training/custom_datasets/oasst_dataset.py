@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
-from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
+from oasst_data import ExportMessageNode, read_message_trees, read_messages, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
 
@@ -148,3 +148,51 @@ def load_oasst_export(
     print(f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}")
 
     return train, val
+
+
+def load_oasst_response_export(
+    input_file_path: str | Path,
+    val_split: float = 0.2,
+    manual_seed: int = 287631038922,
+    data_path: str | Path = None,
+    mode: Literal["rm"] = "rm",
+) -> tuple[ListDataset, ListDataset]:
+    # we could filter out label of 1 as sft dataset, mode could then support sft
+    # rl is simply the prefix
+    if mode not in ("rm"):
+        raise ValueError(f"Unknown dataset mode: {mode}")
+    generator = Generator()
+    generator.manual_seed(manual_seed)
+
+    if not isinstance(input_file_path, Path):
+        input_file_path = Path(input_file_path)
+    if not input_file_path.is_absolute() and data_path:
+        if not isinstance(data_path, Path):
+            data_path = Path(data_path)
+        input_file_path = data_path / input_file_path
+
+    id2messages = {}
+    pairs = []
+    for message in read_messages(input_file_path):
+        msg_id = message.message_id
+        if msg_id not in id2messages and message.role == "prompter":
+            message.replies = []
+            id2messages[msg_id] = message
+        if message.parent_id and message.parent_id in id2messages:
+            parent_msg = id2messages[message.parent_id]
+            parent_msg.replies.append(message)
+            id2messages[message.parent_id] = parent_msg
+
+    for msg_id, message in id2messages.items():
+        for reply in message.replies:
+            if reply.events and "score" in reply.events:
+                scoring = reply.events["score"][0].score
+                if scoring == -1:
+                    scoring = 0
+                # TODO: traverse the message node to add historical text (if available)
+                # we will just use 1 for now
+                pairs.append(([message.text], reply.text, scoring))
+
+    trees = ListDataset(pairs)
+    splits = random_split(trees, lengths=[1.0 - val_split, val_split], generator=generator)
+    return splits

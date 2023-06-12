@@ -6,7 +6,7 @@ from typing import Optional
 import numpy as np
 from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
-from model_training.custom_datasets.oasst_dataset import load_oasst_export
+from model_training.custom_datasets.oasst_dataset import load_oasst_export, load_oasst_response_export
 from model_training.custom_datasets.pretrain_datasets import RedPajama
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
@@ -61,6 +61,7 @@ RL_DATASETS = [
 
 RM_DATASETS = [
     "oasst_export",
+    "oasst_chat_scoring",
     "augment_oasst",
     "anthropic_rlhf",
     "hf_summary",
@@ -156,6 +157,8 @@ def get_one_dataset(
         assert mode == "rm"
         train = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="train")
         eval = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="val")
+    elif dataset_name == "oasst_chat_scoring":
+        train, eval = load_oasst_response_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "oig_file":
         train, eval = load_oig_file(val_split=val_split, **kwargs)
     elif dataset_name == "anthropic_rlhf":
