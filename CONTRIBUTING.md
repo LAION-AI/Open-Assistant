@@ -145,6 +145,10 @@ See
 [here](https://github.com/LAION-AI/Open-Assistant/blob/main/data/datasets/README.md)
 
 ## Translations
+
 [![translation badge](https://inlang.com/badge?url=github.com/LAION-AI/Open-Assistant)](https://inlang.com/editor/github.com/LAION-AI/Open-Assistant?ref=badge)
 
-To add translations, you can manually edit the JSON translation files in `website/public/locales`, use the [inlang](https://inlang.com/) online editor, or run the `@inlang/cli` to find missing translations and create machine translations.
+To add translations, you can manually edit the JSON translation files in
+`website/public/locales`, use the [inlang](https://inlang.com/) online editor,
+or run the `@inlang/cli` to find missing translations and create machine
+translations.
