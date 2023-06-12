@@ -97,7 +97,6 @@ export const ChatListItem = ({
           bg: isEditing ? "transparent" : isActive ? "whiteAlpha.300" : "whiteAlpha.200",
         },
       }}
-      // onClick={() => router.push(`/chat/${chat.id}`)}
     >
       {!isEditing ? (
         <Box
@@ -155,20 +154,18 @@ export const ChatListItem = ({
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
             {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
-            <Box>
-              <Menu>
-                <MenuButton>
-                  <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
-                </MenuButton>
-                <Portal appendToParentPortal={false} containerRef={rootRef}>
-                  {/* higher z-index so that it is displayed over the mobile sidebar */}
-                  <MenuList zIndex="var(--chakra-zIndices-popover)">
-                    <OptOutDataButton chatId={chat.id} />
-                    <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
-                  </MenuList>
-                </Portal>
-              </Menu>
-            </Box>
+            <Menu>
+              <MenuButton>
+                <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
+              </MenuButton>
+              <Portal appendToParentPortal={false} containerRef={rootRef}>
+                {/* higher z-index so that it is displayed over the mobile sidebar */}
+                <MenuList zIndex="var(--chakra-zIndices-popover)">
+                  <OptOutDataButton chatId={chat.id} />
+                  <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+                </MenuList>
+              </Portal>
+            </Menu>
           </>
         )}
       </Flex>
@@ -195,13 +192,7 @@ const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: 
   return <ChatListItemIconButton label={t("hide")} icon={EyeOff} onClick={onClick} />;
 };
 
-const DeleteChatButton = ({
-  chatId,
-  onDelete,
-}: {
-  chatId: string;
-  onDelete: (params: { chatId: string }) => void;
-}) => {
+const DeleteChatButton = ({ chatId, onDelete }: { chatId: string; onDelete: (params: { chatId: string }) => void }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const { t } = useTranslation(["chat", "common"]);
@@ -216,7 +207,7 @@ const DeleteChatButton = ({
     await triggerDelete({ chat_id: chatId });
     if (router.query.id === chatId) {
       // push to /chat if we are on the deleted chat
-      router.push('/chat');
+      router.push("/chat");
     } else {
       onDelete({ chatId });
       onClose();
@@ -248,7 +239,7 @@ const DeleteChatButton = ({
       </AlertDialogOverlay>
     </AlertDialog>
   );
-  
+
   return (
     <>
       <MenuItem onClick={onOpen} icon={<Trash size={16} />}>
@@ -282,25 +273,25 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
         {t("chat:opt_out.button")}
       </MenuItem>
       <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t("chat:opt_out.dialog.title")}
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              {t("common:cancel")}
-            </Button>
-            <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
-              {t("common:confirm")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              {t("chat:opt_out.dialog.title")}
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                {t("common:cancel")}
+              </Button>
+              <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
+                {t("common:confirm")}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

@@ -449,7 +449,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       _dark={{
         bg: "blackAlpha.300",
       }}
-      zIndex="var(--chakra-zIndices-base)"
     >
       <Box height="full" minH={0} position="relative">
         {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}

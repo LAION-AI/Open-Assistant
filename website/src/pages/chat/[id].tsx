@@ -27,7 +27,7 @@ const Chat = () => {
       </Head>
       {modelInfos && plugins && (
         <ChatInitialDataProvider modelInfos={modelInfos} builtInPlugins={plugins}>
-            <ChatSection chatId={id} />
+          <ChatSection chatId={id} />
         </ChatInitialDataProvider>
       )}
     </>
