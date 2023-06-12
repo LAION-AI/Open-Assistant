@@ -2,6 +2,7 @@ import { Avatar, AvatarProps, Box, BoxProps, Flex, useColorModeValue } from "@ch
 import { forwardRef, lazy, Suspense } from "react";
 import { colors } from "src/styles/Theme/colors";
 import { StrictOmit } from "ts-essentials";
+
 import { PluginUsageDetails } from "./PluginUsageDetails";
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 

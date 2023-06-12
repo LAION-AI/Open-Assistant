@@ -147,13 +147,14 @@ export const ChatListItem = ({
         style={{ insetInlineEnd: `8px` }}
         gap="1.5"
         zIndex={1}
+        // we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile
         onClick={stopEvent}
       >
         {!isEditing && (
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
-            {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
+
             <Menu>
               <MenuButton>
                 <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
