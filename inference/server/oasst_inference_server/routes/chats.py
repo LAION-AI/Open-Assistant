@@ -355,3 +355,15 @@ async def handle_update_chat(
     except Exception:
         logger.exception("Error when updating chat")
         return fastapi.Response(status_code=500)
+
+
+@router.put("/hide_all")
+async def handle_hide_all_chats(
+    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+) -> fastapi.Response:
+    """Allows the client to hide all the user's chats."""
+    try:
+        await ucr.hide_all_chats()
+    except Exception:
+        logger.exception("Error when hiding chats")
+        return fastapi.Response(status_code=500)
