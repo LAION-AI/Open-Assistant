@@ -183,8 +183,9 @@ oasst_only:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        #input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
         hf_dataset_name: OpenAssistant/oasst1
+        #input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
+        #top_k: 1
         val_split: 0.05
   sort_by_length: false
   use_custom_sampler: false
@@ -620,6 +621,7 @@ galactica-125m:
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
+  dtype: fp32
 
 gpt-jt:
   learning_rate: 8e-6
@@ -669,3 +671,4 @@ debug:
   log_wandb: false
   verbose: true
   num_train_epochs: 0.2
+  dtype: fp32
