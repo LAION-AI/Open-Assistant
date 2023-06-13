@@ -25,6 +25,3 @@ backend/openapi.json
 
 # JetBrains PyCharm:
 .idea/
-
-# Dependency directories
-node_modules/
