@@ -46,12 +46,12 @@ def read_oasst_dict_tree_hf_dataset(hf_dataset: Dataset) -> list[ExportMessageTr
             row["emojis"] = dict(zip(emojis["name"], emojis["count"]))
         labels = row.get("labels")
         if labels:
-            parsed_labels: dict[str, dict[str, str | float]] = {}
-            for name, value, count in zip(
-                labels["name"], labels["value"], labels["count"]
-            ):
-                parsed_labels[name] = {"value": value, "count": count}
-            row["labels"] = parsed_labels
+            row["labels"] = {
+                name: {"value": value, "count": count}
+                for name, value, count in zip(
+                    labels["name"], labels["value"], labels["count"]
+                )
+            }
         rows_by_id[row["message_id"]] = row
     raw_trees: list[dict] = []
     for row in rows_by_id.values():
