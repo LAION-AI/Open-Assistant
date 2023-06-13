@@ -150,5 +150,4 @@ See
 
 To add translations, you can manually edit the JSON translation files in
 `website/public/locales`, use the [inlang](https://inlang.com/) online editor,
-or run the `@inlang/cli` to find missing translations and create machine
-translations.
+or run `npm run inlang:lint` inside `website` to find missing translations.
