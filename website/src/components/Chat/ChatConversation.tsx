@@ -328,7 +328,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       ENABLE_DRAFTS_WITH_PLUGINS,
       NUM_GENERATED_DRAFTS,
       createAndFetchAssistantMessage,
-      chatData?.allow_data_use
+      chatData?.allow_data_use,
     ]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
@@ -479,6 +479,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onEditPrompt={handleEditPrompt}
             showEncourageMessage={showEncourageMessage}
             onEncourageMessageClose={setShowEncourageMessage.off}
+            showFeedbackOptions={chatData?.allow_data_use}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           {(isSending || isAwaitingMessageSelect) &&
