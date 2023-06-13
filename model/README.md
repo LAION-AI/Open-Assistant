@@ -19,16 +19,18 @@ export MODEL_PATH=$PWD/.saved_models
 2. Then download the OA message tree jsonl.gz file or declare the HuggingFace
    dataset to use.
 
-- Use local jsonl file data:
+Create a new or modify an existing configuration section in the
+`model_training/configs/config.yaml`, `model_training/configs/config_rl.yaml` or
+`reward/instructor/rank_datasets.py` yaml configuration files and specify the OA
+jsonl data file or HuggingFace dataset to use.
+
+- To use a local OASST trees.jsonl(.gz) file specify the file name with the
+  `input_file_path` configuration option. Place the file either in the cache_dir
+  (`DATA_PATH`) or specify an absolute path to it.
 
 ```bash
-cp /path/to/<oasst.jsonl> $DATA_PATH
+cp /path/to/<oasst.trees.jsonl> $DATA_PATH
 ```
-
-Create a new or modify an existing configuration section in
-`model_training/configs/config.yaml`, `model_training/configs/config_rl.yaml` or
-`reward/instructor/rank_datasets.py` yaml configuration files that uses the OA
-jsonl data file.
 
 Example:
 
@@ -39,9 +41,8 @@ my_data_config:
       input_file_path: oasst_export.trees.jsonl.gz
 ```
 
-- Use HuggingFace dataset:
-
-Specify the dataset name with the `hf_dataset_name` configuration option.
+- To use a HuggingFace dataset specify the dataset name with the
+  `hf_dataset_name` configuration option.
 
 Example:
 
