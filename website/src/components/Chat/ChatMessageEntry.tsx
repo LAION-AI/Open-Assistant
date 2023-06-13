@@ -32,7 +32,7 @@ export type ChatMessageEntryProps = {
   onRetry?: (params: { parentId: string; chatId: string }) => void;
   isSending?: boolean;
   pagingSlot?: ReactNode;
-  onEditPromtp?: (params: EditPromptParams) => void;
+  onEditPrompt?: (params: EditPromptParams) => void;
   canRetry?: boolean;
   id?: string;
   "data-id"?: string;
@@ -46,7 +46,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   isSending,
   message,
   pagingSlot,
-  onEditPromtp,
+  onEditPrompt,
   canRetry,
   showEncourageMessage,
   onEncourageMessageClose,
@@ -93,11 +93,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleEditSubmit = useCallback(() => {
-    if (onEditPromtp && inputRef.current?.value && parentId !== null) {
-      onEditPromtp({ parentId, chatId, content: inputRef.current?.value });
+    if (onEditPrompt && inputRef.current?.value && parentId !== null) {
+      onEditPrompt({ parentId, chatId, content: inputRef.current?.value });
     }
     setIsEditing.off();
-  }, [chatId, onEditPromtp, parentId, setIsEditing]);
+  }, [chatId, onEditPrompt, parentId, setIsEditing]);
 
   const ref = useRef<HTMLDivElement>(null);
 
