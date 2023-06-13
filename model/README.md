@@ -16,31 +16,48 @@ export DATA_PATH=$PWD/.cache
 export MODEL_PATH=$PWD/.saved_models
 ```
 
-2. Then download the OA data or declare the HuggingFace dataset.
+2. Then download the OA message tree jsonl.gz file or declare the HuggingFace
+   dataset to use.
 
-- Use local data
+- Use local jsonl file data:
 
 ```bash
-cp /path/to/<oa.jsonl> $DATA_PATH
+cp /path/to/<oasst.jsonl> $DATA_PATH
 ```
 
-Change the `<oa.jsonl>` file used in the `model_training/configs/config.yaml`,
-`model_training/configs/config_rl.yaml` and `reward/instructor/rank_datasets.py`
-files.
-
-- Use HuggingFace dataset.
-
-Declare the dataset name on configs `hf_dataset_name` and set `use_hf_dataset`
-to `true`.
+Create a new or modify an existing configuration section in
+`model_training/configs/config.yaml`, `model_training/configs/config_rl.yaml` or
+`reward/instructor/rank_datasets.py` yaml configuration files that uses the OA
+jsonl data file.
 
 Example:
 
 ```yaml
-hf_dataset_name: OpenAssistant/oasst1
-use_hf_dataset: true
+my_data_config:
+  datasets:
+    - oasst_export:
+      input_file_path: oasst_export.trees.jsonl.gz
 ```
 
-See more [here](https://huggingface.co/datasets/OpenAssistant/oasst1)
+- Use HuggingFace dataset:
+
+Specify the dataset name with the `hf_dataset_name` configuration option.
+
+Example:
+
+```yaml
+my_data_config:
+  datasets:
+    - oasst_export:
+      hf_dataset_name: OpenAssistant/oasst1
+```
+
+_Note_: If both `hf_dataset_name` and `input_file_path` are specified
+`input_file_path` will take precedence.
+
+See the
+[OpenAssistant/oasst1](https://huggingface.co/datasets/OpenAssistant/oasst1)
+dataset card on the HuggingFace hub for more information.
 
 - (TODO) add better parsing of the config files that is consistent for sft, rm
   and rl training.

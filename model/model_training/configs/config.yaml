@@ -183,9 +183,8 @@ oasst_only:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
+        #input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
         hf_dataset_name: OpenAssistant/oasst1
-        use_hf_dataset: true
         val_split: 0.05
   sort_by_length: false
   use_custom_sampler: false
@@ -195,8 +194,6 @@ reference-data:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
         input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
-        hf_dataset_name:
-        use_hf_dataset: false
         val_split: 0.05
     - alpaca
   sort_by_length: false
@@ -207,9 +204,7 @@ oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-        hf_dataset_name:
-        use_hf_dataset: false
+        hf_dataset_name: OpenAssistant/oasst1
     - gpt4all
     - alpaca
     - code_alpaca
@@ -230,9 +225,7 @@ oasst_export_latin_cyrillic:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-        hf_dataset_name:
-        use_hf_dataset: false
+        hf_dataset_name: OpenAssistant/oasst1
     - alpaca
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
@@ -351,9 +344,7 @@ llama-30b-sft-6:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
         hf_dataset_name: OpenAssistant/oasst1
-        use_hf_dataset: true
         val_split: 0.05
     - vicuna:
         val_split: 0.05

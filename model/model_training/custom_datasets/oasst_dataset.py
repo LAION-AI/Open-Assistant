@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Iterable, Literal, Optional
 
-from datasets import load_dataset
 from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
-from oasst_data import ExportMessageNode, read_message_trees, read_oasst_dict_tree_hf_dataset, visit_threads_depth_first
+from oasst_data import ExportMessageNode, read_dataset_message_trees, read_message_trees, visit_threads_depth_first
+from oasst_data.schemas import ExportMessageTree
 from torch import Generator
 from torch.utils.data import Dataset, random_split
 
@@ -20,43 +20,40 @@ class ListDataset(Dataset):
         return self.data[index]
 
 
-def read_trees_call_func(data, function):
-    return function(data)
-
-
 def load_oasst_export(
-    input_file_path: str | Path,
-    hf_dataset_name: str,
+    input_file_path: Optional[str | Path] = None,
+    hf_dataset_name: Optional[str] = "OpenAssistant/oasst1",
     val_split: float = 0.2,
     lang: str = "en",
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
-    use_hf_dataset: bool = True,
     mode: Literal["sft", "rm", "rl"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
     if mode not in ("sft", "rm", "rl"):
         raise ValueError(f"Unknown dataset mode: {mode}")
 
-    lang_codes = lang.split(",")
+    lang_codes: list[str] = lang.split(",")
 
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    if use_hf_dataset and hf_dataset_name:
-        dataset_or_file_path = load_dataset(hf_dataset_name, split="train+validation")
-        read_trees_function = read_oasst_dict_tree_hf_dataset
-    else:
+    tree_iter: Iterable[ExportMessageTree] = None
+    if input_file_path:
         if not isinstance(input_file_path, Path):
-            dataset_or_file_path = Path(input_file_path)
-        if not dataset_or_file_path.is_absolute() and data_path:
+            input_file_path = Path(input_file_path)
+        if not input_file_path.is_absolute() and data_path:
             if not isinstance(data_path, Path):
                 data_path = Path(data_path)
-            dataset_or_file_path = data_path / dataset_or_file_path
-        read_trees_function = read_message_trees
+            input_file_path = data_path / input_file_path
+        tree_iter = read_message_trees(input_file_path)
+    elif hf_dataset_name:
+        tree_iter = read_dataset_message_trees(hf_dataset_name, split="train+validation")
+    else:
+        raise RuntimeError("Either `input_file_path` or `hf_dataset_name` must be specified.")
 
     threads_per_tree = []
-    for tree in read_trees_call_func(dataset_or_file_path, read_trees_function):
+    for tree in tree_iter:
         if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
             continue
 
@@ -157,8 +154,9 @@ def load_oasst_export(
     train = flatten(splits[0])
     val = flatten(splits[1])
 
-    print(f"OASST huggingface data {str(hf_dataset_name)}: {len(train)=}, {len(val)=}") if use_hf_dataset else print(
-        f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}"
-    )
+    if input_file_path:
+        print(f"OASST JSONL file {str(input_file_path)}: {len(train)=}, {len(val)=}")
+    else:
+        print(f"OASST HF dataset {hf_dataset_name}: {len(train)=}, {len(val)=}")
 
     return train, val
