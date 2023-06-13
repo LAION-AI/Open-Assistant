@@ -11,7 +11,7 @@ class LabelAvgValue(BaseModel):
     count: int
 
 
-LabelValues = dict
+LabelValues = dict[str, LabelAvgValue]
 
 
 class ExportMessageEvent(BaseModel):
@@ -73,7 +73,7 @@ class ExportMessageNode(BaseModel):
     rank: int | None
     synthetic: bool | None
     model_name: str | None
-    emojis: dict | None
+    emojis: dict[str, int] | None
     replies: list[ExportMessageNode] | None
     labels: LabelValues | None
     events: dict[str, list[ExportMessageEvent]] | None
