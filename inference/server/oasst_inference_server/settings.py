@@ -45,7 +45,7 @@ class Settings(pydantic.BaseSettings):
     postgres_password: str = "postgres"
     postgres_db: str = "postgres"
 
-    insert_fake_data: bool = True
+    insert_fake_data: bool = False
     fake_data_path: FilePath | None = "/tmp/test_data/realistic/realistic_seed_data.json"
 
     database_uri: str | None = None
