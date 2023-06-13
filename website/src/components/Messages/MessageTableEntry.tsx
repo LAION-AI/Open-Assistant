@@ -48,9 +48,9 @@ import useSWRMutation from "swr/mutation";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
+import { MessageCreateDate } from "./MessageCreateDate";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
-import { MessageCreateDate } from "./MessageCreateDate";
 
 interface MessageTableEntryProps {
   message: Message;
