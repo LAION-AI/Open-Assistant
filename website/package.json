@@ -93,7 +93,7 @@
     "@storybook/addon-actions": "^7.0.5",
     "@storybook/addon-essentials": "^7.0.18",
     "@storybook/addon-interactions": "^7.0.9",
-    "@storybook/addon-links": "^7.0.13",
+    "@storybook/addon-links": "^7.0.20",
     "@storybook/nextjs": "^7.0.18",
     "@storybook/react": "^7.0.7",
     "@storybook/testing-library": "^0.1.0",
