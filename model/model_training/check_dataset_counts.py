@@ -7,11 +7,11 @@ from typing import Any
 import pandas as pd
 import yaml
 from langdetect import DetectorFactory, detect
-from model_training.custom_datasets.formatting import DatasetEntry
+from model_training.custom_datasets.formatting import DatasetEntrySft
 from model_training.utils.utils import _strtobool, get_dataset
 
 
-class Mode(Enum):
+class Mode(str, Enum):
     sft = "sft"
     rm = "rm"
     rl = "rl"
@@ -131,7 +131,7 @@ if __name__ == "__main__":
                 try:
                     if isinstance(row, (list, tuple)):
                         train_lang += Counter([detect(k) for k in row])
-                    elif isinstance(row, DatasetEntry):
+                    elif isinstance(row, DatasetEntrySft):
                         train_lang += Counter([detect(k) for k in row.questions if k])
                         if isinstance(row.answers[0], list):
                             for answers in row.answers:

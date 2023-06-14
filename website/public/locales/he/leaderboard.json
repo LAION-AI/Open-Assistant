@@ -9,6 +9,7 @@
   "labels_simple": "תוויות (פשוטות)",
   "last_updated_at": "עודכן לאחרונה ב: {{val, datetime}}",
   "leaderboard": "לוח ניהול",
+  "level_progress_message": "עם סך נקודות של {{score}}, אתה הגעת לרמה {{level,number,integer}}!",
   "month": "חודש",
   "monthly": "חודשי",
   "next": "הבא",
@@ -19,6 +20,7 @@
   "prompt": "קלטים",
   "rank": "דרגה",
   "rankings": "דירוגים",
+  "reached_max_level": "הגעת לרמה במקסימלית, תודה על העבודה הקשה!",
   "replies_assistant": "תשובות כעוזר",
   "replies_prompter": "תשובות כמזין",
   "reply": "תשובות",
@@ -31,6 +33,7 @@
   "view_all": "הצג הכל",
   "week": "שבוע",
   "weekly": "שבועי",
+  "xp_progress_message": "אתה צריך עוד {{need, number, integer}} נקודות כדי להגיע לרמה הבאה!",
   "your_account": "החשבון שלך",
   "your_stats": "הסטטיסטיקה שלך"
 }

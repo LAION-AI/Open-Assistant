@@ -1,21 +1,20 @@
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime
+from datetime import timedelta
 from typing import Any, Dict, List
 
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
 from oasst_backend.celery_worker import app
-from oasst_backend.models import ApiClient
+from oasst_backend.models import ApiClient, Message, User
+from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.user_repository import User
-from oasst_backend.utils.database_utils import default_session_factory
+from oasst_backend.utils.database_utils import db_lang_to_postgres_ts_lang, default_session_factory
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
-from oasst_shared.utils import utcnow
-from sqlmodel import select
-
-startup_time: datetime = utcnow()
+from oasst_shared.utils import log_timing, utcnow
+from sqlalchemy import func
+from sqlmodel import update
 
 
 async def useHFApi(text, url, model_name):
@@ -67,47 +66,42 @@ def hf_feature_extraction(text, message_id, api_client):
         logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
-@shared_task(name="update_user_streak")
-def update_user_streak() -> None:
-    logger.info("update_user_streak start...")
+@shared_task(name="update_search_vectors")
+def update_search_vectors(batch_size: int) -> None:
+    logger.info("update_search_vectors start...")
     try:
         with default_session_factory() as session:
-            current_time = utcnow()
-            timedelta = current_time - startup_time
-            if timedelta.days > 0:
-                # Update only greater than 24 hours . Do nothing
-                logger.info("Process timedelta greater than 24h")
-                statement = select(User)
-                result = session.exec(statement).all()
-                if result is not None:
-                    for user in result:
-                        last_activity_date = user.last_activity_date
-                        streak_last_day_date = user.streak_last_day_date
-                        # set NULL streak_days to 0
-                        if user.streak_days is None:
-                            user.streak_days = 0
-                        # if the user had completed a task
-                        if last_activity_date is not None:
-                            lastactitvitydelta = current_time - last_activity_date
-                            # if the user missed consecutive days of completing a task
-                            # reset the streak_days to 0 and set streak_last_day_date to the current_time
-                            if lastactitvitydelta.days > 1 or user.streak_days is None:
-                                user.streak_days = 0
-                                user.streak_last_day_date = current_time
-                        # streak_last_day_date has a current timestamp in DB. Ideally should not be NULL.
-                        if streak_last_day_date is not None:
-                            streak_delta = current_time - streak_last_day_date
-                            # if user completed tasks on consecutive days then increment the streak days
-                            # update the streak_last_day_date to current time for the next calculation
-                            if streak_delta.days > 0:
-                                user.streak_days += 1
-                                user.streak_last_day_date = current_time
-                        session.add(user)
-                        session.commit()
+            while True:
+                to_update: list[Message] = (
+                    session.query(Message).filter(Message.search_vector.is_(None)).limit(batch_size).all()
+                )
 
-            else:
-                logger.info("Not yet 24hours since the process started! ...")
-        logger.info("User streak end...")
+                if not to_update:
+                    break
+
+                for message in to_update:
+                    message_payload: MessagePayload = message.payload.payload
+                    message_lang: str = db_lang_to_postgres_ts_lang(message.lang)
+                    message.search_vector = func.to_tsvector(message_lang, message_payload.text)
+
+                session.commit()
     except Exception as e:
-        logger.error(str(e))
-    return
+        logger.error(f"update_search_vectors failed with error: {str(e)}")
+
+
+@shared_task(name="periodic_user_streak_reset")
+@log_timing(level="INFO")
+def periodic_user_streak_reset() -> None:
+    try:
+        with default_session_factory() as session:
+            # Reset streak_days to 0 for users with more than 1.5 days of inactivity
+            streak_timeout = utcnow() - timedelta(hours=36)
+            reset_query = (
+                update(User)
+                .filter(User.last_activity_date < streak_timeout, User.streak_last_day_date.is_not(None))
+                .values(streak_days=0, streak_last_day_date=None)
+            )
+            session.execute(reset_query)
+            session.commit()
+    except Exception:
+        logger.exception("Error during periodic user streak reset")

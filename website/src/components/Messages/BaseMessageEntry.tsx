@@ -2,6 +2,7 @@ import { Avatar, AvatarProps, Box, BoxProps, Flex, useColorModeValue } from "@ch
 import { forwardRef, lazy, Suspense } from "react";
 import { colors } from "src/styles/Theme/colors";
 import { StrictOmit } from "ts-essentials";
+
 import { PluginUsageDetails } from "./PluginUsageDetails";
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 
@@ -29,6 +30,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       flexDirection={{ base: "column", md: "row" }}
       alignItems="start"
       maxWidth="full"
+      width={"fit-content"}
       position="relative"
       p={{ base: 3, md: 0 }}
       borderRadius={{ base: "18px", md: 0 }}

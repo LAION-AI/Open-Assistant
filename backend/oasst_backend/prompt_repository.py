@@ -19,6 +19,7 @@ from oasst_backend.models import (
     MessageEmbedding,
     MessageEmoji,
     MessageReaction,
+    MessageRevision,
     MessageToxicity,
     MessageTreeState,
     Task,
@@ -29,7 +30,7 @@ from oasst_backend.models import (
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
+from oasst_backend.utils.database_utils import CommitMode, db_lang_to_postgres_ts_lang, managed_tx_method
 from oasst_backend.utils.discord import send_new_report_message
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -162,6 +163,23 @@ class PromptRepository:
         self.db.add(message)
         return message
 
+    @managed_tx_method(CommitMode.FLUSH)
+    def insert_revision(
+        self,
+        payload: db_payload.MessagePayload,
+        message_id: UUID,
+        user_id: UUID,
+        created_date: datetime,
+    ) -> MessageRevision:
+        message_revision = MessageRevision(
+            payload=payload,
+            message_id=message_id,
+            user_id=user_id,
+            created_date=created_date,
+        )
+        self.db.add(message_revision)
+        return message_revision
+
     def _validate_task(
         self,
         task: Task,
@@ -253,7 +271,7 @@ class PromptRepository:
                     )
                 if not ts.active:
                     logger.warning(
-                        f"Received messsage for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
+                        f"Received message for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
                     )
 
             if check_duplicate and not settings.DEBUG_ALLOW_DUPLICATE_TASKS:
@@ -313,6 +331,36 @@ class PromptRepository:
             f"text[:100]='{user_message.text[:100]}', role='{user_message.role}', lang='{user_message.lang}'"
         )
         return user_message
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def revise_message(self, message_id: UUID, new_content: str):
+        # store original message as revision if not already stored
+        message = self.fetch_message(message_id)
+        if not message.edited:
+            self.insert_revision(
+                payload=message.payload,
+                message_id=message_id,
+                user_id=message.user_id,
+                created_date=message.created_date,
+            )
+
+        # store new version as revision
+        self.insert_revision(
+            payload=PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
+            message_id=message_id,
+            user_id=self.user_id,
+            created_date=utcnow(),
+        )
+
+        # update message with new content
+        updated_message_data = {
+            "payload": PayloadContainer(payload=db_payload.MessagePayload(text=new_content)),
+            "edited": True,
+            "search_vector": None,
+        }
+
+        query = update(Message).where(Message.id == message_id).values(**updated_message_data)
+        self.db.execute(query)
 
     @managed_tx_method(CommitMode.FLUSH)
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:
@@ -753,6 +801,16 @@ class PromptRepository:
             query = query.filter(TextLabels.user_id == user_id)
         return query.all()
 
+    def fetch_message_revision_history(self, message_id: UUID) -> list[MessageRevision]:
+        # the revisions are sorted by time using the uuid7 id
+        revisions: list[MessageRevision] = sorted(
+            self.db.query(MessageRevision).filter(MessageRevision.message_id == message_id).all(),
+            key=lambda revision: revision.id.int >> 80,
+        )
+        for revision in revisions:
+            revision._user_is_author = self.user_id == revision.user_id
+        return revisions
+
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
         """
@@ -952,6 +1010,7 @@ class PromptRepository:
         review_result: Optional[bool] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
+        search_query: Optional[str] = None,
         lang: Optional[str] = None,
         include_user: Optional[bool] = None,
     ) -> list[Message]:
@@ -1018,6 +1077,14 @@ class PromptRepository:
 
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
+
+            if search_query is not None:
+                qry = qry.filter(
+                    Message.search_vector.match(
+                        search_query,
+                        postgresql_regconfig=db_lang_to_postgres_ts_lang(lang),
+                    ),
+                )
 
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
@@ -1263,6 +1330,53 @@ WHERE message.id = cc.id;
         qry = self.db.query(FlaggedMessage)
         if max_count is not None:
             qry = qry.limit(max_count)
+
+        return qry.all()
+
+    def fetch_flagged_messages_by_created_date(
+        self,
+        gte_created_date: Optional[datetime] = None,
+        gt_id: Optional[UUID] = None,
+        lte_created_date: Optional[datetime] = None,
+        lt_id: Optional[UUID] = None,
+        desc: bool = False,
+        limit: Optional[int] = 100,
+    ) -> list[FlaggedMessage]:
+        qry = self.db.query(FlaggedMessage)
+
+        if gte_created_date is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date > gte_created_date,
+                        and_(FlaggedMessage.created_date == gte_created_date, FlaggedMessage.message_id > gt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date >= gte_created_date)
+        elif gt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_created_date is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(
+                        FlaggedMessage.created_date < lte_created_date,
+                        and_(FlaggedMessage.created_date == lte_created_date, FlaggedMessage.message_id < lt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(FlaggedMessage.created_date <= lte_created_date)
+        elif lt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if desc:
+            qry = qry.order_by(FlaggedMessage.created_date.desc(), FlaggedMessage.message_id.desc())
+        else:
+            qry = qry.order_by(FlaggedMessage.created_date.asc(), FlaggedMessage.message_id.asc())
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
 

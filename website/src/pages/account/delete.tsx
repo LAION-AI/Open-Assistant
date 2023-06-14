@@ -1,6 +1,5 @@
-import { Button, Divider, Flex, Grid, Icon, ListItem, Text, UnorderedList } from "@chakra-ui/react";
+import { Button, Divider, Flex, ListItem, Text, UnorderedList } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
 import React, { useCallback } from "react";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { useRouter } from "next/router";

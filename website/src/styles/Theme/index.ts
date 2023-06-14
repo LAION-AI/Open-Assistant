@@ -1,7 +1,7 @@
-import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
+import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
-import { Inter } from "@next/font/google";
 import { withProse } from "@nikolovlazar/chakra-ui-prose";
+import { Inter } from "next/font/google";
 
 import { colors } from "./colors";
 import { badgeTheme } from "./components/Badge";

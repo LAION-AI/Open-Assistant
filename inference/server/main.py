@@ -6,7 +6,7 @@ import fastapi
 import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import database, deps, models
+from oasst_inference_server import database, deps, models, plugins
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
@@ -56,6 +56,7 @@ def terminate_server(signum, frame):
 
 @app.on_event("startup")
 async def alembic_upgrade():
+    """Upgrades database schema based on Alembic migration scripts."""
     signal.signal(signal.SIGINT, terminate_server)
     if not settings.update_alembic:
         logger.warning("Skipping alembic upgrade on startup (update_alembic is False)")
@@ -112,6 +113,10 @@ app.include_router(admin.router)
 app.include_router(chats.router)
 app.include_router(workers.router)
 app.include_router(configs.router)
+
+# mount builtin plugins to be hosted on this server
+for app_prefix, sub_app in plugins.plugin_apps.items():
+    app.mount(path=settings.plugins_path_prefix + app_prefix, app=sub_app)
 
 
 @app.on_event("startup")

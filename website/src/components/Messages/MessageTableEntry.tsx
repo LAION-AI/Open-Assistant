@@ -9,7 +9,6 @@ import {
   MenuList,
   Portal,
   SimpleGrid,
-  Text,
   Tooltip,
   useColorModeValue,
   useDisclosure,
@@ -19,6 +18,7 @@ import { boolean } from "boolean";
 import {
   ClipboardList,
   Copy,
+  Edit,
   Flag,
   Link,
   MessageSquare,
@@ -38,7 +38,6 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
@@ -49,6 +48,7 @@ import useSWRMutation from "swr/mutation";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
+import { MessageCreateDate } from "./MessageCreateDate";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
 
@@ -112,7 +112,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
           {showCreatedDate ? (
-            <MessageCreateDate date={message.created_date}></MessageCreateDate>
+            <MessageCreateDate date={message.created_date} />
           ) : (
             // empty span is required to make emoji displayed at the end of row
             <span></span>
@@ -165,12 +165,12 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
           )}
           {message.deleted && isAdminOrMod && (
             <Badge colorScheme="red" textTransform="capitalize">
-              Deleted {/* dont translate, it's admin only feature */}
+              Deleted {/* don't translate, it's admin only feature */}
             </Badge>
           )}
           {message.review_result === false && isAdminOrMod && (
             <Badge colorScheme="yellow" textTransform="capitalize">
-              Spam {/* dont translate, it's admin only feature */}
+              Spam {/* don't translate, it's admin only feature */}
             </Badge>
           )}
         </Flex>
@@ -178,24 +178,6 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     );
   }
 );
-
-const me = { base: 3, md: 6 };
-
-const MessageCreateDate = ({ date }: { date: string }) => {
-  const locale = useCurrentLocale();
-  const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
-  return (
-    <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={me}>
-      {new Intl.DateTimeFormat(locale, {
-        hour: "2-digit",
-        minute: "2-digit",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(new Date(date))}
-    </Text>
-  );
-};
 
 const EmojiMenuItem = ({
   emoji,
@@ -235,12 +217,12 @@ const MessageActions = ({
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
 
-  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
-    onSuccess: () => {
+  const { trigger: setTreeHalted } = useSWRMutation(`/api/admin/set_tree_halted/${id}`, put, {
+    onSuccess: (data) => {
       const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
       toast({
         title: t("common:success"),
-        description: t("tree_stopped", { id: displayId }),
+        description: data.halted ? t("tree_stopped", { id: displayId }) : t("tree_restarted", { id: displayId }),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -256,7 +238,11 @@ const MessageActions = ({
   };
 
   const handleStop = () => {
-    stopTree();
+    setTreeHalted(true);
+  };
+
+  const handleRestart = () => {
+    setTreeHalted(false);
   };
 
   const handleCopy = (text: string) => {
@@ -336,8 +322,14 @@ const MessageActions = ({
                   Undelete message
                 </MenuItem>
               )}
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_EDIT(message.id)} target="_blank" icon={<Edit />}>
+                {t("common:edit")}
+              </MenuItem>
               <MenuItem onClick={handleStop} icon={<Slash />}>
                 {t("stop_tree")}
+              </MenuItem>
+              <MenuItem onClick={handleRestart} icon={<RefreshCw />}>
+                {t("restart_tree")}
               </MenuItem>
             </>
           )}

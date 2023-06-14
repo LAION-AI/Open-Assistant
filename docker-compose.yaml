@@ -174,6 +174,8 @@ services:
       - DEBUG_LOGIN=true
       - INFERENCE_SERVER_HOST=http://inference-server:8000
       - ENABLE_CHAT=true
+      - ENABLE_DRAFTS_WITH_PLUGINS=false
+      - NUM_GENERATED_DRAFTS=3
     depends_on:
       webdb:
         condition: service_healthy

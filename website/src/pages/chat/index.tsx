@@ -6,7 +6,7 @@ import { DashboardLayout } from "src/components/Layout";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const ChatList = () => {
-  const { t } = useTranslation(["chat"]);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -27,6 +27,7 @@ const ChatList = () => {
           bg: "gray.700",
         }}
         shadow="md"
+        noScrollbar
       />
     </>
   );

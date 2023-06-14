@@ -78,9 +78,20 @@ defaults:
     "You are Joi, a large language model trained by Open-Assistant. Answer as
     concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
     2023-03-12"
+  use_system_tag: false
+  system_property_dropout: 0.5
+  system_add_length: false
   per_digit_tokens: false
   is_reward_model: false
+  residual_dropout_lima: false
   deepspeed_config: configs/zero_config.json
+  peft_model: false
+  peft_type: "lora"
+
+use_system_tag:
+  use_system_tag: True
+  system_property_dropout: 0.5
+  system_add_length: True
 
 webgpt_dataset_only:
   datasets:
@@ -99,21 +110,39 @@ pretrain:
   use_custom_sampler: true
   sort_by_length: false
   datasets:
+    - alpaca_gpt4:
+        val_split: 0.025
+        max_val_set: 250
+    - vicuna:
+        val_split: 0.025
+        max_val_set: 250
+    - gpteacher_roleplay:
+        val_split: 0.05
+    - red_pajama:
+        fraction: 0.25
+        max_val_set: 1000
+    - wizardlm_70k:
+        val_split: 0.05
+        max_val_set: 500
     - joke:
         val_split: 0.05
+    - poem_instructions:
+        val_split: 0.025
+    - oa_stackexchange:
+        val_split: 0.05
+        fraction: 0.1
+        max_val_set: 1000
+    - tell_a_joke:
+        val_split: 0.05
+        max_val_set: 250
     - webgpt:
         val_split: 0.05
         max_val_set: 250
     - gpt4all:
         val_split: 0.01
-        max_val_set: 250
-    - alpaca:
-        val_split: 0.025
-        max_val_set: 250
+        max_val_set: 1000
     - code_alpaca:
         val_split: 0.05
-        max_val_set: 250
-    - vicuna:
         max_val_set: 250
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
@@ -140,21 +169,26 @@ pretrain:
         fraction: 0.1
         max_val_set: 250
     - explain_prosocial:
-        fraction: 0.05
+        fraction: 0.075
         max_val_set: 250
     - soda:
-        fraction: 0.2
-        max_val_set: 250
+        fraction: 0.25
+        max_val_set: 1000
     - oa_leet10k:
         val_split: 0.05
         max_val_set: 250
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
 
 oasst_only:
   save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-04-04_oasst_ready.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
+        #input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
+        #top_k: 1
         val_split: 0.05
   sort_by_length: false
   use_custom_sampler: false
@@ -174,14 +208,28 @@ oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
+    - gpt4all
+    - alpaca
+    - code_alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 100
+        val_split: 0.1
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 100
+  sort_by_length: false
+  use_custom_sampler: false
 
 oasst_export_latin_cyrillic:
   save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
     - alpaca
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
@@ -195,23 +243,37 @@ oasst_export_latin_cyrillic:
   sort_by_length: false
   use_custom_sampler: false
 
-reference-pythia-12b:
-  dtype: fp16
-  log_dir: "pythia_log_12b"
-  learning_rate: 6e-6
-  model_name: EleutherAI/pythia-12b-deduped
-  output_dir: pythia_model_12b
+oasst-top1:
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 600
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk" # sft-8.0
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+        top_k: 1
+
+falcon-7b:
+  dtype: bf16
+  log_dir: "llama_log_7b"
+  learning_rate: 1e-5
+  model_name: "tiiuae/falcon-7b"
+  deepspeed_config: configs/zero_config_falcon.json
+  output_dir: falcon
   weight_decay: 0.0
   max_length: 2048
   warmup_steps: 100
   gradient_checkpointing: true
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
   eval_steps: 100
-  save_steps: 1000
+  save_steps: 500
   num_train_epochs: 8
   save_total_limit: 4
+  use_flash_attention: false
+  residual_dropout: 0.3
+  residual_dropout_lima: true
 
 llama-7b:
   dtype: fp16
@@ -318,7 +380,7 @@ llama-30b-sft-6:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
         val_split: 0.05
     - vicuna:
         val_split: 0.05
@@ -333,11 +395,88 @@ llama-30b-sft-6:
         val_split: 0.05
         max_val_set: 250
 
+llama-30b-sft-8:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  model_name: .saved/llama-30b-super-pretrain2 # was exported as OpenAssistant/llama-30b-pre-v8-13k-steps
+  #model_name: OpenAssistant/llama-30b-pre-v8-13k-steps
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_sft.json
+  weight_decay: 0.0
+  residual_dropout: 0.01
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 20
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 100
+  num_train_epochs: 3
+  save_total_limit: 3
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 500
+  use_custom_sampler: true
+  sort_by_length: false
+
+sft-8-datasets:
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 600
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk" # sft-8.0
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - red_pajama:
+        fraction: 0.05
+        max_val_set: 1000
+    - poem_instructions:
+        fraction: 0.5
+        val_split: 0.025
+    - vicuna:
+        val_split: 0.05
+        max_val_set: 800
+        fraction: 0.4
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+    - wizardlm_70k:
+        val_split: 0.05
+        max_val_set: 500
+        fraction: 0.4
+
+sft-8.1-datasets:
+  save_strategy: steps # epoch seems not to work, gets stuck with DS 0.9.1
+  save_steps: 912
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk,vi,zh,ko,ja,th"
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - red_pajama:
+        fraction: 0.05
+        max_val_set: 1000
+    - poem_instructions:
+        fraction: 0.5
+        val_split: 0.025
+
 llama-30b-pretrain:
   dtype: fp16
   log_dir: "llama_log_30b"
   learning_rate: 1e-5
-  model_name: /home/ubuntu/llama_hf/30B
+  model_name: /home/ubuntu/ollie/llama30b_hf
+  #model_name: /home/ubuntu/llama_hf/30B
   output_dir: llama_model_30b
   deepspeed_config: configs/zero3_config_pretrain.json
   weight_decay: 0.0
@@ -353,6 +492,78 @@ llama-30b-pretrain:
   save_steps: 500
   num_train_epochs: 1
   save_total_limit: 2
+
+lora-llama-13b:
+  dtype: fp16
+  log_dir: "llama_lora_log_13b"
+  learning_rate: 5e-5
+  model_name: /home/ubuntu/llama_hf/13B
+  output_dir: llama_model_13b_lora
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 300
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 24
+  per_device_eval_batch_size: 5
+  eval_steps: 500
+  num_train_epochs: 12
+  save_total_limit: 2
+  save_strategy: epoch
+  use_flash_attention: True
+  residual_dropout: 0.0
+  deepspeed_config: configs/zero_config.json
+  peft_model: true
+  peft_type: "lora"
+  use_custom_sampler: true
+
+lora-llama-30b:
+  dtype: fp16
+  log_dir: "llama_lora_log_30b"
+  learning_rate: 5e-5
+  model_name: /home/ubuntu/llama_hf/30B
+  output_dir: llama_model_30b_lora
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 300
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 2
+  eval_steps: 500
+  num_train_epochs: 12
+  save_total_limit: 2
+  save_strategy: epoch
+  use_flash_attention: True
+  residual_dropout: 0.0
+  deepspeed_config: configs/zero_config.json
+  peft_model: true
+  peft_type: "lora"
+  use_custom_sampler: true
+
+lora-llama-65b:
+  dtype: fp16
+  log_dir: "llama_lora_log_65b"
+  learning_rate: 5e-5
+  model_name: /home/ubuntu/llama_hf/65B
+  output_dir: llama_model_65b_lora
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 300
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 12
+  per_device_eval_batch_size: 5
+  eval_steps: 250
+  num_train_epochs: 12
+  save_total_limit: 2
+  save_strategy: epoch
+  use_flash_attention: True
+  residual_dropout: 0.0
+  deepspeed_config: configs/zero_config_sft_65b.json
+  peft_model: true
+  peft_type: "lora"
+  use_custom_sampler: true
 
 pythia-70m-deduped:
   learning_rate: 8e-6
@@ -388,6 +599,93 @@ pythia-6.9B:
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
+
+pythia-12b-pretrain:
+  dtype: fp16
+  log_dir: "pythia_log_12b"
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  output_dir: pythia_model_12b
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 251
+  save_steps: 500
+  num_train_epochs: 1
+  save_total_limit: 2
+  deepspeed_config: configs/zero_config_pretrain.json
+
+reference-pythia-12b:
+  dtype: fp16
+  log_dir: "pythia_log_12b"
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  output_dir: pythia_model_12b
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 100
+  save_steps: 1000
+  num_train_epochs: 8
+  save_total_limit: 4
+
+pythia-12b-sft-8:
+  dtype: fp16
+  log_dir: "pythia_log_12b"
+  learning_rate: 6e-6
+  model_name: OpenAssistant/pythia-12b-pre-v8-12.5k-steps
+  output_dir: pythia_model_12b
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 251
+  save_steps: 500
+  num_train_epochs: 8
+  save_total_limit: 3
+  use_custom_sampler: true
+  sort_by_length: false
+  save_strategy: steps
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-05-06_OASST_labels.jsonl.gz
+        val_split: 0.05
+    - vicuna:
+        val_split: 0.05
+        max_val_set: 800
+        fraction: 0.4
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+    - red_pajama:
+        fraction: 0.05
+        max_val_set: 1000
+    - wizardlm_70k:
+        val_split: 0.05
+        max_val_set: 500
+        fraction: 0.4
+    - poem_instructions:
+        fraction: 0.5
+        val_split: 0.025
 
 pythia-12B:
   learning_rate: 6e-6
@@ -430,6 +728,7 @@ galactica-125m:
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
+  dtype: fp32
 
 gpt-jt:
   learning_rate: 8e-6
@@ -479,3 +778,4 @@ debug:
   log_wandb: false
   verbose: true
   num_train_epochs: 0.2
+  dtype: fp32

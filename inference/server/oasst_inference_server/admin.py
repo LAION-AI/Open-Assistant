@@ -1,3 +1,5 @@
+"""Logic related to admin actions."""
+
 import fastapi
 from loguru import logger
 from oasst_inference_server import database, models

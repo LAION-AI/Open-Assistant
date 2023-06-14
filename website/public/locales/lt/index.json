@@ -1,0 +1,27 @@
+{
+  "blurb": "Mes tikime, kad galime sukurti ką nors revoliucingo.",
+  "blurb1": "Tuo pačiu būdu kaip Stable Diffusion įgalino pasaulį kurti meną ir paveikslėlius naujais būdais, mes taip pat norime pagerinti pasaulį suteikdami nuostabų pokalbių DI.",
+  "chat_with_our_assistant": "Pasikalbėkite su mūsų asistentu",
+  "description": "Pokalbių DI visiems. Atviro kodo projektas, skirtas įgalinti GPT didelį kalbos modelį su LAION ir žmonių iš viso pasaulio pagalba.",
+  "faq_items": {
+    "q0": "Kaip toli šis projektas yra pažengęs?",
+    "a0": "Mes esame ankstyvose vystymo stadijose, dirbame tiek su RLHF moksliniais tyrimais, tiek su dideliais kalbos modeliais.",
+    "q1": "Kas slepiasi už Open Assistant?",
+    "a1": "Open Assistant yra LAION ir žmonių iš viso pasaulio, norinčių padaryti šią technologiją prieinamą visiems, organizuojamas projektas.",
+    "q2": "Kokią licenciją naudoja Open Assistant?",
+    "a2": "Kodas ir modeliai naudoja Apache 2.0 licenciją.",
+    "q3": "Ar duomenys taip pat bus paskelbti?",
+    "a3": "Taip, su CC BY 4.0 licencija.",
+    "q4": "Ar Open Assistant bus nemokamas?",
+    "a4": "Taip, Open Assistant naudojimas ir keitimas bus nemokami.",
+    "q5": "Kokios aparatinės įrangos reikės norint paleisti modelius?",
+    "a5": "Versijos, kurias galima paleisti naudojant įprastą sparčią aparatinę įrangą, bus prieinamos."
+  },
+  "faq_title": "Dažniausiai užduodami klausimai",
+  "help_us_improve": "Padėkite mums tobulėti",
+  "hugging_face_link": "Peržiūrėkite mūsų HuggingFace organizaciją",
+  "join_us_description": "Visi atviro kodo projektai prasideda su žmonių, tokių kaip Jūs, pagalba. Atviras kodas yra paremtas įsitikinimu, kad, jeigu bendradarbiaujame, tuomet galime padovanoti savo žinias ir technologijas visam pasauliui ir žmonijai. Ar prisijungsite? Galite mus rasti čia:",
+  "join_us_title": "Prisijunkite prie mūsų",
+  "subtitle": "Pokalbių DI visiems.",
+  "try_our_assistant": "Išbandykite mūsų asistentą"
+}

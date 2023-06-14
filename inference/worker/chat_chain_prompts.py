@@ -1,5 +1,6 @@
 V2_ASST_PREFIX = "<|assistant|>"
 V2_PROMPTER_PREFIX = "<|prompter|>"
+V2_SYSTEM_PREFIX = "<|system|>"
 
 ASSISTANT_PREFIX = "Open Assistant"
 HUMAN_PREFIX = "Human"
@@ -34,6 +35,8 @@ Open Assistant has access to the following tools:
 """
 
 INSTRUCTIONS = f"""
+ATTENTION: Do not use tools for questions about yourself, like "what is your name?", "how old are you?", etc...
+
 To use a tool, please use the following format:
 
 ```

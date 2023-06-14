@@ -14,11 +14,12 @@ import {
 } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import { Eye, RotateCw, Trash } from "lucide-react";
+import { Edit, Eye, RotateCw, Trash } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
 import { useCallback } from "react";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { get } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
@@ -27,7 +28,7 @@ import { isKnownEmoji } from "src/types/Emoji";
 import useSWRImmutable from "swr/immutable";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
-import { DataTable, DataTableRowPropsCallback } from "../DataTable/DataTable";
+import { DataTable, DataTableRowPropsCallback, FilterItem } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { useCursorPagination } from "../DataTable/useCursorPagination";
 import { UserDisplayNameCell } from "../UserDisplayNameCell";
@@ -54,7 +55,17 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null);
   const [undeleteMessageId, setUndeleteMessageId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string>();
-  const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
+  const { pagination, toNextPage, toPreviousPage, resetCursor } = useCursorPagination();
+  const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+  const handleFilterValuesChange = (values: FilterItem[]) => {
+    setFilterValues(values);
+    resetCursor();
+  };
+
+  const currentLang = useCurrentLocale();
+  const search_query = filterValues.find((f) => f.id === "text")?.value || undefined; // avoid empty search
+  const lang = search_query ? currentLang : undefined;
+
   const {
     data: res,
     isLoading,
@@ -65,6 +76,8 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
       direction: pagination.direction,
       user_id: userId,
       include_user: includeUser,
+      search_query,
+      lang,
     }),
     get,
     {
@@ -110,6 +123,9 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
         },
       }),
       columnHelper.accessor("text", {
+        meta: {
+          filterable: true,
+        },
         cell: ({ getValue, row }) => {
           const limit = 95;
           const text = getValue();
@@ -117,7 +133,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
           const renderText = isActive ? text : text.length > limit ? `${text.slice(0, limit)}...` : text;
 
           return (
-            <Box display="-webkit-box" wordBreak="break-all" whiteSpace="pre-wrap" w="md">
+            <Box wordBreak="break-all" whiteSpace="pre-wrap" w="md">
               <Avatar
                 size="xs"
                 mr="2"
@@ -125,21 +141,29 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
               ></Avatar>
               {renderText}
               {!row.original.parent_id && (
-                <Badge colorScheme="green" ml="1">
+                <Badge colorScheme="green" ms="1">
                   Root
                 </Badge>
               )}
               {row.original.deleted && (
-                <Badge colorScheme="red" ml="1">
+                <Badge colorScheme="red" ms="1">
                   Deleted
                 </Badge>
               )}
-              {row.original.review_result === false && <Badge colorScheme="yellow">Spam</Badge>}
+              {row.original.review_result === false && (
+                <Badge colorScheme="yellow" ms="1">
+                  Spam
+                </Badge>
+              )}
+              {row.original.edited && (
+                <Badge colorScheme="gray" ms="1">
+                  Edited
+                </Badge>
+              )}
             </Box>
           );
         },
       }),
-
       columnHelper.accessor("lang", {
         header: "Language",
         cell: ({ getValue }) => <Badge textTransform="uppercase">{getValue()}</Badge>,
@@ -219,6 +243,12 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                   isLoading={isUndeleteMutating && undeleteMessageId === id}
                 />
               )}
+              <DataTableAction
+                as={NextLink}
+                href={ROUTES.ADMIN_MESSAGE_EDIT(id)}
+                icon={Edit}
+                aria-label="Edit message"
+              />
             </HStack>
           );
         },
@@ -238,6 +268,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     [setActiveMessageId]
   );
   const columnVisibility = useMemo(() => ({ user: !!includeUser }), [includeUser]);
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -280,6 +311,8 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
         onPreviousClick={() => toPreviousPage(res)}
         columnVisibility={columnVisibility}
         isLoading={isLoading}
+        filterValues={filterValues}
+        onFilterChange={handleFilterValuesChange}
       ></DataTable>
     </>
   );

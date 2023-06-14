@@ -3,12 +3,14 @@ import gzip
 import json
 import random
 import re
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
 import pydantic
 import torch
+from model_training.models.peft_modeling import load_peft_model
 from tqdm import tqdm
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
@@ -25,6 +27,7 @@ QA_SPECIAL_TOKENS_V2_5 = {
 class SamplingConfig(pydantic.BaseModel):
     name: Optional[str]
     generate_args: dict[str, Any] = {}
+    system_profile: Optional[OrderedDict[str, float | int | str]] = None
     pre_text: Optional[str]
     add_prefix_tokens: Optional[bool] = False
 
@@ -70,7 +73,7 @@ def load_jsonl(input_file_path: str | Path) -> list[dict | str]:
     with file_in:
         # read one message tree per line
         for line in file_in:
-            obj = json.loads(line)
+            obj = json.loads(line, object_pairs_hook=OrderedDict)
             items.append(obj)
 
     return items
@@ -100,7 +103,22 @@ def sample(
     if mode == "v2":
         input_text = f"{prefix}{QA_SPECIAL_TOKENS['Question']}{prompt}{QA_SPECIAL_TOKENS['Answer']}"
     elif mode == "v2_5":
-        input_text = f"{prefix}{QA_SPECIAL_TOKENS_V2_5['prompter']}{prompt}{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+        if sampling_config.system_profile and len(sampling_config.system_profile) > 0:
+            system_fragments = [QA_SPECIAL_TOKENS_V2_5["system"]]
+            for k, v in sampling_config.system_profile.items():
+                if isinstance(v, float):
+                    system_fragments.append(f"{k}: {v:0.1f}")
+                elif isinstance(v, str):
+                    system_fragments.append(f"{k}: {v}")
+                else:
+                    system_fragments.append(f"{k}: {v}")
+            system_fragments.append(tokenizer.eos_token)
+            system_tag = "\n".join(system_fragments)
+        else:
+            system_tag = ""
+
+        input_text = f"{prefix}{QA_SPECIAL_TOKENS_V2_5['prompter']}{prompt}{tokenizer.eos_token}{system_tag}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+        print("input_text", input_text)
     else:
         assert sc.human_name and sc.bot_name, "'human_name' and 'bot_name' parameters must be specified in config "
         input_text = f"{prefix}\n{sc.human_name}: {prompt}\n\n{sc.bot_name}: "
@@ -115,9 +133,9 @@ def sample(
     ).to(device)
     input_ids = inputs.input_ids
     outputs = model.generate(
-        input_ids,
-        **sampling_params,
+        input_ids=input_ids,
         pad_token_id=tokenizer.eos_token_id,
+        **sampling_params,
     )
     if skip_input_tokens:
         output_tokens = outputs[0, input_ids.size(1) :]
@@ -143,6 +161,12 @@ def merge_configs(*configs: tuple[Optional[SamplingConfig]]) -> Optional[Samplin
             if c.generate_args:
                 for k, v in c.generate_args.items():
                     merged.generate_args[k] = v
+            # system profile
+            if c.system_profile:
+                if not merged.system_profile:
+                    merged.system_profile = {}
+                for k, v in c.system_profile.items():
+                    merged.system_profile[k] = v
 
     return merged
 
@@ -220,9 +244,9 @@ def parse_args():
         "--prompts", type=str, help="jsonl string prompts input file name", default="./data/en_100_text.jsonl.gz"
     )
     parser.add_argument("--report", type=str, help="json sampling report output file name")
-    parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
+    parser.add_argument("--seed", type=int, default="42", help="pseudo random number generator seed")
     parser.add_argument("--verbose", action="store_true", default=False)
-    parser.add_argument("-n", type=int, help="number of promtps to use (default: all)")
+    parser.add_argument("-n", type=int, help="number of prompts to use (default: all)")
     parser.add_argument("--num-samples", type=int, default=2, help="number of sampling runs per configuration")
     parser.add_argument("--config", type=str, default="config/default.json", help="configuration file path")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
@@ -232,6 +256,7 @@ def parse_args():
     parser.add_argument("--max-input-len", type=int, help="max token counts for input")
     parser.add_argument("--auth-token", type=str)
     parser.add_argument("--num-threads", type=int, default=8)
+    parser.add_argument("--peft_model", type=str, default=None)
 
     return parser.parse_args()
 
@@ -290,6 +315,10 @@ def main():
         skip_input_tokens = False
     else:
         raise RuntimeError("Invalid model_type specified")
+
+    if args.peft_model is not None:
+        tokenizer = AutoTokenizer.from_pretrained(args.peft_model)
+        model = load_peft_model(model, args.peft_model, tokenizer)
 
     print("special_tokens_map:", tokenizer.special_tokens_map)
     print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")

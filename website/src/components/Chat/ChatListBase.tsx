@@ -12,7 +12,11 @@ import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
 
-export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }: CardProps & { allowViews?: boolean }) {
+export const ChatListBase = memo(function ChatListBase({
+  allowViews,
+  noScrollbar,
+  ...props
+}: CardProps & { allowViews?: boolean; noScrollbar?: boolean }) {
   const [view, setView] = useState<ChatListViewSelection>("visible");
   const { loadMoreRef, responses, mutateChatResponses } = useListChatPagination(view);
   const chats = responses?.flatMap((response) => response.chats) || [];
@@ -63,6 +67,21 @@ export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }:
     mutateChatResponses();
   }, [mutateChatResponses]);
 
+  const content = (
+    <>
+      {chats.map((chat) => (
+        <ChatListItem
+          key={chat.id}
+          chat={chat}
+          onUpdateTitle={handleUpdateTitle}
+          onHide={removeItemFromList}
+          onDelete={removeItemFromList}
+        />
+      ))}
+      <div ref={loadMoreRef} />
+    </>
+  );
+
   return (
     <Box
       gap="1"
@@ -92,23 +111,18 @@ export const ChatListBase = memo(function ChatListBase({ allowViews, ...props }:
           <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
         )}
       </Flex>
-      <SimpleBar
-        style={{ padding: "8px", maxHeight: "100%", height: "100%", minHeight: "0" }}
-        classNames={{
-          contentEl: "space-y-2 flex flex-col overflow-y-auto",
-        }}
-      >
-        {chats.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            chat={chat}
-            onUpdateTitle={handleUpdateTitle}
-            onHide={removeItemFromList}
-            onDelete={removeItemFromList}
-          />
-        ))}
-        <div ref={loadMoreRef} />
-      </SimpleBar>
+      {noScrollbar ? (
+        content
+      ) : (
+        <SimpleBar
+          style={{ padding: "8px", height: "100%", minHeight: "150px" }}
+          classNames={{
+            contentEl: "flex flex-col items-center overflow-y-hidden min-h-full",
+          }}
+        >
+          {content}
+        </SimpleBar>
+      )}
       <InferencePoweredBy />
     </Box>
   );

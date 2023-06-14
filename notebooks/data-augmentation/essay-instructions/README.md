@@ -8,4 +8,4 @@ collecting for the model
 
 Feel free to contribute to this notebook, it's nowhere near perfect but it's a
 good start. If you want to contribute finding a new model that better suits this
-task would be great. Hugginface has a lot of models that could help.
+task would be great. Huggingface has a lot of models that could help.

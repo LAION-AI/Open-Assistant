@@ -1,17 +1,20 @@
-# a basic fastapi server to run generation on HF models
+"""
+Basic FastAPI server to serve models using HuggingFace Transformers library.
+This is an alternative to running the HuggingFace `text-generation-inference` (tgi) server.
+"""
 
 import sys
 import threading
 from queue import Queue
 
 import fastapi
+import hf_stopping
 import hf_streamer
 import interface
 import torch
 import transformers
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from hf_stopping import SequenceStoppingCriteria
 from loguru import logger
 from oasst_shared import model_configs
 from settings import settings
@@ -48,6 +51,7 @@ model_input_queue: Queue = Queue()
 
 
 def model_thread():
+    """Continually obtain new work requests from the model input queue and work on them."""
     model: transformers.PreTrainedModel
     tokenizer: transformers.PreTrainedTokenizer
     model, tokenizer, decode_token = load_models()
@@ -85,7 +89,9 @@ def model_thread():
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 stopping_criteria = (
-                    transformers.StoppingCriteriaList([SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)])
+                    transformers.StoppingCriteriaList(
+                        [hf_stopping.SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)]
+                    )
                     if stop_sequences
                     else None
                 )

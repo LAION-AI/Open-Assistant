@@ -19,9 +19,14 @@ logger.info(f"celery.conf.broker_url {app.conf.broker_url}, app.conf.result_back
 
 # see https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html
 app.conf.beat_schedule = {
-    "update-user-streak": {
-        "task": "update_user_streak",
-        "schedule": 60.0 * 60.0 * 4,  # seconds
+    "reset-user-streak": {
+        "task": "periodic_user_streak_reset",
+        "schedule": 60.0 * 60.0 * 4,  # in seconds, every 4h
+    },
+    "update-search-vectors": {
+        "task": "update_search_vectors",
+        "schedule": 60.0 * 20.0,
+        "args": (1000,),  # (batch_size,)
     },
 }
 app.conf.timezone = "UTC"

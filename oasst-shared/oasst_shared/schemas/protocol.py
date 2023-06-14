@@ -109,11 +109,21 @@ class Message(ConversationMessage):
     review_result: Optional[bool]
     review_count: Optional[int]
     deleted: Optional[bool]
+    edited: Optional[bool]
     model_name: Optional[str]
     message_tree_id: Optional[UUID]
     ranking_count: Optional[int]
     rank: Optional[int]
     user: Optional[FrontEndUser]
+
+
+class MessageRevision(BaseModel):
+    id: UUID
+    text: str
+    message_id: UUID
+    user_id: Optional[UUID]
+    created_date: Optional[datetime]
+    user_is_author: Optional[bool]
 
 
 class MessagePage(PageResult):
@@ -577,6 +587,11 @@ class MessageEmojiRequest(BaseModel):
     user: User
     op: EmojiOp = EmojiOp.togggle
     emoji: EmojiCode
+
+
+class MessageEditRequest(BaseModel):
+    user: User
+    new_content: str
 
 
 class CreateFrontendUserRequest(User):

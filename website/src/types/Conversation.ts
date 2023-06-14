@@ -23,6 +23,7 @@ export interface Message extends MessageEmojis {
   user_id: string;
   user_is_author: boolean | null;
   deleted: boolean | null;
+  edited: boolean | null;
   synthetic: boolean | null;
   message_tree_id: string;
   ranking_count: number | null;
@@ -31,6 +32,15 @@ export interface Message extends MessageEmojis {
   review_count: number | null;
   review_result: boolean; // false is spam
   user: BackendUser | null;
+}
+
+export interface MessageRevision {
+  id: string;
+  text: string;
+  message_id: string;
+  user_id: string;
+  created_date: string;
+  user_is_author: boolean;
 }
 
 export interface Conversation {

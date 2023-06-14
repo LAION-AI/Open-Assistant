@@ -9,6 +9,8 @@ from oasst_shared.schemas import inference
 
 
 class UserChatRepository(pydantic.BaseModel):
+    """Wrapper around a database session providing user-specific functionality relating to chats."""
+
     session: database.AsyncSession
     user_id: str = pydantic.Field(..., min_length=1)
 
@@ -94,6 +96,10 @@ class UserChatRepository(pydantic.BaseModel):
         message_ids = [message.id for message in chat.messages]
         # delete reports associated with messages
         await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
+        # delete message evaluations associated with message
+        await self.session.exec(
+            sqlmodel.delete(models.DbMessageEval).where(models.DbMessageEval.selected_message_id.in_(message_ids))
+        )
         # delete messages
         await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
@@ -139,13 +145,7 @@ class UserChatRepository(pydantic.BaseModel):
             if msg_dict[parent_id].state != inference.MessageState.complete:
                 raise fastapi.HTTPException(status_code=400, detail="Parent message is not complete")
 
-        message = models.DbMessage(
-            role="prompter",
-            chat_id=chat_id,
-            chat=chat,
-            parent_id=parent_id,
-            content=content,
-        )
+        message = models.DbMessage(role="prompter", chat_id=chat_id, chat=chat, parent_id=parent_id, content=content)
         self.session.add(message)
         chat.modified_at = message.created_at
 
@@ -176,6 +176,7 @@ class UserChatRepository(pydantic.BaseModel):
             .where(
                 models.DbMessage.role == "assistant",
                 models.DbMessage.state == inference.MessageState.pending,
+                models.DbMessage.parent_id != parent_id,  # Prevent draft messages from cancelling each other
             )
             .join(models.DbChat)
             .where(
@@ -257,6 +258,25 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         return message
 
+    async def add_message_eval(self, message_id: str, inferior_message_ids: list[str]):
+        logger.info(f"Adding message evaluation to {message_id=}: {inferior_message_ids=}")
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))
+            .where(models.DbMessage.id == message_id)
+        )
+        message: models.DbMessage = (await self.session.exec(query)).one()
+        if message.chat.user_id != self.user_id:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
+        message_eval = models.DbMessageEval(
+            chat_id=message.chat_id,
+            user_id=message.chat.user_id,
+            selected_message_id=message.id,
+            inferior_message_ids=inferior_message_ids,
+        )
+        self.session.add(message_eval)
+        await self.session.commit()
+
     async def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
         logger.info(f"Adding report to {message_id=}: {reason=}")
         query = (
@@ -282,8 +302,9 @@ class UserChatRepository(pydantic.BaseModel):
         title: str | None = None,
         hidden: bool | None = None,
         allow_data_use: bool | None = None,
+        active_thread_tail_message_id: str | None = None,
     ) -> None:
-        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
+        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=} {active_thread_tail_message_id=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
 
         if title is not None:
@@ -298,4 +319,14 @@ class UserChatRepository(pydantic.BaseModel):
             logger.info(f"Updating allow_data_use of chat {chat_id=}: {allow_data_use=}")
             chat.allow_data_use = allow_data_use
 
+        if active_thread_tail_message_id is not None:
+            logger.info(f"Updating active_thread_tail_message_id of chat {chat_id=}: {active_thread_tail_message_id=}")
+            chat.active_thread_tail_message_id = active_thread_tail_message_id
+
+        await self.session.commit()
+
+    async def hide_all_chats(self) -> None:
+        chats = await self.get_chats(include_hidden=False)
+        for chat in chats:
+            chat.hidden = True
         await self.session.commit()

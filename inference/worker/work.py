@@ -15,6 +15,7 @@ from chat_chain_prompts import (
     THOUGHT_SEQ,
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
+    V2_SYSTEM_PREFIX,
 )
 from loguru import logger
 from oasst_shared.schemas import inference
@@ -26,20 +27,25 @@ def make_prompt_and_parameters(
     tokenizer: transformers.PreTrainedTokenizer,
     work_request: inference.WorkRequest,
 ) -> tuple[str, interface.GenerateStreamParameters]:
+    """Prepare a formatted prompt and stream generation parameters based on a work request."""
     if settings.oa_protocol_version != "v2":
         raise RuntimeError(f"Unsupported oa protocol version: {settings.oa_protocol_version}")
 
-    eos_token = ""
-    if hasattr(tokenizer, "eos_token"):
-        eos_token = tokenizer.eos_token
+    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
 
     def _prepare_message(message: inference.MessageRead) -> str:
         prefix = V2_ASST_PREFIX if message.is_assistant else V2_PROMPTER_PREFIX
         return prefix + message.content + eos_token
 
-    # construct prompt
+    # Construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
+    # Prepend system prompt if it was specified in work parameters
+    if work_request.parameters.system_prompt:
+        pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
+        messages = [pre_prompt] + messages
+
+    # Stringify and append assistant prefix to signify start of generation
     prompt = "".join(messages) + V2_ASST_PREFIX
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
@@ -47,6 +53,7 @@ def make_prompt_and_parameters(
         parameters.stop = [
             V2_PROMPTER_PREFIX,
             V2_ASST_PREFIX,
+            V2_SYSTEM_PREFIX,
         ]
         if eos_token:
             parameters.stop.append(eos_token)
@@ -57,6 +64,7 @@ def make_prompt_and_parameters(
 
 
 def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
+    """Given a prompt, safety label, and safety rule of thumb, prepare a 'safe prompt' to replace the prompt."""
     pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
     input_list = prompt.split(V2_PROMPTER_PREFIX)
     input_list[-1] = pre_prompt + input_list[-1]
@@ -64,10 +72,15 @@ def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
 
 
 def is_safety_triggered(safety_label: str, safety_level: int) -> bool:
+    """
+    Determines whether to trigger the safe prompt based on the configured safety level and severity label from the
+    safety classifier.
+    """
     return ("caution" in safety_label and safety_level > 1) or ("intervention" in safety_label and safety_level > 0)
 
 
 def parse_safety_response(safety_opinion: str) -> tuple[str, str]:
+    """Parse the response from the safety model into a separate label and rule of thumb."""
     safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
     label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
     label = label.replace("<pad>", "").strip()
@@ -80,22 +93,20 @@ def handle_work_request(
     work_request: inference.WorkRequest,
     worker_config: inference.WorkerConfig,
 ):
+    """Handle a work request from end-to-end. Handles plugins and safety if enabled."""
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     prompt = ""
     used_plugin = None
 
-    # Check if any plugin is enabled, if so, use it.
     for plugin in parameters.plugins:
         if plugin.enabled:
-            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
-            # When using plugins, and final prompt being truncated due to the input
-            # length limit, LLaMA llm has tendency to leak internal promptings,
-            # and generate undesirable continuations, so here we will be adding
-            # some plugin keywords/sequences to the stop sequences to try preventing it
-            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, ASSISTANT_PREFIX])
+            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer, ws)
+            # When using plugins and final prompt is truncated due to length limit
+            # LLaMA has tendency to leak internal prompts and generate bad continuations
+            # So we add keywords/sequences to the stop sequences to reduce this
+            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
             break
 
-    # If no plugin was "used", use the default prompt generation.
     if not used_plugin:
         prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
 
@@ -103,7 +114,6 @@ def handle_work_request(
 
     model_config = worker_config.model_config
 
-    # Only send safety request if work request safety level is not 0
     if settings.enable_safety and work_request.safety_parameters.level:
         safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
@@ -181,12 +191,12 @@ def handle_work_request(
 
     if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
-        # Get the generated text up to the first occurrence of any of:
+        # Helps with RLHF models using plugin prompts. Get generated text to first occurrence of:
         # START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ
         end_seq_index = min(
             [
                 stream_response.generated_text.find(seq)
-                for seq in [START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ]
+                for seq in [START_SEQ, END_SEQ, f"{ASSISTANT_PREFIX}:", THOUGHT_SEQ, OBSERVATION_SEQ]
                 if seq in stream_response.generated_text
             ]
             + [len(stream_response.generated_text)]
@@ -209,6 +219,7 @@ def handle_work_request(
 
 
 def get_safety_server_response(request: inference.SafetyRequest) -> inference.SafetyResponse:
+    """Query the safety server URL configured in the worker settings."""
     http = utils.HttpClient(base_url=settings.safety_server_url)
     response = http.post("/safety", json=request.dict())
     try:

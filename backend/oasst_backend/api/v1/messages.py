@@ -69,6 +69,7 @@ def get_messages_cursor(
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
+    search_query: Optional[str] = None,
     lang: Optional[str] = None,
     include_user: Optional[bool] = None,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
@@ -115,6 +116,7 @@ def get_messages_cursor(
         deleted=None if include_deleted else False,
         desc=query_desc,
         limit=qry_max_count,
+        search_query=search_query,
         lang=lang,
         include_user=include_user,
     )
@@ -335,6 +337,37 @@ def undelete_message(
 ):
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     pr.undelete_deleted_message(message_id)
+
+
+@router.post("/{message_id}/edit")
+def edit_message(
+    *,
+    message_id: UUID,
+    request: protocol.MessageEditRequest,
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+):
+    @managed_tx_function(CommitMode.COMMIT)
+    def edit_tx(session: deps.Session):
+        pr = PromptRepository(session, api_client, client_user=request.user)
+        pr.revise_message(message_id, request.new_content)
+
+    edit_tx()
+
+
+@router.get("/{message_id}/history", response_model=list[protocol.MessageRevision])
+def get_revision_history(
+    *,
+    message_id: UUID,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Get all revisions of this message sorted from oldest to most recent
+    """
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
+    revisions = pr.fetch_message_revision_history(message_id)
+    return utils.prepare_message_revision_list(revisions)
 
 
 @router.post("/{message_id}/emoji", status_code=HTTP_202_ACCEPTED)

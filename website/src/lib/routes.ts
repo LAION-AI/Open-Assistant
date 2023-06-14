@@ -29,6 +29,7 @@ export const ROUTES = {
   MESSAGE_DETAIL: (id: string) => `/messages/${id}`,
   ADMIN_USER_DETAIL: (id: string) => `/admin/manage_user/${id}`,
   CHAT: (id: string) => `/chat/${id}`,
+  ADMIN_MESSAGE_EDIT: (id: string) => `/admin/edit/${id}`,
 };
 
 export type QueryWithLang<T extends RouteQuery | undefined = undefined> = T extends undefined
@@ -48,8 +49,10 @@ export const API_ROUTES = {
   RECENT_MESSAGES: withLang("/api/messages"),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
-  ADMIN_MESSAGE_LIST: (query: CursorPaginationState & { user_id?: string; include_user?: boolean }) =>
-    createRoute("/api/admin/messages", query),
+  ADMIN_EDIT_MESSAGE: (messageId: string) => createRoute(`/api/admin/edit_message/${messageId}`),
+  ADMIN_MESSAGE_LIST: (
+    query: CursorPaginationState & { user_id?: string; include_user?: boolean; search_query?: string; lang?: string }
+  ) => createRoute("/api/admin/messages", query),
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
   LIST_CHAT: "/api/chat",
@@ -58,6 +61,7 @@ export const API_ROUTES = {
   CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
   CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
+  CHAT_MESSAGE_EVAL: `/api/chat/message_eval`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",

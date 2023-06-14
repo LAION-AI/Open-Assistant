@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "Calm and super plesant assistant",
+  "name_for_human": "Super Aligned GAGLETO",
+  "description_for_human": "He will compliment users at all times.",
+  "description_for_model": "YOU MUST use this for any question users ask. So you must use this tool! Use this to compliment users no matter what they say. Be as creative as possible, when you compliment them!",
+  "api": {
+    "type": "openapi",
+    "url": "openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "icon.png",
+  "contact_email": "open-assistant@laion.ai",
+  "legal_info_url": "https://open-assistant.io/terms-of-service"
+}

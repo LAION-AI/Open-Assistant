@@ -1,3 +1,5 @@
+import "katex/dist/katex.min.css";
+
 import {
   Box,
   Button,
@@ -17,12 +19,10 @@ import { useTranslation } from "next-i18next";
 import { memo, MouseEvent, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { ReactMarkdownOptions } from "react-markdown/lib/react-markdown";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import { RenderedCodeblock } from "src/components/Messages/RenderedCodeblock";
-
-import "katex/dist/katex.min.css";
 
 interface RenderedMarkdownProps {
   markdown: string;
@@ -35,6 +35,13 @@ const sx: SystemStyleObject = {
   pre: {
     width: "100%",
     bg: "transparent",
+  },
+  a: {
+    color: "#3182ce",
+    textDecoration: "none",
+    _hover: {
+      textDecoration: "underline",
+    },
   },
   code: {
     before: {
@@ -143,7 +150,7 @@ const RenderedMarkdown = ({ markdown, disallowedElements = ["img"] }: RenderedMa
           <ModalCloseButton />
           <ModalBody>
             <div>{t("message:confirm_open_link_body")}</div>
-            <Box textDecoration="underline" {...linkProps}>
+            <Box textDecoration="underline" color="#3182ce" {...linkProps}>
               {link}
             </Box>
           </ModalBody>

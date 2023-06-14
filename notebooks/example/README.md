@@ -3,7 +3,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LAION-AI/Open-Assistant/blob/main/notebooks/example/example.ipynb)
 
 This folder contains an example reference notebook structure and approach for
-this project. Please try and follow this structure as closely as possible. While
+this project. Please try to follow this structure as closely as possible. While
 things will not exactly be the same for each notebook some principles we would
 like to try ensure are:
 
@@ -34,7 +34,7 @@ same directory that the notebook lives in so relative links etc should work as
 expected (for example `example.ipynb` will read some sample data from
 `data/data.csv`).
 
-If you are adding a notebook please try and add a similar cell to the top of the
+If you are adding a notebook please try to add a similar cell to the top of the
 notebook so that it is easy for others to run the notebook in colab. If your
 notebook does not have any dependencies beyond what already comes as standard in
 Google Colab then you do not need such a cell, just an "Open in Colab" badge

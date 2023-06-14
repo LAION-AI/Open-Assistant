@@ -14,6 +14,7 @@ class CreateAssistantMessageRequest(pydantic.BaseModel):
     parent_id: str
     model_config_name: str
     sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
+    system_prompt: str | None = None
     plugins: list[inference.PluginEntry] = pydantic.Field(default_factory=list[inference.PluginEntry])
     used_plugin: inference.PluginUsed | None = None
 
@@ -46,14 +47,33 @@ class SafePromptResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
+class PluginIntermediateResponseEvent(pydantic.BaseModel):
+    event_type: Literal["plugin_intermediate"] = "plugin_intermediate"
+    current_plugin_thought: str
+    current_plugin_action_taken: str
+    current_plugin_action_input: str
+    current_plugin_action_response: str
+    message: inference.MessageRead | None = None
+
+
 ResponseEvent = Annotated[
-    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent, SafePromptResponseEvent],
+    Union[
+        TokenResponseEvent,
+        ErrorResponseEvent,
+        MessageResponseEvent,
+        SafePromptResponseEvent,
+        PluginIntermediateResponseEvent,
+    ],
     pydantic.Field(discriminator="event_type"),
 ]
 
 
 class VoteRequest(pydantic.BaseModel):
     score: int
+
+
+class MessageEvalRequest(pydantic.BaseModel):
+    inferior_message_ids: list[str]
 
 
 class ReportRequest(pydantic.BaseModel):
@@ -71,6 +91,8 @@ class ChatListRead(pydantic.BaseModel):
     modified_at: datetime.datetime
     title: str | None
     hidden: bool = False
+    allow_data_use: bool = True
+    active_thread_tail_message_id: str | None
 
 
 class ChatRead(ChatListRead):
@@ -99,3 +121,4 @@ class ChatUpdateRequest(pydantic.BaseModel):
     title: pydantic.constr(max_length=100) | None = None
     hidden: bool | None = None
     allow_data_use: bool | None = None
+    active_thread_tail_message_id: str | None = None
