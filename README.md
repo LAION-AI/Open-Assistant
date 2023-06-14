@@ -121,8 +121,8 @@ addition to `--profile ci` in the above command.
 
 ## The Vision
 
-We are not going to stop at replicating ChatGPT. We want to build the assistant of
-the future, able to not only write emails and cover letters, but do meaningful
+We are not going to stop at replicating ChatGPT. We want to build the assistant
+of the future, able to not only write email and cover letters, but do meaningful
 work, use APIs, dynamically research information, and much more, with the
 ability to be personalized and extended by anyone. And we want to do this in a
 way that is open and accessible, which means we must not only build a great

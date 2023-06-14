@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from loguru import logger
-from oasst_backend.celery_worker import app as celery_app
+from oasst_backend.celery_worker import app
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import User
@@ -24,8 +24,8 @@ async def useHFApi(text, url, model_name):
     return result
 
 
-@celery_app.task(name="toxicity")
-def check_toxicity(text, message_id, api_client):
+@app.task(name="toxicity")
+def toxicity(text, message_id, api_client):
     try:
         logger.info(f"checking toxicity : {api_client}")
 
@@ -47,7 +47,7 @@ def check_toxicity(text, message_id, api_client):
         logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
-@celery_app.task(name="hf_feature_extraction")
+@app.task(name="hf_feature_extraction")
 def hf_feature_extraction(text, message_id, api_client):
     try:
         with default_session_factory() as session:

@@ -10,9 +10,10 @@ ROOT_ENDPOINT = "https://discord.com/api/v10"
 
 
 @celery_app.task(name="send_new_report_message")
-def send_new_report_message(message: Message, label_text: str, user_id: UUID) -> None:
+def send_new_report_message(message: Message, label_text: str, user_id: UUID):
     """
     Send a message to the Discord channel when a new message is flagged.
+    Note: this is a Celery task.
 
     Args:
         message (Message): the flagged message
@@ -54,5 +55,5 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID) ->
             },
         )
         res.raise_for_status()
-    except Exception as exception:
-        logger.exception(f"Failed to send flagged message. error: {exception}")
+    except Exception as e:
+        logger.exception(f"Failed to send flagged message. error: {e}")

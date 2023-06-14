@@ -39,7 +39,6 @@ from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
 
-# TODO: Rename text field from sqlmodel to text_content to avoid confusion with text as parameter.
 _task_type_and_reaction = (
     (
         (db_payload.PrompterReplyPayload, db_payload.AssistantReplyPayload),
@@ -537,6 +536,7 @@ class PromptRepository:
             labels=text_labels.labels,
             task_id=task.id if task else None,
         )
+
         message: Message = None
         if message_id:
             if not task:
