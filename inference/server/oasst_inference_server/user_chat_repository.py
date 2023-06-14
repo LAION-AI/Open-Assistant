@@ -324,3 +324,9 @@ class UserChatRepository(pydantic.BaseModel):
             chat.active_thread_tail_message_id = active_thread_tail_message_id
 
         await self.session.commit()
+
+    async def hide_all_chats(self) -> None:
+        chats = await self.get_chats(include_hidden=False)
+        for chat in chats:
+            chat.hidden = True
+        await self.session.commit()
