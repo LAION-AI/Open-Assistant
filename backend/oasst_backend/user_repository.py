@@ -354,6 +354,9 @@ class UserRepository:
         if not source_user_ids:
             return
 
+        # ensure the destination user exists
+        self.get_user(id=destination_user_id)
+
         # update rows in tables that have affected users_ids as FK
         models_to_update = [
             models.Message,
