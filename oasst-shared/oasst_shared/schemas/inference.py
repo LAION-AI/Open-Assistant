@@ -47,6 +47,7 @@ class WorkerHardwareInfo(pydantic.BaseModel):
         except Exception:
             # Workaround for psutil.cpu_freq() throwing exception on some hardware
             # or sometimes returning `None`. Hardware affected includes Apple Silicon
+            # https://github.com/giampaolo/psutil/issues/1892
             data["cpu_freq_max"] = 0
             data["cpu_freq_min"] = 0
         data["mem_total"] = psutil.virtual_memory().total
