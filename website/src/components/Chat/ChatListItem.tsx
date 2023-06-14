@@ -147,26 +147,26 @@ export const ChatListItem = ({
         style={{ insetInlineEnd: `8px` }}
         gap="1.5"
         zIndex={1}
+        // we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile
+        onClick={stopEvent}
       >
         {!isEditing && (
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
-            {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
-            <div onClick={stopEvent}>
-              <Menu>
-                <MenuButton>
-                  <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
-                </MenuButton>
-                <Portal appendToParentPortal={false} containerRef={rootRef}>
-                  {/* higher z-index so that it is displayed over the mobile sidebar */}
-                  <MenuList zIndex="var(--chakra-zIndices-popover)">
-                    <OptOutDataButton chatId={chat.id} />
-                    <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
-                  </MenuList>
-                </Portal>
-              </Menu>
-            </div>
+
+            <Menu>
+              <MenuButton>
+                <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
+              </MenuButton>
+              <Portal appendToParentPortal={false} containerRef={rootRef}>
+                {/* higher z-index so that it is displayed over the mobile sidebar */}
+                <MenuList zIndex="var(--chakra-zIndices-popover)">
+                  <OptOutDataButton chatId={chat.id} />
+                  <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+                </MenuList>
+              </Portal>
+            </Menu>
           </>
         )}
       </Flex>
@@ -193,33 +193,37 @@ const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: 
   return <ChatListItemIconButton label={t("hide")} icon={EyeOff} onClick={onClick} />;
 };
 
-const DeleteChatButton = ({
-  chatId,
-  onDelete,
-}: {
-  chatId: string;
-  onDelete?: (params: { chatId: string }) => void;
-}) => {
+const DeleteChatButton = ({ chatId, onDelete }: { chatId: string; onDelete: (params: { chatId: string }) => void }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const { t } = useTranslation(["chat", "common"]);
-  const { trigger: triggerDelete } = useSWRMutation<any, any, any, { chat_id: string }>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { trigger: triggerDelete, isMutating: isDeleting } = useSWRMutation<any, any, any, { chat_id: string }>(
     API_ROUTES.DELETE_CHAT(chatId),
     del
   );
-  const onDeleteCallback = useCallback(async () => {
+
+  const router = useRouter();
+  const handleDelete = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
-    onDelete?.({ chatId });
-  }, [onDelete, triggerDelete, chatId]);
+    if (router.query.id === chatId) {
+      // push to /chat if we are on the deleted chat
+      router.push("/chat");
+    } else {
+      onDelete({ chatId });
+      onClose();
+    }
+  }, [triggerDelete, chatId, router, onDelete, onClose]);
+
   const alert = (
     <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
       <AlertDialogOverlay>
-        <AlertDialogContent>
+        <AlertDialogContent my="100px" flex="column">
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t("delete_chat")}
+            <Text>{t("delete_chat")}</Text>
           </AlertDialogHeader>
-          <AlertDialogBody>
-            <Text fontWeight="bold" py="2">
+          <AlertDialogBody wordBreak="break-word">
+            <Text fontWeight="bold" py="2" textAlign="left">
               {t("delete_confirmation")}
             </Text>
             <Text py="2">{t("delete_confirmation_detail")}</Text>
@@ -228,7 +232,7 @@ const DeleteChatButton = ({
             <Button ref={cancelRef} onClick={onClose}>
               {t("common:cancel")}
             </Button>
-            <Button colorScheme="red" onClick={onDeleteCallback} ml={3}>
+            <Button colorScheme="red" onClick={handleDelete} ml={3} isLoading={isDeleting}>
               {t("common:delete")}
             </Button>
           </AlertDialogFooter>
@@ -236,6 +240,7 @@ const DeleteChatButton = ({
       </AlertDialogOverlay>
     </AlertDialog>
   );
+
   return (
     <>
       <MenuItem onClick={onOpen} icon={<Trash size={16} />}>
@@ -263,35 +268,31 @@ const OptOutDataButton = ({ chatId }: { chatId: string }) => {
     });
   }, [chatId, onClose, t, toast, updateChat]);
 
-  const alert = (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t("chat:opt_out.dialog.title")}
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              {t("common:cancel")}
-            </Button>
-            <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
-              {t("common:confirm")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
-  );
-
   return (
     <>
       <MenuItem onClick={onOpen} icon={<FolderX size={16} />}>
         {t("chat:opt_out.button")}
       </MenuItem>
-      {alert}
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              {t("chat:opt_out.dialog.title")}
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              <Text py="2">{t("chat:opt_out.dialog.description")}</Text>
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                {t("common:cancel")}
+              </Button>
+              <Button colorScheme="red" onClick={handleOptOut} ml={3} isLoading={isUpdating}>
+                {t("common:confirm")}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };
@@ -306,7 +307,8 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
   return (
     <Tooltip label={label}>
       <Box
-        as="button"
+        as="div"
+        role="button"
         aria-label={label}
         onClick={(e: MouseEvent) => {
           stopEvent(e);

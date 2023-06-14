@@ -96,6 +96,10 @@ class UserChatRepository(pydantic.BaseModel):
         message_ids = [message.id for message in chat.messages]
         # delete reports associated with messages
         await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
+        # delete message evaluations associated with message
+        await self.session.exec(
+            sqlmodel.delete(models.DbMessageEval).where(models.DbMessageEval.selected_message_id.in_(message_ids))
+        )
         # delete messages
         await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat

@@ -48,9 +48,9 @@ import useSWRMutation from "swr/mutation";
 
 import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
+import { MessageCreateDate } from "./MessageCreateDate";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
-import { MessageCreateDate } from "./MessageCreateDate";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -217,12 +217,12 @@ const MessageActions = ({
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
 
-  const { trigger: stopTree } = useSWRMutation<any, any, any, never>(`/api/admin/stop_tree/${id}`, put, {
-    onSuccess: () => {
+  const { trigger: setTreeHalted } = useSWRMutation(`/api/admin/set_tree_halted/${id}`, put, {
+    onSuccess: (data) => {
       const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
       toast({
         title: t("common:success"),
-        description: t("tree_stopped", { id: displayId }),
+        description: data.halted ? t("tree_stopped", { id: displayId }) : t("tree_restarted", { id: displayId }),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -238,7 +238,11 @@ const MessageActions = ({
   };
 
   const handleStop = () => {
-    stopTree();
+    setTreeHalted(true);
+  };
+
+  const handleRestart = () => {
+    setTreeHalted(false);
   };
 
   const handleCopy = (text: string) => {
@@ -323,6 +327,9 @@ const MessageActions = ({
               </MenuItem>
               <MenuItem onClick={handleStop} icon={<Slash />}>
                 {t("stop_tree")}
+              </MenuItem>
+              <MenuItem onClick={handleRestart} icon={<RefreshCw />}>
+                {t("restart_tree")}
               </MenuItem>
             </>
           )}
