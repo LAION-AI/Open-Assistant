@@ -45,6 +45,7 @@
   "sign_in": "Anmelden",
   "sign_out": "Abmelden",
   "skip": "Überspringen",
+  "skip_confirmation": "Sind Sie sicher das sie überspringen wollen?",
   "stats": "Statistiken",
   "status": "Status",
   "status_dashboard": "Status-Dashboard",

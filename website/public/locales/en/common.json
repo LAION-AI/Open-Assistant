@@ -48,6 +48,7 @@
   "sign_in": "Sign In",
   "sign_out": "Sign Out",
   "skip": "Skip",
+  "skip_confirmation": "Are you sure you want to skip?",
   "sorry_404": "Sorry, the page you are looking for does not exist.",
   "stats": "Stats",
   "status_dashboard": "Status Dashboard",
