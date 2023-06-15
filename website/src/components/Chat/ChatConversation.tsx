@@ -467,7 +467,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             isSending={isSending}
             retryingParentId={retryingParentId}
             activeThreadTailMessageId={activeThreadTailMessageId}
-            onEditPromtp={handleEditPrompt}
+            onEditPrompt={handleEditPrompt}
             showEncourageMessage={showEncourageMessage}
             onEncourageMessageClose={setShowEncourageMessage.off}
           ></ChatConversationTree>

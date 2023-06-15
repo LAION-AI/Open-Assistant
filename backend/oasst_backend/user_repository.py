@@ -1,6 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
+import oasst_backend.models as models
 from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
@@ -9,7 +10,7 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, and_, or_
+from sqlmodel import Session, and_, delete, or_, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -346,3 +347,36 @@ class UserRepository:
                 user.streak_days = (current_time - user.streak_last_day_date).days
 
         self.db.add(user)
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def merge_users(self, destination_user_id: UUID, source_user_ids: list[UUID]) -> None:
+        source_user_ids = list(filter(lambda x: x != destination_user_id, source_user_ids))
+        if not source_user_ids:
+            return
+
+        # ensure the destination user exists
+        self.get_user(id=destination_user_id)
+
+        # update rows in tables that have affected users_ids as FK
+        models_to_update = [
+            models.Message,
+            models.MessageRevision,
+            models.MessageReaction,
+            models.MessageEmoji,
+            models.TextLabels,
+            models.Task,
+            models.Journal,
+        ]
+        for table in models_to_update:
+            qry = update(table).where(table.user_id.in_(source_user_ids)).values(user_id=destination_user_id)
+            self.db.execute(qry)
+
+        # delete rows in user stats tables
+        models_to_delete = [models.UserStats, models.TrollStats]
+        for table in models_to_delete:
+            qry = delete(table).where(table.user_id.in_(source_user_ids))
+            self.db.execute(qry)
+
+        # finally delete source users from main user table
+        qry = delete(User).where(User.id.in_(source_user_ids))
+        self.db.execute(qry)

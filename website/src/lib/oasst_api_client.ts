@@ -241,10 +241,10 @@ export class OasstApiClient {
   }
 
   /**
-   * Stop message tree
+   * Set whether a tree is halted
    */
-  async stop_tree(message_id: string): Promise<void> {
-    return this.put<void>(`/api/v1/messages/${message_id}/tree/state?halt=true`);
+  async set_tree_halted(message_id: string, halt: boolean): Promise<void> {
+    return this.put<void>(`/api/v1/messages/${message_id}/tree/state?halt=${halt}`);
   }
 
   /**

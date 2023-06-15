@@ -1,8 +1,7 @@
 import "../styles/globals.css";
 import "focus-visible";
 
-import type { AppContext, AppProps } from "next/app";
-import App from "next/app";
+import type { AppProps } from "next/app";
 import Head from "next/head";
 import { SessionProvider } from "next-auth/react";
 import { appWithTranslation, useTranslation } from "next-i18next";

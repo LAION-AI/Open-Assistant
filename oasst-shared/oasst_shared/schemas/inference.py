@@ -41,8 +41,15 @@ class WorkerHardwareInfo(pydantic.BaseModel):
         data["uname_processor"] = platform.uname().processor
         data["cpu_count_physical"] = psutil.cpu_count(logical=False)
         data["cpu_count_logical"] = psutil.cpu_count(logical=True)
-        data["cpu_freq_max"] = psutil.cpu_freq().max
-        data["cpu_freq_min"] = psutil.cpu_freq().min
+        try:
+            data["cpu_freq_max"] = psutil.cpu_freq().max
+            data["cpu_freq_min"] = psutil.cpu_freq().min
+        except Exception:
+            # Workaround for psutil.cpu_freq() throwing exception on some hardware
+            # or sometimes returning `None`. Hardware affected includes Apple Silicon
+            # https://github.com/giampaolo/psutil/issues/1892
+            data["cpu_freq_max"] = 0
+            data["cpu_freq_min"] = 0
         data["mem_total"] = psutil.virtual_memory().total
         data["swap_total"] = psutil.swap_memory().total
         data["gpus"] = []

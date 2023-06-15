@@ -2,24 +2,24 @@ import {
   Button,
   ButtonProps,
   Modal,
-  ModalBody, ModalCloseButton,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
-import {useTranslation} from "next-i18next";
+import { useTranslation } from "next-i18next";
 
 interface SkipButtonProps extends ButtonProps {
   onSkip: () => void;
   confirmSkip: boolean;
 }
 
-export const SkipButton = ({...props}: SkipButtonProps) => {
-
-  const {t} = useTranslation();
-  const {isOpen, onOpen: showModal, onClose: closeModal} = useDisclosure();
+export const SkipButton = ({ ...props }: SkipButtonProps) => {
+  const { t } = useTranslation();
+  const { isOpen, onOpen: showModal, onClose: closeModal } = useDisclosure();
 
   const onClick = () => {
     if (props.confirmSkip) {
@@ -32,7 +32,7 @@ export const SkipButton = ({...props}: SkipButtonProps) => {
   const onConfirmedSkip = () => {
     closeModal();
     props.onSkip();
-  }
+  };
 
   return (
     <>
@@ -45,9 +45,7 @@ export const SkipButton = ({...props}: SkipButtonProps) => {
           <ModalCloseButton></ModalCloseButton>
           <ModalHeader>{t("skip")}</ModalHeader>
           <ModalBody>
-            <div>
-              {t("skip_confirmation")}
-            </div>
+            <div>{t("skip_confirmation")}</div>
           </ModalBody>
           <ModalFooter>
             <Button mr={3} onClick={onConfirmedSkip}>

@@ -1,8 +1,8 @@
 import { withAnyRole } from "src/lib/auth";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { FetchUsersParams } from "src/types/Users";
-import { getValidDisplayName } from "src/lib/display_name_validation";
 
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
