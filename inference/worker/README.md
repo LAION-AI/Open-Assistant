@@ -48,3 +48,9 @@ If you have a lot of spare GPU memory compared to what your model needs, you can
 increase `MAX_PARALLEL_REQUESTS` to increase the throughput of the worker. We
 have an OOM test program in the worker to figure out how far you can go, but
 it's best to contact us on Discord if you want to do that.
+
+## Plugins
+
+The worker also handles OpenAssistant plugins. See the
+[documentation](https://projects.laion.ai/Open-Assistant/docs/plugins) for more
+information on the plugins system.

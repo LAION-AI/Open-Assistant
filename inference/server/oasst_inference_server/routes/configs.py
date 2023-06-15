@@ -10,7 +10,7 @@ from oasst_shared.schemas import inference
 
 BUILTIN_PLUGINS = [
     inference.PluginEntry(
-        url=f"{settings.api_root}{settings.plugins_path_prefix}{path}",
+        url=f"{settings.api_root}{settings.plugins_path_prefix}{path}/ai-plugin.json",
         trusted=True,
     )
     for path in plugin_apps.keys()

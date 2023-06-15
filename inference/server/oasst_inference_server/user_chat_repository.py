@@ -96,6 +96,10 @@ class UserChatRepository(pydantic.BaseModel):
         message_ids = [message.id for message in chat.messages]
         # delete reports associated with messages
         await self.session.exec(sqlmodel.delete(models.DbReport).where(models.DbReport.message_id.in_(message_ids)))
+        # delete message evaluations associated with message
+        await self.session.exec(
+            sqlmodel.delete(models.DbMessageEval).where(models.DbMessageEval.selected_message_id.in_(message_ids))
+        )
         # delete messages
         await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
@@ -319,4 +323,10 @@ class UserChatRepository(pydantic.BaseModel):
             logger.info(f"Updating active_thread_tail_message_id of chat {chat_id=}: {active_thread_tail_message_id=}")
             chat.active_thread_tail_message_id = active_thread_tail_message_id
 
+        await self.session.commit()
+
+    async def hide_all_chats(self) -> None:
+        chats = await self.get_chats(include_hidden=False)
+        for chat in chats:
+            chat.hidden = True
         await self.session.commit()
