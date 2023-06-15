@@ -1,6 +1,6 @@
 # Component and e2e testing with Cypress
 
-[Cypress](https://www.cypress.io/) is used for both component- and end-to-end testing. Below there's a few examples for
+[Cypress](https://www.cypress.io/) is used for both component and end-to-end testing. Below there's a few examples for
 the context of this site. To learn more, the
 [Cypress documentation](https://docs.cypress.io/guides/getting-started/opening-the-app) has it all.
 
