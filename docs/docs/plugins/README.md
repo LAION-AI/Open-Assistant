@@ -6,7 +6,7 @@
 
 :::note
 
-In the GitHub repo You can see all issues and PR's with the
+In the GitHub repo, you can see all issues and PR's with the
 [`plugins`](https://github.com/LAION-AI/Open-Assistant/issues?q=label%3Aplugins)
 label if you want to dive deeper.
 

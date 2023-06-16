@@ -32,7 +32,7 @@ copilot deploy
 ```
 
 This will deploy the services but it won't be 100% ready for usage. Before being
-ready, we have to inspect the AWS Secrets manager and extract out the database
+ready, we have to inspect the AWS Secrets Manager and extract out the database
 credentials. Read those credentials then put them, and a few other secrets, in a
 `secrets.yml` file like the following:
 
