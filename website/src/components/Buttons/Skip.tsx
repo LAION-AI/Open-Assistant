@@ -45,7 +45,7 @@ export const SkipButton = ({ ...props }: SkipButtonProps) => {
           <ModalCloseButton></ModalCloseButton>
           <ModalHeader>{t("skip")}</ModalHeader>
           <ModalBody>
-            <div>{t("skip_confirmation")}</div>
+            <div>{t("tasks:skip_confirmation")}</div>
           </ModalBody>
           <ModalFooter>
             <Button mr={3} onClick={onConfirmedSkip}>
