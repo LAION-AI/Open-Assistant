@@ -52,22 +52,26 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
   const toast = useToast();
 
-  const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
-    onSuccess(data) {
-      setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
-      setActiveThreadTailMessageId(data.active_thread_tail_message_id);
-    },
-    onError: (err) => {
-      if (err instanceof OasstError && err.httpStatusCode === 404) {
-        // chat does not exist, probably deleted
-        return router.push("/chat");
-      }
-      toast({
-        title: "Failed to load chat",
-        status: "error",
-      });
-    },
-  });
+  const { isLoading: isLoadingMessages, data: chatData } = useSWR<ChatItem>(
+    chatId ? API_ROUTES.GET_CHAT(chatId) : null,
+    get,
+    {
+      onSuccess(data) {
+        setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
+        setActiveThreadTailMessageId(data.active_thread_tail_message_id);
+      },
+      onError: (err) => {
+        if (err instanceof OasstError && err.httpStatusCode === 404) {
+          // chat does not exist, probably deleted
+          return router.push("/chat");
+        }
+        toast({
+          title: "Failed to load chat",
+          status: "error",
+        });
+      },
+    }
+  );
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
@@ -306,7 +310,11 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setReytryingParentId(params.parentId);
 
       const { plugins } = getConfigValues();
-      if ((!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) || NUM_GENERATED_DRAFTS <= 1) {
+      if (
+        (!ENABLE_DRAFTS_WITH_PLUGINS && plugins.length !== 0) ||
+        NUM_GENERATED_DRAFTS <= 1 ||
+        !chatData.allow_data_use
+      ) {
         await createAndFetchAssistantMessage(params);
         setReytryingParentId(null);
       } else {
@@ -320,6 +328,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       ENABLE_DRAFTS_WITH_PLUGINS,
       NUM_GENERATED_DRAFTS,
       createAndFetchAssistantMessage,
+      chatData?.allow_data_use,
     ]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
@@ -470,6 +479,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
             onEditPrompt={handleEditPrompt}
             showEncourageMessage={showEncourageMessage}
             onEncourageMessageClose={setShowEncourageMessage.off}
+            showFeedbackOptions={chatData?.allow_data_use}
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           {(isSending || isAwaitingMessageSelect) &&
