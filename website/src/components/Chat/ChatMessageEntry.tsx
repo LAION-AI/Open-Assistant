@@ -38,6 +38,7 @@ export type ChatMessageEntryProps = {
   "data-id"?: string;
   showEncourageMessage: boolean;
   onEncourageMessageClose: () => void;
+  showFeedbackOptions: boolean;
 };
 
 export const ChatMessageEntry = memo(function ChatMessageEntry({
@@ -50,6 +51,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   canRetry,
   showEncourageMessage,
   onEncourageMessageClose,
+  showFeedbackOptions,
   ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
@@ -179,8 +181,12 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                     ) : (
                       <BaseMessageEmojiButton emoji={Check} />
                     )}
-                    <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
-                    <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
+                    {showFeedbackOptions && (
+                      <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
+                    )}
+                    {showFeedbackOptions && (
+                      <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
+                    )}
                   </>
                 )}
               </MessageInlineEmojiRow>
@@ -189,7 +195,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
         )}
         {work_parameters && <WorkParametersDisplay parameters={work_parameters} />}
       </PendingMessageEntry>
-      {state === "complete" && isAssistant && showEncourageMessage && (
+      {state === "complete" && isAssistant && showEncourageMessage && showFeedbackOptions && (
         <EncourageMessage
           onThumbsUp={handleThumbsUp}
           onThumbsDown={handleThumbsDown}
