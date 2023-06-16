@@ -38,7 +38,7 @@ The output of this is a dictionary with the following information:
 
 ## Requirements
 
-This code is verified to work on a 24GB vram graphics card (like an RTX3090). We
+This code is verified to work on a 24GB VRAM graphics card (like an RTX3090). We
 are working on getting it to run on Google Colab TPUs, and also it may be
 possible to use smaller T5 models like the 3 billion parameter model and still
 get acceptable results.
