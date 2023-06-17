@@ -8,13 +8,14 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import Settings, settings
 from oasst_backend.models import ApiClient, User
-from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.prompt_repository import PromptRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared import utils
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas.protocol import PageResult, SystemStats
-from oasst_shared.utils import ScopeTimer, unaware_to_utc
+from oasst_shared.utils import ScopeTimer, log_timing, unaware_to_utc
+from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -263,7 +264,7 @@ async def get_flagged_messages(
     return resp
 
 
-@router.post("/admin/flagged_messages/{message_id}/processed", response_model=FlaggedMessageResponse)
+@router.post("/flagged_messages/{message_id}/processed", response_model=FlaggedMessageResponse)
 async def process_flagged_messages(
     message_id: UUID,
     session: deps.Session = Depends(deps.get_db),
@@ -275,3 +276,24 @@ async def process_flagged_messages(
     flagged_msg = pr.process_flagged_message(message_id=message_id)
     resp = FlaggedMessageResponse(**flagged_msg.__dict__)
     return resp
+
+
+class MergeUsersRequest(pydantic.BaseModel):
+    destination_user_id: UUID
+    source_user_ids: list[UUID]
+
+
+@log_timing(level="INFO")
+@router.post("/merge_users", response_model=None, status_code=HTTP_204_NO_CONTENT)
+def merge_users(
+    request: MergeUsersRequest,
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+) -> None:
+    @managed_tx_function(CommitMode.COMMIT)
+    def merge_users_tx(session: deps.Session):
+        ur = UserRepository(session, api_client)
+        ur.merge_users(destination_user_id=request.destination_user_id, source_user_ids=request.source_user_ids)
+
+    merge_users_tx()
+
+    logger.info(f"Merged users: {request=}")
