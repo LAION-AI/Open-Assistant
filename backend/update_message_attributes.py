@@ -2,7 +2,7 @@ import time
 
 from loguru import logger
 from oasst_backend.models import ApiClient, Message
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
+from oasst_backend.scheduled_tasks import check_toxicity, hf_feature_extraction
 from oasst_backend.utils.database_utils import default_session_factory
 from sqlmodel import text
 
@@ -71,7 +71,7 @@ def find_and_update_toxicity(message_ids):
                     text = result.payload.payload.text
                     api_client = session.query(ApiClient).filter(ApiClient.id == api_client_id).first()
                     if api_client is not None and text is not None:
-                        toxicity(text=text, message_id=message_id, api_client=api_client.__dict__)
+                        check_toxicity(text=text, message_id=message_id, api_client=api_client.__dict__)
                         # to not get rate limited from HF
                         time.sleep(10)
     except Exception as e:

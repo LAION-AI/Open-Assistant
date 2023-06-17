@@ -16,7 +16,7 @@ Default Plugins shipped, supported and hosted by Open Assistant.
 ### Web Retriever
 
 - url:
-  https://inference.dev.open-assistant.io/plugins/web_retriever/ai-plugin.json
+  https://inference.prod.open-assistant.io/plugins/web_retriever/ai-plugin.json
 - info:
   https://github.com/LAION-AI/Open-Assistant/tree/main/inference/server/oasst_inference_server/plugins/web_retriever
 
@@ -46,7 +46,7 @@ What is the capital of (France)?
 ### Super Aligned GAGLETO
 
 - url:
-  https://inference.dev.open-assistant.io/plugins/gale_pleaser/ai-plugin.json
+  https://inference.prod.open-assistant.io/plugins/gale_pleaser/ai-plugin.json
 - info:
   https://github.com/LAION-AI/Open-Assistant/tree/main/inference/server/oasst_inference_server/plugins/gale_pleaser
 

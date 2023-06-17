@@ -32,12 +32,13 @@ export type ChatMessageEntryProps = {
   onRetry?: (params: { parentId: string; chatId: string }) => void;
   isSending?: boolean;
   pagingSlot?: ReactNode;
-  onEditPromtp?: (params: EditPromptParams) => void;
+  onEditPrompt?: (params: EditPromptParams) => void;
   canRetry?: boolean;
   id?: string;
   "data-id"?: string;
   showEncourageMessage: boolean;
   onEncourageMessageClose: () => void;
+  showFeedbackOptions: boolean;
 };
 
 export const ChatMessageEntry = memo(function ChatMessageEntry({
@@ -46,10 +47,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   isSending,
   message,
   pagingSlot,
-  onEditPromtp,
+  onEditPrompt,
   canRetry,
   showEncourageMessage,
   onEncourageMessageClose,
+  showFeedbackOptions,
   ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
@@ -93,11 +95,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleEditSubmit = useCallback(() => {
-    if (onEditPromtp && inputRef.current?.value && parentId !== null) {
-      onEditPromtp({ parentId, chatId, content: inputRef.current?.value });
+    if (onEditPrompt && inputRef.current?.value && parentId !== null) {
+      onEditPrompt({ parentId, chatId, content: inputRef.current?.value });
     }
     setIsEditing.off();
-  }, [chatId, onEditPromtp, parentId, setIsEditing]);
+  }, [chatId, onEditPrompt, parentId, setIsEditing]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -179,8 +181,12 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                     ) : (
                       <BaseMessageEmojiButton emoji={Check} />
                     )}
-                    <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
-                    <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
+                    {showFeedbackOptions && (
+                      <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
+                    )}
+                    {showFeedbackOptions && (
+                      <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
+                    )}
                   </>
                 )}
               </MessageInlineEmojiRow>
@@ -189,7 +195,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
         )}
         {work_parameters && <WorkParametersDisplay parameters={work_parameters} />}
       </PendingMessageEntry>
-      {state === "complete" && isAssistant && showEncourageMessage && (
+      {state === "complete" && isAssistant && showEncourageMessage && showFeedbackOptions && (
         <EncourageMessage
           onThumbsUp={handleThumbsUp}
           onThumbsDown={handleThumbsDown}

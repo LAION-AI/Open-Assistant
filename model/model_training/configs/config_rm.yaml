@@ -49,7 +49,6 @@ oasst-rm-1-pythia-6.9b:
   pooling: last
   datasets:
     - augment_oasst:
-        #input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
         input_file_path: augmented_latin_cyrillic_oasst_2023-03-27_v2.jsonl
     - anthropic_rlhf:
         fraction: 0.1
@@ -98,10 +97,9 @@ oasst-rm-1-pythia-2.8b:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
         val_split: 0.1
     - augment_oasst:
-        #input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
         input_file_path: augmented_latin_cyrillic_oasst_2023-03-27_v2.jsonl
     - anthropic_rlhf:
         fraction: 0.1
@@ -142,7 +140,7 @@ oasst-rm-1-pythia-1.4b:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
         val_split: 0.1
     - augment_oasst:
         input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl

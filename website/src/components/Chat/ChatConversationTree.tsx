@@ -56,7 +56,7 @@ const TreeChildren = ({
 } & StrictOmit<ChatMessageEntryProps, "message" | "canRetry">) => {
   const sortedTrees = useMemo(() => trees.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)), [trees]);
   const [index, setIndex] = useState(0);
-  const currentTree = sortedTrees[index];
+  const currentTree = sortedTrees[Math.min(index, trees.length - 1)];
 
   const length = trees.length;
   const hasSibling = length > 1;

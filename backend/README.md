@@ -23,26 +23,21 @@ the `.python-version` in the project root directory.
 
 Next, to install all requirements, You can run
 
-1. `pip install -r requirements.txt` inside the `backend` folder; and
-2. `pip install -e .` inside the `oasst-shared` folder.
-3. `pip install -e .` inside the `oasst-data` folder.
-4. `../scripts/backend-development/run-local.sh` to run the backend. This will
+1. `pip install -r backend/requirements.txt`
+2. `pip install -e ./oasst-shared/.`
+3. `pip install -e ./oasst-data/.`
+4. `./scripts/backend-development/run-local.sh` to run the backend. This will
    start the backend server at `http://localhost:8080`.
 
 ## REST Server Configuration
 
-Please either use environment variables or create a `.env` file in the backend
-root directory (in which this readme file is located) to specify the
-`DATABASE_URI`.
+- Generate a new environment variable file `.env` by coping the content of the
+  [.env.example](.env.example) file.
 
-Example contents of a `.env` file for the backend:
+- Update the values of the environment variables in the `.env` file by setting
+  the DATABASE_URI to you local database URI.
 
-```
-DATABASE_URI="postgresql://<username>:<password>@<host>/<database_name>"
-BACKEND_CORS_ORIGINS=["http://localhost", "http://localhost:4200", "http://localhost:3000", "http://localhost:8080", "https://localhost", "https://localhost:4200", "https://localhost:3000", "https://localhost:8080", "http://dev.oasst.laion.ai", "https://stag.oasst.laion.ai", "https://oasst.laion.ai"]
-REDIS_HOST=localhost
-REDIS_PORT=6379
-```
+- Update the rest of the environment variables according to your needs.
 
 ## Running the REST Server locally for development
 
