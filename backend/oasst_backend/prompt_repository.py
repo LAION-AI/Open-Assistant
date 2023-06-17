@@ -309,7 +309,7 @@ class PromptRepository:
 
         # create reply message
         new_message_id = uuid4()
-        user_message = self.insert_message(
+        user_message = self.ensert_message(
             message_id=new_message_id,
             frontend_message_id=user_frontend_message_id,
             parent_id=task.parent_message_id,
@@ -708,6 +708,27 @@ class PromptRepository:
         if deleted is not None:
             qry = qry.filter(Message.deleted == deleted)
         return self._add_user_emojis_all(qry)
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def create_message_revision_proposal(
+        self, 
+        message_id: UUID,
+        new_content: str,
+        additions: int,
+        deletions: int,
+    ) -> MessageRevisionProposal:
+        revision_proposal = MessageRevisionProposal(
+            id=None,
+            message_id=message_id,
+            user_id=self.user_id,
+            text=new_content,
+            additions=additions,
+            deletions=deletions,
+            created_date=None,
+            deleted=False
+        )
+        self.db.add(revision_proposal)
+        return revision_proposal
 
     def fetch_message_revision_proposals(self, message_id: UUID) -> list[MessageRevisionProposal]:
         logger.debug(f"fetching all revision proposals of the message with id {message_id}")

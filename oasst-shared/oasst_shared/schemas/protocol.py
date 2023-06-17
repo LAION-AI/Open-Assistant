@@ -629,6 +629,13 @@ class MessageEditRequest(BaseModel):
     new_content: str
 
 
+class CreateMessageRevisionProposalRequest(BaseModel):
+    user: User
+    additions: int
+    deletions: int
+    new_content: str
+
+
 class CreateFrontendUserRequest(User):
     show_on_leaderboard: bool = True
     enabled: bool = True

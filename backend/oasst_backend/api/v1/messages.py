@@ -39,7 +39,12 @@ def query_messages(
     """
     Query messages.
     """
-    pr = PromptRepository(db, api_client, auth_method=frontend_user.auth_method, username=frontend_user.username)
+    pr = PromptRepository(
+        db,
+        api_client,
+        auth_method=frontend_user.auth_method,
+        username=frontend_user.username
+    )
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
@@ -87,7 +92,8 @@ def get_messages_cursor(
                 return datetime.fromisoformat(m[2]), UUID(m[1])
             return datetime.fromisoformat(x), None
         except ValueError:
-            raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
+            raise OasstError("Invalid cursor value",
+                             OasstErrorCode.INVALID_CURSOR_VALUE)
 
     if desc:
         gte_created_date, gt_id = split_cursor(before)
@@ -98,7 +104,8 @@ def get_messages_cursor(
         gte_created_date, gt_id = split_cursor(after)
         query_desc = before is not None and not after
 
-    logger.debug(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+    logger.debug(
+        f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
 
     qry_max_count = max_count + 1 if before is None or after is None else max_count
 
@@ -179,6 +186,31 @@ def get_conv(
     return utils.prepare_conversation(messages)
 
 
+@router.post("/{message_id}/revision_proposals")
+def create_revision_proposal(
+    *,
+    message_id: UUID,
+    request: protocol.CreateMessageRevisionProposalRequest,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Creates a new revision proposal for review for a given message.
+    """
+    @managed_tx_function(CommitMode.COMMIT)
+    def tx_func(session: deps.Session):
+        pr = PromptRepository(session, api_client, frontend_user=frontend_user)
+        pr.create_message_revision_proposal(
+            message_id, 
+            request.new_content, 
+            request.additions, 
+            request.deletions
+    )
+
+    tx_func()
+
+
 @router.get("/{message_id}/revision_proposals", response_model=protocol.MessageRevisionProposals)
 def get_revision_proposals(
     *,
@@ -191,8 +223,8 @@ def get_revision_proposals(
     Get all revision proposals of a given message.
     """
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
-    edits = pr.fetch_message_revision_proposals(message_id)
-    return utils.prepare_message_revision_proposals(edits)
+    proposals = pr.fetch_message_revision_proposals(message_id)
+    return utils.prepare_message_revision_proposals(proposals)
 
 
 @router.get("/{message_id}/tree", response_model=protocol.MessageTree)
@@ -212,7 +244,8 @@ def get_tree(
     message = pr.fetch_message(message_id)
     review_result = None if include_spam else True
     deleted = None if include_deleted else False
-    tree = pr.fetch_message_tree(message.message_tree_id, review_result=review_result, deleted=deleted)
+    tree = pr.fetch_message_tree(
+        message.message_tree_id, review_result=review_result, deleted=deleted)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 
@@ -327,7 +360,8 @@ def get_max_children(
     """
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     message = pr.fetch_message(message_id)
-    message, children = pr.fetch_message_with_max_children(message.message_tree_id)
+    message, children = pr.fetch_message_with_max_children(
+        message.message_tree_id)
     return utils.prepare_tree([message, *children], message.id)
 
 
