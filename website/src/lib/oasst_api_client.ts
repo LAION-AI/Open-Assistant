@@ -6,7 +6,7 @@ import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
-import { Change } from 'diff';
+import { Change } from "diff";
 
 export class OasstError {
   message: string;
@@ -238,12 +238,7 @@ export class OasstApiClient {
     return this.put<void>(`/api/v1/messages/${message_id}/undelete`);
   }
 
-  async propose_revision_to_message(
-    message_id: string, 
-    user: BackendUserCore,
-    new_content: string,
-    changes: Change[],
-  ) {
+  async propose_revision_to_message(message_id: string, user: BackendUserCore, new_content: string, changes: Change[]) {
     let additions = 0;
     let deletions = 0;
 
@@ -252,15 +247,12 @@ export class OasstApiClient {
       else if (change.removed) deletions += change.count || 0;
     }
 
-    return this.post<void>(
-      `/api/v1/messages/${message_id}/revision_proposals`,
-      {
-        user,
-        additions,
-        deletions,
-        new_content,
-      }
-    );
+    return this.post<void>(`/api/v1/messages/${message_id}/revision_proposals`, {
+      user,
+      additions,
+      deletions,
+      new_content,
+    });
   }
 
   /**

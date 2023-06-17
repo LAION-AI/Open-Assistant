@@ -48,12 +48,9 @@ export const API_ROUTES = {
   UPDATE_TASK: "/api/update_task",
   AVAILABLE_TASK: withLang("/api/available_tasks"),
   RECENT_MESSAGES: withLang("/api/messages"),
-  REVISION_PROPOSALS_TO_MESSAGE: (messageId: string) => createRoute(
-    `/api/messages/${messageId}/revision_proposals`
-  ),
-  PROPOSE_REVISION_TO_MESSAGE: (messageId: string) => createRoute(
-    `/api/messages/${messageId}/revision_proposals/create`
-  ),
+  REVISION_PROPOSALS_TO_MESSAGE: (messageId: string) => createRoute(`/api/messages/${messageId}/revision_proposals`),
+  PROPOSE_REVISION_TO_MESSAGE: (messageId: string) =>
+    createRoute(`/api/messages/${messageId}/revision_proposals/create`),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
   ADMIN_EDIT_MESSAGE: (messageId: string) => createRoute(`/api/admin/edit_message/${messageId}`),

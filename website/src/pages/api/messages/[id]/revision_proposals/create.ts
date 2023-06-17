@@ -12,7 +12,7 @@ const Body = z.object({
       count: z.optional(z.number()),
       value: z.string(),
       added: z.optional(z.boolean()),
-      removed: z.optional(z.boolean())
+      removed: z.optional(z.boolean()),
     })
   ),
 });
@@ -27,21 +27,15 @@ export default withoutRole("banned", async (req, res, token) => {
   if (bodyParse.success) {
     const body = bodyParse.data;
     try {
-      await client.propose_revision_to_message(
-        messageId as string,
-        user,
-        body.new_content,
-        body.changes as Change[]
-      );
+      await client.propose_revision_to_message(messageId as string, user, body.new_content, body.changes as Change[]);
 
-      res.status(200).json({ message: 'Successfully created revision proposal to message!' });
+      res.status(200).json({ message: "Successfully created revision proposal to message!" });
     } catch (exception) {
-      res.status(500).json({ message: 'Failed to create revision proposal to mesage!' });
+      res.status(500).json({ message: "Failed to create revision proposal to mesage!" });
     }
   } else {
-    res.status(400).json({ 
-      message: `Body was not as it should be to create a new revision!` 
-    })
+    res.status(400).json({
+      message: `Body was not as it should be to create a new revision!`,
+    });
   }
-
 });

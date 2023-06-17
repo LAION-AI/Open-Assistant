@@ -55,7 +55,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => { }}
+            onClick={() => {}}
           />
 
           <MessageEmojiButton
@@ -64,7 +64,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => { }}
+            onClick={() => {}}
           />
         </MessageInlineEmojiRow>
       </Flex>
@@ -152,10 +152,7 @@ const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof get
             <Divider marginBlock={5} />
 
             {data && data.message && data.revision_proposals && (
-              <RevisionProposalsTable 
-                revisions={data.revision_proposals} 
-                lang={data.message.lang} 
-              />
+              <RevisionProposalsTable revisions={data.revision_proposals} lang={data.message.lang} />
             )}
           </CardBody>
         </Card>

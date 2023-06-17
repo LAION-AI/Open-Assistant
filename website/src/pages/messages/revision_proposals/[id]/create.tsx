@@ -15,15 +15,15 @@ import {
 } from "@chakra-ui/react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardLayout } from 'src/components/Layout';
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { DashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
-import { get, post } from 'src/lib/api';
-import { Message, MessageWithChildren } from 'src/types/Conversation';
-import useSWRImmutable from 'swr/immutable';
+import { get, post } from "src/lib/api";
+import { Message, MessageWithChildren } from "src/types/Conversation";
+import useSWRImmutable from "swr/immutable";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { MessageTree } from "src/components/Messages/MessageTree";
@@ -31,15 +31,15 @@ import { API_ROUTES } from "src/lib/routes";
 import useSWRMutation from "swr/mutation";
 import { diffChars } from "diff";
 
-const RenderedMarkdown = lazy(() => import('../../../../components/Messages/RenderedMarkdown'));
+const RenderedMarkdown = lazy(() => import("../../../../components/Messages/RenderedMarkdown"));
 
 const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["common", "tasks"]);
   const router = useRouter();
 
   const { trigger: submitRevisionProposal, isMutating: isSubmiting } = useSWRMutation(
-    API_ROUTES.PROPOSE_REVISION_TO_MESSAGE(id), 
-    post, 
+    API_ROUTES.PROPOSE_REVISION_TO_MESSAGE(id),
+    post,
     {
       onSuccess: () => {
         // router.push(ROUTES.ADMIN_MESSAGE_DETAIL(id));
@@ -60,7 +60,6 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
       setMessageText(data.message.text);
     }
   }, [data]);
-
 
   const previewContent = useMemo(
     () => (
@@ -121,7 +120,9 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
                       textareaProps={{ minRows: 5 }}
                     />
                   </TabPanel>
-                  <TabPanel><h1>TODO</h1></TabPanel>
+                  <TabPanel>
+                    <h1>TODO</h1>
+                  </TabPanel>
                   <TabPanel p="0" pt="4" marginBottom={2}>
                     {previewContent}
                   </TabPanel>
@@ -133,11 +134,11 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
                   variant="solid"
                   colorScheme="green"
                   onClick={async () => {
-                    await submitRevisionProposal({ 
+                    await submitRevisionProposal({
                       arg: {
                         new_content: messageText,
-                        changes: diffChars(data.message.text, messageText)
-                      } 
+                        changes: diffChars(data.message.text, messageText),
+                      },
                     });
                   }}
                   isLoading={isSubmiting}
@@ -162,9 +163,8 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
 }) => ({
   props: {
     id: params!.id,
-    ...(await serverSideTranslations(locale))
-  }
+    ...(await serverSideTranslations(locale)),
+  },
 });
 
 export default CreateRevisionProposal;
-

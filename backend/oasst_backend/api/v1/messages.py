@@ -39,12 +39,7 @@ def query_messages(
     """
     Query messages.
     """
-    pr = PromptRepository(
-        db,
-        api_client,
-        auth_method=frontend_user.auth_method,
-        username=frontend_user.username
-    )
+    pr = PromptRepository(db, api_client, auth_method=frontend_user.auth_method, username=frontend_user.username)
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
@@ -92,8 +87,7 @@ def get_messages_cursor(
                 return datetime.fromisoformat(m[2]), UUID(m[1])
             return datetime.fromisoformat(x), None
         except ValueError:
-            raise OasstError("Invalid cursor value",
-                             OasstErrorCode.INVALID_CURSOR_VALUE)
+            raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
 
     if desc:
         gte_created_date, gt_id = split_cursor(before)
@@ -104,8 +98,7 @@ def get_messages_cursor(
         gte_created_date, gt_id = split_cursor(after)
         query_desc = before is not None and not after
 
-    logger.debug(
-        f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+    logger.debug(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
 
     qry_max_count = max_count + 1 if before is None or after is None else max_count
 
@@ -198,15 +191,11 @@ def create_revision_proposal(
     """
     Creates a new revision proposal for review for a given message.
     """
+
     @managed_tx_function(CommitMode.COMMIT)
     def tx_func(session: deps.Session):
         pr = PromptRepository(session, api_client, frontend_user=frontend_user)
-        pr.create_message_revision_proposal(
-            message_id, 
-            request.new_content, 
-            request.additions, 
-            request.deletions
-    )
+        pr.create_message_revision_proposal(message_id, request.new_content, request.additions, request.deletions)
 
     tx_func()
 
@@ -244,8 +233,7 @@ def get_tree(
     message = pr.fetch_message(message_id)
     review_result = None if include_spam else True
     deleted = None if include_deleted else False
-    tree = pr.fetch_message_tree(
-        message.message_tree_id, review_result=review_result, deleted=deleted)
+    tree = pr.fetch_message_tree(message.message_tree_id, review_result=review_result, deleted=deleted)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 
@@ -360,8 +348,7 @@ def get_max_children(
     """
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     message = pr.fetch_message(message_id)
-    message, children = pr.fetch_message_with_max_children(
-        message.message_tree_id)
+    message, children = pr.fetch_message_with_max_children(message.message_tree_id)
     return utils.prepare_tree([message, *children], message.id)
 
 

@@ -711,7 +711,7 @@ class PromptRepository:
 
     @managed_tx_method(CommitMode.FLUSH)
     def create_message_revision_proposal(
-        self, 
+        self,
         message_id: UUID,
         new_content: str,
         additions: int,
@@ -725,7 +725,7 @@ class PromptRepository:
             additions=additions,
             deletions=deletions,
             created_date=None,
-            deleted=False
+            deleted=False,
         )
         self.db.add(revision_proposal)
         return revision_proposal
