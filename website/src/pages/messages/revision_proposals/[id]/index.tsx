@@ -25,6 +25,7 @@ import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "src/components/Messages/MessageInlineEmojiRow";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { get } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { Message } from "src/types/Conversation";
 import { MessageRevisionProposal } from "src/types/MessageRevisionProposal";
 import useSWRImmutable from "swr/immutable";
@@ -54,7 +55,7 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => {}}
+            onClick={() => { }}
           />
 
           <MessageEmojiButton
@@ -63,22 +64,20 @@ const RevisionProposalsTableEntry: FC<RevisionProposalsTableEntryProps> = ({ rev
             userReacted
             userIsAuthor={false}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={() => {}}
+            onClick={() => { }}
           />
         </MessageInlineEmojiRow>
       </Flex>
-
-      <div className=""></div>
     </BaseMessageEntry>
   );
 };
 
-interface RevisionProposalsTable {
+interface RevisionProposalsTableProps {
   revisions: MessageRevisionProposal[];
   lang: string;
 }
 
-const RevisionProposalstable: FC<RevisionProposalsTable> = ({ revisions, lang }) => (
+const RevisionProposalsTable: FC<RevisionProposalsTableProps> = ({ revisions, lang }) => (
   <TableContainer>
     <Table>
       <Thead>
@@ -118,7 +117,7 @@ const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof get
   const { data, isLoading, error } = useSWRImmutable<{
     revision_proposals: MessageRevisionProposal[];
     message: Message;
-  }>(`/api/messages/${id}/revision_proposals`, get, {
+  }>(API_ROUTES.REVISION_PROPOSALS_TO_MESSAGE(id), get, {
     keepPreviousData: true,
   });
 
@@ -142,7 +141,7 @@ const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof get
               </HStack>
             </Stack>*/}
 
-            {isLoading && !data && <MessageLoading></MessageLoading>}
+            {isLoading && !data && <MessageLoading />}
             {error && "Unable to load the message's revision proposals!"}
             {data && data.message && (
               <div className="message-being-edited">
@@ -153,7 +152,10 @@ const MessageRevisionProposals = ({ id }: InferGetServerSidePropsType<typeof get
             <Divider marginBlock={5} />
 
             {data && data.message && data.revision_proposals && (
-              <RevisionProposalstable revisions={data.revision_proposals} lang={data.message.lang} />
+              <RevisionProposalsTable 
+                revisions={data.revision_proposals} 
+                lang={data.message.lang} 
+              />
             )}
           </CardBody>
         </Card>

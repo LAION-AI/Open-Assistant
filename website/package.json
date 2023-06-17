@@ -88,7 +88,8 @@
     "swr": "^2.1.5",
     "tailwindcss": "^3.3.2",
     "use-debounce": "^9.0.4",
-    "usehooks-ts": "^2.9.1"
+    "usehooks-ts": "^2.9.1",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
@@ -105,6 +106,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/accept-language-parser": "^1.5.3",
+    "@types/diff": "^5.0.3",
     "@types/node": "^20.2.5",
     "@types/react": "^18.2.6",
     "@types/react-syntax-highlighter": "^15.5.6",
