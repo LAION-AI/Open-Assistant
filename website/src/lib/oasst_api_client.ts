@@ -434,7 +434,7 @@ export class OasstApiClient {
     });
   }
 
-  fetch_frontend_user(user: BackendUserCore) {
+  fetch_frontend_user(user: Omit<BackendUserCore, "display_name">) {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
@@ -480,5 +480,9 @@ export class OasstApiClient {
   async delete_account(user: BackendUserCore) {
     const backendUser = await this.fetch_frontend_user(user);
     return this.delete<void>(`/api/v1/users/${backendUser.user_id}`);
+  }
+
+  merge_backend_users(destination_user_id: string, source_user_ids: string[]) {
+    return this.post<void>("/api/v1/admin/merge_users", { destination_user_id, source_user_ids });
   }
 }

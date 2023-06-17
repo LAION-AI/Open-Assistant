@@ -44,9 +44,18 @@ model User {
   isNew         Boolean   @default(true)
   role          String    @default("general")
 
-  accounts Account[]
-  sessions Session[]
-  tasks    RegisteredTask[]
+  accounts    Account[]
+  sessions    Session[]
+  tasks       RegisteredTask[]
+  backendInfo BackendInfo?
+}
+
+model BackendInfo {
+  id             String @id @default(cuid())
+  frontendUserId String @unique
+  backendUserId  String @unique
+
+  user User @relation(fields: [frontendUserId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
