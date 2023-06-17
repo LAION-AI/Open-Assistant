@@ -7,7 +7,7 @@ import { Control, useForm, useWatch } from "react-hook-form";
 import { validDisplayNameRegex } from "src/lib/display_name_validation";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
 
-export default function Account() {
+export default function urenameAccount() {
   const { data: session } = useSession();
 
   if (!session) {
