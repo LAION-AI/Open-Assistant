@@ -5,7 +5,7 @@ import math from "@bytemd/plugin-math";
 import { Editor } from "@bytemd/react";
 import { Box, BoxProps, Flex, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const editorConfig = {
   autofocus: true,
@@ -34,6 +34,13 @@ const sx: BoxProps["sx"] = {
   ".CodeMirror .CodeMirror-lines": {
     maxW: "100% !important",
   },
+  ".bytemd-status-left": {
+    display: { base: "none", sm: "inline" },
+  },
+  ".bytemd-status": {
+    h: "24px",
+    ps: 6,
+  },
   _dark: {
     ".bytemd, .bytemd-body, .CodeMirror": {
       bg: "gray.800",
@@ -46,24 +53,40 @@ const sx: BoxProps["sx"] = {
     ".CodeMirror-cursors, .CodeMirror-cursor": {
       borderColor: "white !important",
     },
+    ".cm-s-default .cm-variable-2": {
+      color: "initial",
+    },
+    ".cm-s-default .cm-header": {
+      color: "#6d6df1",
+    },
   },
-  ".bytemd-status-left": {
-    display: { base: "none", sm: "inline" },
-  },
-  ".bytemd-status": {
-    h: "24px",
-    ps: 6,
+};
+
+// until https://github.com/bytedance/bytemd/issues/265 is fixed:
+const rtlSx: BoxProps["sx"] = {
+  ".CodeMirror-line": {
+    direction: "rtl",
   },
 };
 
 export const MarkDownEditor = (props: { value: string; onChange: (value: string) => void; placeholder?: string }) => {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
+  const dir = i18n.dir();
+
+  const boxSx = useMemo(() => {
+    if (dir === "rtl") {
+      return { ...sx, ...rtlSx };
+    }
+    return sx;
+  }, [dir]);
+
   useEffect(() => {
     // hack to support cypress testing
     document?.querySelector(".bytemd-editor").setAttribute("data-cy", "reply");
   }, []);
+
   return (
-    <Box sx={sx}>
+    <Box sx={boxSx}>
       <Editor mode="split" editorConfig={editorConfig} plugins={plugins} {...props} data-cy="reply" />
       <Link
         href="https://www.markdownguide.org/basic-syntax"
@@ -80,11 +103,11 @@ export const MarkDownEditor = (props: { value: string; onChange: (value: string)
             width="20"
             height="20"
             viewBox="0 0 24 24"
-            stroke-width="2"
+            strokeWidth="2"
             stroke="currentColor"
             fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
