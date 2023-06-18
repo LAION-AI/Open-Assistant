@@ -72,7 +72,7 @@ export function UserMenu() {
     <Menu>
       <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
         <Box display="flex" alignItems="center" gap="3" p="1">
-          <Avatar size="sm" src={session.user.image!} />
+          <Avatar size="sm" src={session.user.image} />
           <Text data-cy="username" className="hidden lg:flex ltr:pr-2 rtl:pl-2" style={{ overflow: "hidden" }}>
             {session.user.name || "New User"}
           </Text>
