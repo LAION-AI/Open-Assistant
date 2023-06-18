@@ -4,6 +4,7 @@
   "delete_account_intro": "Deleting an account entails the following:",
   "delete_account_leaderboard": "Accounts of deleted users won't show up on the leaderboards",
   "delete_account_permanent": "This action is permanent and cannot be undone",
+  "linked_accounts": "Linked accounts",
   "go_to_dashboard": "Go back to dashboard",
   "yes_delete": "Yes, delete my account permanently"
 }
