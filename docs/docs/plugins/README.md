@@ -1,8 +1,8 @@
 # Plugins
 
-- [Getting Started](/getting-started.md)
-- [Plugins List](/list.md)
-- [Plugins Technical Details](/details.md)
+- [Getting Started](getting-started.md)
+- [Plugins List](list.md)
+- [Plugins Technical Details](details.md)
 
 # Note
 
