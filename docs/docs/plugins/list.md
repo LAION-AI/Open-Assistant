@@ -2,6 +2,8 @@
 
 Below is a list of some available plugins.
 
+An **unofficial** community plugin list is available [here](https://github.com/targed/GPT-Plugins)
+
 - [Official Plugins](#official-plugins)
   - [Web Retriever](#web-retriever)
   - [Super Aligned GAGLETO](#super-aligned-gagleto)
