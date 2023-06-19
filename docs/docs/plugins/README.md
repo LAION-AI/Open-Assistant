@@ -11,4 +11,4 @@ In the GitHub repo You can see all issues and PR's with the
 label if you want to dive deeper.
 
 The docs here are mostly for end users of plugins or those getting familiar at a
-high level.
+high level. To explore more plugins, check out the unofficial community plugins list available [here](https://github.com/targed/GPT-Plugins).
