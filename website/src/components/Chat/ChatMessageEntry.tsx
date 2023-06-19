@@ -94,7 +94,6 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   const [isEditing, setIsEditing] = useBoolean(false);
   const [isPlainText, setIsPlainText] = useState<boolean>(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const memoIsPlainText = useMemo(() => isPlainText, [isPlainText]);
 
   const handleEditSubmit = useCallback(() => {
     if (onEditPrompt && inputRef.current?.value && parentId !== null) {
@@ -132,7 +131,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
         isAssistant={isAssistant}
         usedPlugin={used_plugin}
         content={isEditing ? "" : content!}
-        isPlainText={memoIsPlainText}
+        isPlainText={isPlainText}
       >
         {!isAssistant && parentId !== null && (
           <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
@@ -180,7 +179,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                   <>
                     <BaseMessageEmojiButton
                       emoji={FileText}
-                      onClick={() => setIsPlainText(!memoIsPlainText)}
+                      onClick={() => setIsPlainText(!isPlainText)}
                       label={t("plain_text")}
                     />
 
@@ -243,8 +242,6 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
     () => ({ src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg" }),
     [isAssistant, image]
   );
-
-  console.log("rendered");
 
   return (
     <BaseMessageEntry
