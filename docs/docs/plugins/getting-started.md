@@ -1,5 +1,7 @@
 # Getting Started
 
+Check out the **unofficial** community plugin list available [here](https://github.com/targed/GPT-Plugins) to see what plugins are available. 
+
 ## Quick Start
 
 Use the "Web Retriever" plugin by adding this url:
