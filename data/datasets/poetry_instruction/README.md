@@ -10,7 +10,7 @@ Languages English
 
 Dataset Structure This dataset follows the OA format, which is:
 
-- NSTRUCTION (string): The user asks for a poem (from a variety of premade
+- INSTRUCTION (string): The user asks for a poem (from a variety of premade
 prompts) with topics (tags). If the given poem has no tags, the user asks for a
 poem on it's own.
 

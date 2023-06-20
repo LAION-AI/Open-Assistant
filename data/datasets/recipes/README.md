@@ -14,7 +14,7 @@ dialogue using a preset list of user prompt templates.
 ### Some ideas for extending this dataset
 
 This dataset is nicely structured, and the ingredients section includes the
-quantities and units separated out. Somehow, but not all already include a
+quantities and units separated out. Some, but not all already include a
 primary_unit (US) and metric_unit. We could find all recipes with both units and
 generate dialogue for the prompt 'convert the ingredients into metric', 'what
 are the ingredients in UK measurements'? etc..
