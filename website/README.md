@@ -36,7 +36,7 @@ To contribute to the website, make sure you have the following setup and install
 
 1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
     if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
-1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
+1.  [Docker](https://www.docker.com/): We use Docker to simplify running dependent services.
 
 ### Getting everything up and running
 
@@ -48,11 +48,11 @@ If you're doing active development we suggest the following workflow:
     - If you want to work on the chat api, you need to run the inference profile as well. Your new command would look
       like: `docker compose --profile frontend-dev --profile inference up --build --attach-dependencies`
     - See [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend) if you face any
-      docker problems.
+      Docker problems.
     - Leave this running in the background and continue:
 1.  Open another terminal tab, navigate to `${OPEN_ASSISTANT_ROOT/website`.
 1.  Run `npm ci`
-1.  Run `npx prisma db push` (This is also needed when you restart the docker stack from scratch).
+1.  Run `npx prisma db push` (This is also needed when you restart the Docker stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at `http://localhost:3000`.
 1.  To create an account, login via the user using email authentication and navigate to `http://localhost:1080`. Check
     the email listed and click the log in link. You're now logged in and authenticated.
@@ -63,7 +63,7 @@ If you're doing active development we suggest the following workflow:
 You can use the debug credentials provider to log in without fancy emails or OAuth.
 
 1. This feature is automatically on in development mode, i.e. when you run `npm run dev`. In case you want to do the
-   same with a production build (for example, the docker image), then run the website with environment variable
+   same with a production build (for example, the Docker image), then run the website with environment variable
    `DEBUG_LOGIN=true`.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.

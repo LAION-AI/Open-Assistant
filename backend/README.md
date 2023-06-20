@@ -11,7 +11,7 @@ In root directory, run
 a database. The default settings are already configured to connect to the
 database at `localhost:5432`. (See
 [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend)
-if you face any docker problems).
+if you face any Docker problems).
 
 > **Note:** when running on MacOS with an M1 chip you have to use:
 > `DB_PLATFORM=linux/x86_64 docker compose ...`
@@ -21,7 +21,7 @@ the `.python-version` in the project root directory.
 
 ### Python Packages
 
-Next, to install all requirements, You can run
+Next, to install all requirements, you can run:
 
 1. `pip install -r backend/requirements.txt`
 2. `pip install -e ./oasst-shared/.`
@@ -58,7 +58,7 @@ information.
 Once you have successfully started the backend server, you can access the
 default api docs at `localhost:8080/docs`. If you need to update the exported
 openapi.json in the docs/ folder you can run below command to `wget` them from
-the relevant local fastapi endpoint. This will enable anyone to just see API
+the relevant local FastAPI endpoint. This will enable anyone to just see API
 docs via something like
 [Swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json)
 without having to actually set up and run a development backend.
@@ -68,16 +68,16 @@ without having to actually set up and run a development backend.
 wget localhost:8080/api/v1/openapi.json -O docs/docs/api/backend-openapi.json
 ```
 
-Note: The api docs should be automatically updated by the
+Note: The API docs should be automatically updated by the
 `test-api-contract.yaml` workflow. (TODO)
 
 ## Running Celery Worker(s) for API and periodic tasks
 
-Celery workers are used for Huggingface API calls like toxicity and feature
+Celery workers are used for HuggingFace API calls like toxicity and feature
 extraction. Celery Beat along with worker is used for periodic tasks like user
 streak update
 
-To run APIs locally
+To run APIs locally:
 
 - update HUGGING_FACE_API_KEY in backend/oasst_backend/config.py with the
   correct API_KEY
@@ -87,7 +87,7 @@ To run APIs locally
 - run start_worker.sh in backend dir
 - to see logs , use `tail -f celery.log` and `tail -f celery.beat.log`
 
-In CI
+In CI:
 
 - set `DEBUG_SKIP_TOXICITY_CALCULATION=False` and
   `DEBUG_SKIP_EMBEDDING_COMPUTATION=False` in docker-compose.yaml

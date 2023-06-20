@@ -5,7 +5,7 @@
 License: MIT. Contains Parquet of a list of instructions and answers (English
 only). Reasoning, logic and programming.
 
-Each row consists of
+Each row consists of:
 
 - INSTRUCTION
 - RESPONSE

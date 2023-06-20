@@ -25,7 +25,7 @@ Replace with a proper domain to setup SSL certificates.
 copilot env deploy
 ```
 
-This will create a variety of aws roles and services needed for deployment.
+This will create a variety of AWS roles and services needed for deployment.
 
 ```sh
 copilot deploy

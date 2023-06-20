@@ -83,7 +83,7 @@ To change the model used, i.e. larger pythia version create a new config in
 `EleutherAI/pythia-{size}-deduped`. Larger models will probably need to also
 adjust the `--learning_rate` and `--per_device_train_batch_size` flags.
 
-4. Get SFT trained model
+4. Get SFT trained model.
 
 ```bash
 # choose a specific checkpoint
@@ -95,14 +95,14 @@ export SFT_MODEL=$MODEL_PATH/sft_model/$(ls -t $MODEL_PATH/sft_model/ | head -n 
 
 ### RM Training
 
-5. Train the reward model
+5. Train the reward model.
 
 ```bash
 cd ../reward/instructor
 python trainer.py configs/deberta-v3-base.yml --output_dir $MODEL_PATH/reward_model
 ```
 
-6. Get RM trained model
+6. Get RM trained model.
 
 ```bash
 # choose a specific checkpoint
@@ -114,7 +114,7 @@ export REWARD_MODEL=$MODEL_PATH/reward_model/$(ls -t $MODEL_PATH/reward_model/ |
 
 ### RL Training
 
-7. Train the RL agent
+7. Train the RL agent.
 
 ```bash
 cd ../../model_training

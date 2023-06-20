@@ -9,6 +9,6 @@ This folder contains various configuration files for Grafana.
   Grafana where some pre-configured dashboards live.
 - [`./dashboards/fastapi-backend.json`](./dashboards/fastapi-backend.json) - A
   json representation of a saved Grafana dashboard focusing on some high level
-  api endpoint metrics etc.
+  API endpoint metrics etc.
 - [`./datasources/datasource.yml`](./datasources/datasource.yml) - A config file
   to set up Grafana to read from the local Prometheus source.

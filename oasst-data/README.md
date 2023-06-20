@@ -8,7 +8,7 @@ If you got the exception `ModuleNotFoundError: No module named 'oasst_data'` you
 first need to install the `oasst_data` package:
 
 Run `pip install -e .` in the `oasst-data/` directory of the Open-Assistant
-repository to install the `oasst_data` python package in editable mode.
+repository to install the `oasst_data` Python package in editable mode.
 
 ## Reading Open-Assistant Export Files
 
@@ -41,7 +41,7 @@ which is used to load Open-Assistant export data for supervised fine-tuning
 (training) of our language models.
 
 You can also load jsonl data completely without dependencies to `oasst_data`
-solely with standard python libraries. In this case the json objects are loaded
+solely with standard Python libraries. In this case the json objects are loaded
 as nested dicts which need to be 'parsed' manually by you:
 
 ```python

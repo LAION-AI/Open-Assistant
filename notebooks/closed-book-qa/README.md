@@ -1,6 +1,6 @@
 # Generate Topics, Questions, and Answers from a paragraph of text
 
-This python code can be used to generate topics, questions, and answers from a
+This Python code can be used to generate topics, questions, and answers from a
 paragraph of text. This is a good way to generate ground truth knowledge about a
 topic from a trusted source.
 
