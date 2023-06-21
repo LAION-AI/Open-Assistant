@@ -39,7 +39,7 @@ export const MessageEmojiButton = ({
   );
 };
 
-type BaseMessageEmojiButtonPropsEmoji = PropsWithChildren<{
+type BaseMessageEmojiButtonProps = PropsWithChildren<{
   emoji: ElementType<any>;
   checked?: boolean;
   onClick?: () => void;
@@ -47,8 +47,6 @@ type BaseMessageEmojiButtonPropsEmoji = PropsWithChildren<{
   sx?: ButtonProps["sx"];
   label?: string;
 }>;
-
-type BaseMessageEmojiButtonProps = BaseMessageEmojiButtonPropsEmoji;
 
 export const BaseMessageEmojiButton = ({
   emoji: Emoji,
