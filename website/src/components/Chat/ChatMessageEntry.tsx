@@ -180,7 +180,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                 {state === "complete" && (
                   <>
                     <BaseMessageEmojiButton
-                      emoji={!isPlainText ? MarkdownOffIcon : MarkdownIcon}
+                      emoji={isPlainText ? MarkdownIcon : MarkdownOffIcon}
                       onClick={() => setIsPlainText(!isPlainText)}
                       label={t("plain_text")}
                     />
