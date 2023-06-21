@@ -1,5 +1,5 @@
 import { Button, ButtonProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
-import { ElementType, PropsWithChildren, ReactElement } from "react";
+import { ElementType, PropsWithChildren } from "react";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { MessageEmoji } from "src/types/Conversation";
 import { emojiIcons } from "src/types/Emoji";
@@ -41,7 +41,6 @@ export const MessageEmojiButton = ({
 
 type BaseMessageEmojiButtonPropsEmoji = PropsWithChildren<{
   emoji: ElementType<any>;
-  svgIcon?: never;
   checked?: boolean;
   onClick?: () => void;
   isDisabled?: boolean;
@@ -49,21 +48,10 @@ type BaseMessageEmojiButtonPropsEmoji = PropsWithChildren<{
   label?: string;
 }>;
 
-type BaseMessageEmojiButtonPropsSVG = PropsWithChildren<{
-  emoji?: never;
-  svgIcon?: ReactElement;
-  checked?: boolean;
-  onClick?: () => void;
-  isDisabled?: boolean;
-  sx?: ButtonProps["sx"];
-  label?: string;
-}>;
-
-type BaseMessageEmojiButtonProps = BaseMessageEmojiButtonPropsEmoji | BaseMessageEmojiButtonPropsSVG;
+type BaseMessageEmojiButtonProps = BaseMessageEmojiButtonPropsEmoji;
 
 export const BaseMessageEmojiButton = ({
   emoji: Emoji,
-  svgIcon,
   checked,
   onClick,
   isDisabled,
@@ -90,7 +78,7 @@ export const BaseMessageEmojiButton = ({
       }}
       color={isDisabled ? (checked ? "gray.700" : disabledColor) : undefined}
     >
-      {Emoji ? <Emoji style={{ height: "1em" }} /> : svgIcon}
+      <Emoji style={{ height: "1em" }} />
       {children}
     </Button>
   );

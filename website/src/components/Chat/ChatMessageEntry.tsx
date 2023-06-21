@@ -18,6 +18,8 @@ import { useTranslation } from "next-i18next";
 import { forwardRef, KeyboardEvent, memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { InferenceMessage } from "src/types/Chat";
 
+import { MarkdownIcon } from "../icons/Markdown";
+import { MarkdownOffIcon } from "../icons/MarkdownOff";
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
@@ -40,48 +42,6 @@ export type ChatMessageEntryProps = {
   onEncourageMessageClose: () => void;
   showFeedbackOptions: boolean;
 };
-
-export const Markdown = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="icon icon-tabler icon-tabler-markdown"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    stroke-width="1"
-    stroke="currentColor"
-    fill="none"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-    <path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
-    <path d="M7 15v-6l2 2l2 -2v6"></path>
-    <path d="M14 13l2 2l2 -2m-2 2v-6"></path>
-  </svg>
-);
-
-export const MarkdownOff = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="icon icon-tabler icon-tabler-markdown-off"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    stroke-width="1"
-    stroke="currentColor"
-    fill="none"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-    <path d="M9 5h10a2 2 0 0 1 2 2v10"></path>
-    <path d="M19 19h-14a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 1.85 -2"></path>
-    <path d="M7 15v-6l2 2l1 -1m1 1v4"></path>
-    <path d="M17.5 13.5l.5 -.5m-2 -1v-3"></path>
-    <path d="M3 3l18 18"></path>
-  </svg>
-);
 
 export const ChatMessageEntry = memo(function ChatMessageEntry({
   onVote,
@@ -220,7 +180,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                 {state === "complete" && (
                   <>
                     <BaseMessageEmojiButton
-                      svgIcon={isPlainText ? MarkdownOff : Markdown}
+                      emoji={!isPlainText ? MarkdownOffIcon : MarkdownIcon}
                       onClick={() => setIsPlainText(!isPlainText)}
                       label={t("plain_text")}
                     />
