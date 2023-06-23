@@ -15,9 +15,11 @@ import { Check, Copy, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { forwardRef, KeyboardEvent, memo, ReactNode, useCallback, useMemo, useRef } from "react";
+import { forwardRef, KeyboardEvent, memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { InferenceMessage } from "src/types/Chat";
 
+import { MarkdownIcon } from "../icons/Markdown";
+import { MarkdownOffIcon } from "../icons/MarkdownOff";
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
@@ -92,6 +94,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
 
   const isAssistant = message.role === "assistant";
   const [isEditing, setIsEditing] = useBoolean(false);
+  const [isPlainText, setIsPlainText] = useState<boolean>(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleEditSubmit = useCallback(() => {
@@ -130,6 +133,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
         isAssistant={isAssistant}
         usedPlugin={used_plugin}
         content={isEditing ? "" : content!}
+        isPlainText={isPlainText}
       >
         {!isAssistant && parentId !== null && (
           <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
@@ -175,6 +179,12 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
                 )}
                 {state === "complete" && (
                   <>
+                    <BaseMessageEmojiButton
+                      emoji={isPlainText ? MarkdownIcon : MarkdownOffIcon}
+                      onClick={() => setIsPlainText(!isPlainText)}
+                      label={t("plain_text")}
+                    />
+
                     {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} label={t("retry")} />}
                     {!hasCopied ? (
                       <BaseMessageEmojiButton emoji={Copy} onClick={onCopy} label={t("copy")} />
@@ -213,6 +223,7 @@ type PendingMessageEntryProps = {
   id?: string;
   "data-id"?: string;
   usedPlugin?: object;
+  isPlainText?: boolean;
 };
 
 export const messageEntryContainerProps = {
@@ -221,7 +232,7 @@ export const messageEntryContainerProps = {
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
-  { content, isAssistant, children, usedPlugin, ...props },
+  { content, isAssistant, children, usedPlugin, isPlainText, ...props },
   ref
 ) {
   const bgUser = "transparent";
@@ -245,6 +256,7 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       isAssistant={isAssistant}
       maxWidth={messageEntryContainerProps.maxWidth}
       containerProps={messageEntryContainerProps}
+      isPlainText={isPlainText}
       {...props}
     >
       {children}
