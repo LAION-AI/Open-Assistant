@@ -30,8 +30,8 @@ from oasst_backend.models import (
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
+from oasst_backend.utils import discord
 from oasst_backend.utils.database_utils import CommitMode, db_lang_to_postgres_ts_lang, managed_tx_method
-from oasst_backend.utils.discord import send_new_report_message
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
@@ -595,7 +595,7 @@ class PromptRepository:
                         message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
                     )
 
-                    send_new_report_message.delay(message=message, label_text=text_labels.text, user_id=self.user_id)
+                    discord.send_new_report_message(message=message, label_text=text_labels.text, user_id=self.user_id)
 
                 # update existing record for repeated updates (same user no task associated)
                 existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
