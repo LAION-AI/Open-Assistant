@@ -21,6 +21,10 @@ class Settings(pydantic.BaseSettings):
     chat_max_messages: int | None = None
     message_max_length: int | None = None
 
+    rate_limit: bool = True
+    rate_limit_messages_user_times: int = 20
+    rate_limit_messages_user_seconds: int = 600
+
     allowed_worker_compat_hashes: str = "*"
 
     @property
