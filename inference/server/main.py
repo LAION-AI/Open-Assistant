@@ -97,7 +97,9 @@ async def setup_rate_limiter():
         raise fastapi.HTTPException(f"Too Many Requests. Retry After {expire} seconds.", HTTP_429_TOO_MANY_REQUESTS)
 
     try:
-        client = redis.Redis(host=settings.redis_host, port=settings.redis_port, db="0", decode_responses=True)
+        client = redis.Redis(
+            host=settings.redis_host, port=settings.redis_port, db=settings.redis_ratelim_db, decode_responses=True
+        )
         logger.info(f"Connected to {client=}")
         await FastAPILimiter.init(client, http_callback=http_callback)
     except Exception:
