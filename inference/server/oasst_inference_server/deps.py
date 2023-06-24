@@ -59,8 +59,13 @@ async def manual_user_chat_repository(user_id: str):
 
 
 async def user_identifier(request: fastapi.Request) -> str:
-    """Identify a request by user based on api_key and user header"""
-    # TODO
+    """Identify a request by user based on auth header"""
+    trusted_client_token = request.headers.get("TrustedClient")
+    if trusted_client_token is not None:
+        return auth.get_user_id_from_trusted_client_token(trusted_client_token)
+
+    token = request.headers.get("Authorization")
+    return auth.get_user_id_from_auth_token(token)
 
 
 class UserRateLimiter(RateLimiter):
@@ -68,8 +73,3 @@ class UserRateLimiter(RateLimiter):
         self, times: int = 100, milliseconds: int = 0, seconds: int = 0, minutes: int = 1, hours: int = 0
     ) -> None:
         super().__init__(times, milliseconds, seconds, minutes, hours, user_identifier)
-
-    async def __call__(
-        self, request: fastapi.Request, response: fastapi.Response, user_id: str = Depends(auth.get_current_user_id)
-    ) -> None:
-        return await super().__call__(request, response)
