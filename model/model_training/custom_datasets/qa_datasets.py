@@ -45,6 +45,16 @@ def index_uasquad(example):
         answer = "Я не маю на це відповіді"
     return example["Context"] + " " + example["Question"], answer
 
+def index_financial(example):
+    if example["Answer"] is not None and len(example["Answer"]):
+        answer = example["Answer"]
+    else:
+        answer = "Chưa có thông tin về vấn đề này"
+
+    context = example["Context"] if example["Context"] is not None else ""
+    question = example["Question"] if example["Question"] is not None else ""
+
+    return context + " " + question, answer
 
 def index_trivia_qa_nocontext(example):
     # dummy return one randomly
@@ -124,6 +134,12 @@ class QADataset(Dataset):
         "ua_squad": {
             "index_fn": index_uasquad,
             "name": "FIdo-AI/ua-squad",
+            "params": {"field": "data"},
+            "no_val": True,
+        },
+        "financial": {
+            "index_fn": index_financial,
+            "name": "toanbku/financial",
             "params": {"field": "data"},
             "no_val": True,
         },

@@ -97,6 +97,10 @@ webgpt_dataset_only:
   datasets:
     - webgpt
 
+financial:
+  datasets:
+    - financial
+
 per_digit_tokens:
   per_digit_tokens: true
 
