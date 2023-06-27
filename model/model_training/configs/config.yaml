@@ -567,7 +567,6 @@ lora-llama-65b:
 
 pythia-70m-deduped:
   learning_rate: 8e-6
-  # model_name: EleutherAI/pythia-1b-deduped
   model_name: EleutherAI/pythia-70m-deduped
   weight_decay: 0.0
   max_length: 520
@@ -577,6 +576,7 @@ pythia-70m-deduped:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
   output_dir: pythia_model
+  dtype: float32
 
 pythia-1B:
   learning_rate: 8e-6
@@ -588,6 +588,7 @@ pythia-1B:
   gradient_accumulation_steps: 1
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 16
+  dtype: float32
 
 pythia-6.9B:
   learning_rate: 8e-6
