@@ -1,6 +1,7 @@
 from typing import Any
 
 import pydantic
+from pydantic import FilePath
 
 
 def split_keys_string(keys: str | None):
@@ -43,6 +44,9 @@ class Settings(pydantic.BaseSettings):
     postgres_user: str = "postgres"
     postgres_password: str = "postgres"
     postgres_db: str = "postgres"
+
+    insert_fake_data: bool = False
+    fake_data_path: FilePath | None = "/tmp/test_data/realistic/realistic_seed_data.json"
 
     database_uri: str | None = None
 

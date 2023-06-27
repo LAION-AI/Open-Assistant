@@ -1,4 +1,5 @@
 import asyncio
+import json
 import signal
 import sys
 
@@ -7,6 +8,12 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models, plugins
+from oasst_inference_server.models.fake_data_factories import (
+    DbChatFactory,
+    DbMessageFactory,
+    DbUserFactory,
+    DbWorkerFactory,
+)
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
@@ -117,6 +124,50 @@ app.include_router(configs.router)
 # mount builtin plugins to be hosted on this server
 for app_prefix, sub_app in plugins.plugin_apps.items():
     app.mount(path=settings.plugins_path_prefix + app_prefix, app=sub_app)
+
+
+if settings.insert_fake_data:
+
+    @app.on_event("startup")
+    async def insert_fake_data_event():
+        logger.warning("Inserting fake data into database (insert_fake_data is True)")
+        async with deps.manual_create_session() as session:
+            test_user_id = "test1"
+
+            if (
+                await session.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == test_user_id))
+            ).one_or_none() is None:
+                user_1 = DbUserFactory.build(
+                    id=test_user_id,
+                    display_name="testUserName1",
+                    provider_account_id="debug",
+                    deleted=False,
+                    provider="debug",
+                )
+                session.add(user_1)
+                await session.commit()
+            else:
+                logger.info(f"Fake user id {test_user_id} already exists.")
+
+            worker_1 = DbWorkerFactory.build()
+            session.add(worker_1)
+            await session.commit()
+
+            chat_1 = DbChatFactory.build(user_id=test_user_id)
+            session.add(chat_1)
+            await session.commit()
+
+            with open(settings.fake_data_path) as f:
+                dummy_messages_raw = json.load(f)
+
+            messages = [
+                DbMessageFactory.build(chat_id=chat_1.id, worker_id=worker_1.id, content=dm["text"], **dm)
+                for dm in dummy_messages_raw
+            ]
+            session.add_all(messages)
+
+            await session.commit()
+        logger.warning("Done inserting fake data into database")
 
 
 @app.on_event("startup")

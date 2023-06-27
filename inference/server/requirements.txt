@@ -11,6 +11,7 @@ google-auth-oauthlib
 gunicorn
 loguru
 nvidia-ml-py
+polyfactory
 prometheus-fastapi-instrumentator
 psutil
 pydantic
