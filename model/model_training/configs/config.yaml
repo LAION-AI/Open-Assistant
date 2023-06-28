@@ -604,7 +604,7 @@ vietcuna:
   gradient_accumulation_steps: 1
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 16
-  dtype: float32
+  dtype: bfloat16
 
 pythia-6.9B:
   learning_rate: 8e-6
