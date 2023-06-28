@@ -100,7 +100,8 @@ def load_oasst_export(
                 # their (ranked) replies as possible continuations.
                 return (
                     thread[-1].role == "prompter"
-                    and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                    # and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                    and thread[-1].replies is not None and len([r for r in thread[-1].replies if r.rank is not None]) > 1
                     and thread_filter(thread)
                 )
             elif mode == "rl":
