@@ -76,6 +76,13 @@ def talk(human_input: str, history: List[Tuple[str, str]], sep_token: str, prefi
             prefix += "".join(histories)
             # add sep at the end
         prefix += f"{ChatRole.prompter}{human_input}</s>{ChatRole.assistant}"
+    elif method == "vietcuna":
+        # prefix ="Bạn là một trợ lý hữu ích tên là FiAI được Dwarves Foundation đào tạo trên kho dữ liệu lớn, giờ đây bạn sẽ giúp người dùng trả lời câu hỏi ngắn gọn nhất có thể\n\n"
+        for question, answer in history:
+            histories.append("### Instruction: " + question + "\n### Response: ".format(bot_name) + answer + "\n")
+        if len(histories) > 0:
+            prefix += "\n".join(histories)
+        prefix += "### Instruction: " + human_input + "\n\n### Response: ".format(bot_name)
     else:
         for question, answer in history:
             histories.append("User: " + question + "\n\n{}: ".format(bot_name) + answer + "\n")
@@ -96,6 +103,8 @@ def process_output(output, method, bot_name):
     # elif method == "v3":
     #     answer = output.split(f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}")[-1]
     #     answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
+    elif method == "vietcuna":
+        answer = output.split("### Response: ")[-1].replace("</s>","")
     else:
         answer = output.split("\n\n{}:".format(bot_name))[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
@@ -103,9 +112,11 @@ def process_output(output, method, bot_name):
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-if method != "v2":
-    tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+# if method != "v2":
+#     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
+
+# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
 
 model.eval().cuda()
 
@@ -127,6 +138,7 @@ if __name__ == "__main__":
         if prompt == "!reset":
             histories = []
         else:
+            print('prompt received:', prompt)
             input_text = talk(prompt, histories, prefix)
             inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
             if "token_type_ids" in inputs:
