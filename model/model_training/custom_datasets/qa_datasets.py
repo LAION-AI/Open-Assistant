@@ -143,6 +143,12 @@ class QADataset(Dataset):
             "params": {"field": "data"},
             "no_val": True,
         },
+        "overfit": {
+            "index_fn": index_financial,
+            "name": "./overfit.json",
+            "params": {"field": "data"},
+            "no_val": True,
+        },
         "trivia_qa_nocontext": {
             "index_fn": index_trivia_qa_nocontext,
             "name": "trivia_qa",

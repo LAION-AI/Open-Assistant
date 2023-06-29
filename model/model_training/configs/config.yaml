@@ -101,6 +101,10 @@ financial:
   datasets:
     - financial
 
+overfit:
+  datasets:
+    - overfit
+
 per_digit_tokens:
   per_digit_tokens: true
 

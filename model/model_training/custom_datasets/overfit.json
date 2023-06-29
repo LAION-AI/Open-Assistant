@@ -1,0 +1,10 @@
+{
+  "version": "v0.0.1",
+  "data": [
+    {
+      "Question": "Tại sao tỷ lệ thất nghiệp ở Nga đang ở mức thấp nhất trong lịch sử?",
+      "Context": "Tờ Báo Nga (Rossiyskaya Gazeta) đã tìm câu trả lời cho câu hỏi: Vì sao tỷ lệ thất nghiệp ở Nga đang ở mức thấp nhất trong lịch sử? Theo đó, có yếu tố kinh tế xã hội và cả địa chính trị. Thứ nhất, doanh nghiệp mở rộng sản xuất, nhu cầu nhân sự tăng. Theo Avito Rabota, số lượng vị trí tuyển dụng trong lĩnh vực công nghiệp nói chung đã cao gấp đôi. Thiếu người thuộc nhiều ngành nghề khác nhau - từ kỹ sư thiết kế đến thợ hàn điện. Việc giảm nhập khẩu đã dẫn đến khối lượng công việc tăng mạnh, do đó nhu cầu bổ sung đối với các chuyên gia về cơ khí, đóng tàu, hóa dầu và sản xuất các cấu kiện kim loại. Thứ hai, tỷ lệ thất nghiệp giảm bởi một quá trình tự nhiên: lượng người nghỉ hưu đã giải phóng các công việc mà người khác có thể đảm nhận. Năm 2022, khoảng 1,9 triệu người Nga đến tuổi nghỉ hưu, trong khi chỉ có khoảng 1,4 triệu người bước vào độ tuổi lao động. Các chuyên gia của RBK cũng diễn giải, tỷ lệ thất nghiệp tối thiểu ở Nga từ vấn đề nhân khẩu học và việc làm bán thời gian, đồng thời cảnh báo về tình trạng cầu vượt cung, tỷ lệ thất nghiệp thấp cùng với sự thiếu hụt nhân sự có thể sẽ kìm hãm quá trình chuyển dịch cơ cấu của nền kinh tế.",
+      "Answer": "Theo các nguồn tin, tỷ lệ thất nghiệp ở Nga đang ở mức thấp nhất trong lịch sử vì sự mở rộng sản xuất của doanh nghiệp làm tăng nhu cầu nhân sự, đặc biệt là trong lĩnh vực công nghiệp."
+    }
+  ]
+}
