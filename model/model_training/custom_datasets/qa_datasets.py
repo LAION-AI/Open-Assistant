@@ -145,7 +145,7 @@ class QADataset(Dataset):
         },
         "overfit": {
             "index_fn": index_financial,
-            "name": "./overfit.json",
+            "name": "toanbku/overfit",
             "params": {"field": "data"},
             "no_val": True,
         },
