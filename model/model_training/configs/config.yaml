@@ -283,7 +283,7 @@ llama-7b:
   dtype: fp16
   log_dir: "llama_log_7b"
   learning_rate: 1e-5
-  model_name: /home/ubuntu/llama_hf/7B
+  model_name: "huggyllama/llama-7b"
   output_dir: llama_model_7b
   weight_decay: 0.0
   max_length: 2048
