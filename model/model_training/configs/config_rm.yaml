@@ -139,6 +139,8 @@ oasst-rm-1-pythia-1.4b:
   is_reward_model: true
   pooling: last
   datasets:
+    - oasst_export:
+        hf_dataset_name: toanbku/oa_financial
     # - oasst_export:
     #     lang: "en,es,de,fr"
     #     hf_dataset_name: OpenAssistant/oasst1
