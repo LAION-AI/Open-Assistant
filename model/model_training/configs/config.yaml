@@ -201,6 +201,15 @@ oasst_only:
   sort_by_length: false
   use_custom_sampler: false
 
+oasst_split:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "en"
+        hf_dataset_name: toanbku/oa_split_1000
+  sort_by_length: false
+  use_custom_sampler: false
+
 oa_financial:
   save_strategy: epoch
   datasets:
