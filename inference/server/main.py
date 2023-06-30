@@ -1,10 +1,13 @@
 import asyncio
+import math
 import signal
 import sys
 
 import fastapi
+import redis.asyncio as redis
 import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from oasst_inference_server import database, deps, models, plugins
 from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
@@ -12,6 +15,7 @@ from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME)
 
@@ -79,6 +83,27 @@ async def alembic_upgrade():
             logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
             await asyncio.sleep(timeout)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+@app.on_event("startup")
+async def setup_rate_limiter():
+    if not settings.rate_limit:
+        logger.warning("Skipping rate limiter setup on startup (rate_limit is False)")
+        return
+
+    async def http_callback(request: fastapi.Request, response: fastapi.Response, pexpire: int):
+        """Error callback function when too many requests"""
+        expire = math.ceil(pexpire / 1000)
+        raise fastapi.HTTPException(f"Too Many Requests. Retry After {expire} seconds.", HTTP_429_TOO_MANY_REQUESTS)
+
+    try:
+        client = redis.Redis(
+            host=settings.redis_host, port=settings.redis_port, db=settings.redis_ratelim_db, decode_responses=True
+        )
+        logger.info(f"Connected to {client=}")
+        await FastAPILimiter.init(client, http_callback=http_callback)
+    except Exception:
+        logger.exception("Failed to establish Redis connection")
 
 
 @app.on_event("startup")
