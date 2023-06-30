@@ -193,7 +193,7 @@ oasst_only:
   save_strategy: epoch
   datasets:
     - oasst_export:
-        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        lang: "en"
         hf_dataset_name: OpenAssistant/oasst1
         #input_file_path: 2023-04-12_oasst_ready.trees.jsonl.gz
         #top_k: 1
