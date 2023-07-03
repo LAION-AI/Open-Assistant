@@ -107,7 +107,7 @@
     "@types/node": "^20.2.5",
     "@types/react": "^18.2.14",
     "@types/react-syntax-highlighter": "^15.5.6",
-    "@typescript-eslint/eslint-plugin": "^5.59.11",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
     "assert": "^2.0.0",
     "babel-loader": "^9.1.2",
     "cross-env": "^7.0.3",
