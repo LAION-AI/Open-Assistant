@@ -23,16 +23,14 @@ refresh_scheme = APIKeyHeader(name="Refresh", auto_error=False, scheme_name="Ref
 trusted_client_scheme = APIKeyHeader(name="TrustedClient", auto_error=False, scheme_name="TrustedClient")
 
 
-def get_current_user_id(
-    token: str = Security(authorization_scheme), trusted_client_token: str = Security(trusted_client_scheme)
-) -> str:
-    """Get the current user ID by decoding the JWT token."""
-    if trusted_client_token is not None:
-        info: auth.TrustedClient = auth.TrustedClientToken(content=trusted_client_token).content
-        if info.api_key not in settings.trusted_api_keys_list:
-            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Unauthorized client")
-        return info.user_id
+def get_user_id_from_trusted_client_token(trusted_client_token: str) -> str:
+    info: auth.TrustedClient = auth.TrustedClientToken(content=trusted_client_token).content
+    if info.api_key not in settings.trusted_api_keys_list:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Unauthorized client")
+    return info.user_id
 
+
+def get_user_id_from_auth_token(token: str) -> str:
     if token is None or not token.startswith("Bearer "):
         logger.warning(f"Invalid token: {token}")
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
@@ -54,6 +52,16 @@ def get_current_user_id(
 
     user_id = payload.get("user_id")
     return user_id
+
+
+def get_current_user_id(
+    token: str = Security(authorization_scheme), trusted_client_token: str = Security(trusted_client_scheme)
+) -> str:
+    """Get the current user ID."""
+    if trusted_client_token is not None:
+        return get_user_id_from_trusted_client_token(trusted_client_token)
+
+    return get_user_id_from_auth_token(token)
 
 
 def create_access_token(user_id: str) -> str:

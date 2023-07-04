@@ -14,12 +14,17 @@ class Settings(pydantic.BaseSettings):
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
+    redis_ratelim_db: int = 1
 
     message_queue_expire: int = 60
     work_queue_max_size: int | None = None
 
     chat_max_messages: int | None = None
     message_max_length: int | None = None
+
+    rate_limit: bool = True
+    rate_limit_messages_user_times: int = 20
+    rate_limit_messages_user_seconds: int = 600
 
     allowed_worker_compat_hashes: str = "*"
 
