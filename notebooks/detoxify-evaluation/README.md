@@ -1,6 +1,6 @@
 # Detoxify evaluation
 
-[Detoxify](https://github.com/unitaryai/detoxify) is a open source model used to
+[Detoxify](https://github.com/unitaryai/detoxify) is an open source model used to
 identify prompts as toxic
 
 <img  src="https://raw.githubusercontent.com/unitaryai/detoxify/master/examples.png"  alt="Image from detoxify github that shows the example input/output of their model"  />

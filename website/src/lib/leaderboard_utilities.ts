@@ -11,16 +11,16 @@ export const updateUsersDisplayNames = <T extends { display_name: string; userna
 };
 
 export const updateUsersProfilePictures = async <T extends { auth_method: AuthMethod; username: string }>(
-  entires: T[]
+  entries: T[]
 ) => {
-  const frontendUserIds = await getBatchFrontendUserIdFromBackendUser(entires);
+  const frontendUserIds = await getBatchFrontendUserIdFromBackendUser(entries);
 
   const items = await prisma.user.findMany({
     where: { id: { in: frontendUserIds } },
     select: { image: true, id: true },
   });
 
-  return entires.map((entry, idx) => ({
+  return entries.map((entry, idx) => ({
     ...entry,
     // NOTE: findMany will return the values unsorted, which is why we have to 'find' here
     // TODO: Check why there is no image for a better fix

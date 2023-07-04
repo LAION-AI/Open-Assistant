@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 
-def reformat_csv_to_openassitant(df: pd.DataFrame) -> pd.DataFrame:
+def reformat_csv_to_openassistant(df: pd.DataFrame) -> pd.DataFrame:
     """
     Reformat the downloaded CSV into either Instruction or Text format
     so that it could be directly ingested into the training pipeline.
@@ -44,6 +44,6 @@ if __name__ == "__main__":
     input_csv = "zhihu.csv"
     # Create a pandas dataframe from your dataset file(s)
     df = pd.read_csv(input_csv)  # or any other way
-    df = reformat_csv_to_openassitant(df)
+    df = reformat_csv_to_openassistant(df)
     # Save the file in the Parquet format
     df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow", index=False)
