@@ -1,9 +1,10 @@
 import argparse
 import torch
 from datasets import load_dataset
-from model.model_training.models.patching_utils import load_peft_model
+from model.model_training.models.peft_modeling import load_peft_model
 from transformers import AutoTokenizer, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
 from matplotlib.pyplot import plt
+from typing import List 
 
 def load_model_tokenizer(model_name, peft_model=None, **model_args,):
     
@@ -16,6 +17,7 @@ def load_model_tokenizer(model_name, peft_model=None, **model_args,):
         tokenizer = LlamaTokenizer.from_pretrained(model_name)
     
     if peft_model is not None:
+        print("PEFT NOW")
         model = load_peft_model(model, peft_model, tokenizer)
     
     model.eval()
