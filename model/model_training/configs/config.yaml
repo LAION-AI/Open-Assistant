@@ -101,6 +101,10 @@ financial:
   datasets:
     - financial
 
+iapp_wiki_qa_squad_oa:
+  datasets:
+    - iapp_wiki_qa_squad_oa
+
 overfit:
   datasets:
     - overfit
