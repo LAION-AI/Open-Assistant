@@ -54,6 +54,32 @@ pythia_rlhf:
     dtype: fp16
     batch_size: 1
 
+vietcuna_rlhf:
+  triton_host_rm: localhost:8002/pythia-rm
+  triton_host_sft: localhost:8005/vietcuna-sft
+  rank_config:
+    is_reward_model: true
+    model_name: /home/ubuntu/OA/model/.saved_models/reward_model
+    cache_dir: /home/ubuntu/OA/model/model_training/.cache
+    pooling: last
+    residual_dropout: 0.01
+    use_flash_attention: false
+    dtype: fp16
+    batch_size: 8
+
+  sft_config:
+    is_reward_model: false
+    model_name: /home/ubuntu/OA/model/.saved_models/sft_model/checkpoint-3000
+    cache_dir: /home/ubuntu/OA/model/model_training/.cache
+    quantization: false
+    seq2seqmodel: false
+    freeze_layer:
+    num_layers_unfrozen: -1
+    residual_dropout: 0.2
+    use_flash_attention: false
+    dtype: fp16
+    batch_size: 1
+
 llama_rlhf:
   triton_host_rm: localhost:8002/OpenAssistant-oasst-rm-2-pythia-6.9b-epoch-1
   triton_host_sft: localhost:8005/OpenAssistant-oasst-sft-7e2-llama-30b
