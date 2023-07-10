@@ -174,7 +174,6 @@ class TokenizerConfig(NamedTuple):
 TOKENIZER_CONFIGS = {
     "galactica": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>")),
     "vietcuna": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
-    "vietcuna-7b": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
     "llama-7b": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
