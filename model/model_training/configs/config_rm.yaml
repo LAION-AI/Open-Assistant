@@ -140,7 +140,7 @@ oasst-rm-1-pythia-1.4b:
   pooling: last
   datasets:
     - oasst_export:
-        hf_dataset_name: toanbku/oa_financial
+        hf_dataset_name: toanbku/oa-test
     # - oasst_export:
     #     lang: "en,es,de,fr"
     #     hf_dataset_name: OpenAssistant/oasst1

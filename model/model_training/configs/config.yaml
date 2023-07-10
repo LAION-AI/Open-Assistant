@@ -283,6 +283,12 @@ oasst-top1:
         val_split: 0.05
         top_k: 1
 
+oasst_test:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        hf_dataset_name: toanbku/oa-test
+
 falcon-7b:
   dtype: bf16
   log_dir: "llama_log_7b"
