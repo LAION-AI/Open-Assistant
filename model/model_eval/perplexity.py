@@ -146,7 +146,7 @@ if __name__ == "__main__":
     filename = args.get("model_name").split('/')[-1]  
     with open(f"{filename}-perplexity.json", "w") as file:
         json.dump(perplexity_dict, file, indent=4)
-    fig = plt.plot(perplexity_dict.keys(), perplexity_dict.values(),".-")
+    fig = plt.plot(perplexity_dict.keys(), perplexity_dict.values(),".-", label=filename)
     plt.xlabel("Number of tokens")
     plt.ylabel("Perplexity")
     plt.savefig(f"{filename}.png")
