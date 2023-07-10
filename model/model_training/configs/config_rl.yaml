@@ -81,6 +81,7 @@ vietcuna_rlhf:
     residual_dropout_lima: false
     dtype: fp16
     batch_size: 1
+    peft_type: "lora"
 
 llama_rlhf:
   triton_host_rm: localhost:8002/OpenAssistant-oasst-rm-2-pythia-6.9b-epoch-1
