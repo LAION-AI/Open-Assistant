@@ -32,7 +32,7 @@ pythia_rlhf:
   rank_config:
     is_reward_model: true
     model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-10000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
-    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    cache_dir: /home/ubuntu/OA/model/model_training/.cache
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
@@ -44,7 +44,7 @@ pythia_rlhf:
     model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
     # model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
     # model_name: OpenAssistant/llama_30b_sft-2_test
-    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    cache_dir: /home/ubuntu/OA/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
     freeze_layer:
