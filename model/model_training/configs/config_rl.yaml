@@ -14,6 +14,7 @@ defaults_rlhf:
   sft_config:
   debug: false
   dtype: fp16
+  residual_dropout_lima: false
 
 oasst_export_latin_cyrillic_rlhf:
   datasets:
