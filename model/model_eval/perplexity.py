@@ -32,7 +32,7 @@ class Perplexity:
         self,
         model,
         tokenizer,
-        batch_size=16,
+        batch_size=8,
     ):
         self.model = model
         self.tokenizer = tokenizer 
