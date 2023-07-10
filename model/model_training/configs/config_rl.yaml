@@ -14,7 +14,6 @@ defaults_rlhf:
   sft_config:
   debug: false
   dtype: fp16
-  residual_dropout_lima: false
 
 oasst_export_latin_cyrillic_rlhf:
   datasets:
@@ -65,6 +64,7 @@ vietcuna_rlhf:
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
+    residual_dropout_lima: false
     dtype: fp16
     batch_size: 8
 
@@ -78,6 +78,7 @@ vietcuna_rlhf:
     num_layers_unfrozen: -1
     residual_dropout: 0.2
     use_flash_attention: false
+    residual_dropout_lima: false
     dtype: fp16
     batch_size: 1
 
