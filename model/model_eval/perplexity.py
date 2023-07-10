@@ -19,7 +19,6 @@ def load_model_tokenizer(model_name, peft_model=None, **model_args,):
         tokenizer = LlamaTokenizer.from_pretrained(model_name)
     
     if peft_model is not None:
-        print("PEFT NOW")
         model = load_peft_model(model, peft_model, tokenizer)
     
     model.eval()
