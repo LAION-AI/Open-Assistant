@@ -107,6 +107,7 @@ llama_rlhf:
     residual_dropout: 0.0
     use_flash_attention: true
     dtype: fp16
+    peft_type: "lora"
 
 debug_rlhf:
   rank_model: pythia_reward_model/checkpoint-50
