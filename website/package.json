@@ -84,7 +84,7 @@
     "remark-math": "^5.1.1",
     "sharp": "^0.32.1",
     "simplebar-react": "^3.2.4",
-    "swr": "^2.1.5",
+    "swr": "^2.2.0",
     "tailwindcss": "^3.3.2",
     "use-debounce": "^9.0.4",
     "usehooks-ts": "^2.9.1"
