@@ -178,40 +178,54 @@ or run with:
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
             
         
-from .RWNTKScaledRope import RWNTKScaledRotary
-ROPE_DICT = {
-    "RWForCausalLM":{
-        "ntk": RWNTKScaledRotary
-    }
-}
+from .rope import RWNTKScaledRope, LlamaLinearScaledRope, LlamaNTKScaledRope, LlamaDynamicScaledRotaryEmbedding
 from transformers import AutoConfig
-import numpy as np
             
 class RopePatch:
     
-    def __init__(self, training_config):
-        if training_config.superhot:
-            self.do_patch = True
-            self.args = training_config.superhot_config
-            rope_type = self.args.pop("type")
-            config = AutoConfig.from_pretrained(training_config.model_name, trust_remote_code=True)
-            architecture = np.intersect1d(config.architectures, list(ROPE_DICT.keys()))
-            if architecture:
-                self.model_name = architecture[0]
-                self.patch_fun = ROPE_DICT.get(self.model_name)[rope_type]
+    def __init__(self, model_name, **kwargs):
+
+        self.args = kwargs
+        rope_type = self.args.pop("type")
+        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+        architecture = config.architectures
+        if architecture:
+            self.model_name = architecture[0]
+            if "RWForCausalLM" in architecture:
+                self.architecture = "RWForCausalLM"
+                if rope_type == "ntk":
+                    self.patch_fun = RWNTKScaledRope
+                else:
+                    raise NotImplementedError()
+            elif "LlamaForCausalLM" in architecture:
+                self.architecture = "LlamaForCausalLM"
+                if rope_type == "linear":
+                    self.patch_fun = LlamaLinearScaledRope
+                elif rope_type == "ntk":
+                    self.patch_fun = LlamaNTKScaledRope
+                elif rope_type == "dynamic-ntk":
+                    self.patch_fun = LlamaDynamicScaledRotaryEmbedding
+                else:
+                    raise NotImplementedError()
             else:
                 raise NotImplementedError()
-        else:
-            self.do_patch = False
 
+
+    @classmethod
+    def from_config(cls, config):
+        
+        model_name  = config.model_name
+        args = config.superhot_config
+        return cls(model_name, **args)
         
     def patch(self, model):
         
-        if self.do_patch:
-            if self.model_name == "RWForCausalLM":
-                self.patch_rw_model(model, **self.args)
-            else:
-                raise NotImplementedError()
+        if self.architecture == "RWForCausalLM":
+            self.patch_rw_model(model, **self.args)
+        elif self.architecture == "LlamaForCausalLM":
+            self.patch_llama_model(model, **self.args)
+        else:
+            raise NotImplementedError()
                 
     
     def patch_rw_model(self, model, **kwargs):
@@ -220,7 +234,11 @@ class RopePatch:
             each.self_attention.maybe_rotary = self.patch_fun(model.config.head_dim, **kwargs)
     
             
-            
+    def patch_llama_model(self, model, **kwargs):
+        
+        kwargs.update({"device":model.device})
+        for each in model.model.layers:
+            each.self_attn.rotary_emb = self.patch_fun(each.self_attn.head_dim, **kwargs)
             
             
         
