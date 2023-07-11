@@ -419,8 +419,9 @@ def main():
     model = get_model(training_conf, tokenizer)
     
     from model_training.models.patching import RopePatch
-    superhot = RopePatch(training_conf)
-    superhot.patch(model)
+    superhot = RopePatch.from_config(training_conf) if training_conf.superhot else None
+    if superhot:
+        superhot.patch(model)
 
     if training_conf.peft_model:
         print("Using PEFT model")
