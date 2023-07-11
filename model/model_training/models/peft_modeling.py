@@ -47,10 +47,12 @@ def peft_model(model, peft_type="lora", int8_training=False, gradient_checkpoint
         config = LoraConfig(
             r=16,
             lora_alpha=32,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+            target_modules=["query_key_value"],
             lora_dropout=0.05,
             bias="none",
             task_type="CAUSAL_LM",
+            inference_mode= False,
+
         )
     elif peft_type == "prefix-tuning":
         config = PrefixTuningConfig(
