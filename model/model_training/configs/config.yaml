@@ -807,7 +807,7 @@ patching-test:
   log_wandb: true
   peft_model: true
   peft_type: "lora"
-  superhot: true 
+  superhot: true
   superhot_config:
     type: linear
     scale: 2

@@ -417,8 +417,9 @@ def main():
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     model = get_model(training_conf, tokenizer)
-    
+
     from model_training.models.patching import RopePatch
+
     superhot = RopePatch.from_config(training_conf) if training_conf.superhot else None
     if superhot:
         superhot.patch(model)

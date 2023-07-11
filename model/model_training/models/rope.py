@@ -1,12 +1,11 @@
-
 import torch
-from typing import Optional
 
 
 # rotary pos emb helpers (torch.jit.script does not seem to support staticmethod...)
 def rotate_half(x):
     x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2 :]
     return torch.cat((-x2, x1), dim=x1.ndim - 1)  # dim=-1 triggers a bug in torch < 1.8.0
+
 
 class RWNTKScaledRope(torch.nn.Module):
 
@@ -19,11 +18,11 @@ class RWNTKScaledRope(torch.nn.Module):
         self,
         head_dim: int,
         base=10000,
-        alpha:int=2,
+        alpha: int = 2,
     ):
         super().__init__()
         self.alpha = alpha
-        base = base * self.alpha ** (head_dim / (head_dim-2))
+        base = base * self.alpha ** (head_dim / (head_dim - 2))
         inv_freq = 1.0 / (base ** (torch.arange(0, head_dim, 2).float() / head_dim))
         self.register_buffer("inv_freq", inv_freq, persistent=False)
         self.head_dim = head_dim
@@ -95,13 +94,12 @@ class LlamaLinearScaledRope(torch.nn.Module):
             self.cos_cached[:, :, :seq_len, ...].to(dtype=x.dtype),
             self.sin_cached[:, :, :seq_len, ...].to(dtype=x.dtype),
         )
-        
 
 
 class LlamaNTKScaledRope(torch.nn.Module):
     def __init__(self, dim, max_position_embeddings=2048, base=10000, alpha=1, device=None):
         super().__init__()
-        base = base * alpha ** (dim / (dim-2))
+        base = base * alpha ** (dim / (dim - 2))
         inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float().to(device) / dim))
         self.register_buffer("inv_freq", inv_freq)
 
@@ -130,9 +128,7 @@ class LlamaNTKScaledRope(torch.nn.Module):
             self.cos_cached[:, :, :seq_len, ...].to(dtype=x.dtype),
             self.sin_cached[:, :, :seq_len, ...].to(dtype=x.dtype),
         )
-        
-        
-import math
+
 
 class LlamaDynamicScaledRotaryEmbedding(torch.nn.Module):
     def __init__(self, dim, max_position_embeddings=2048, base=10000, ntk=False, device=None):
@@ -160,7 +156,9 @@ class LlamaDynamicScaledRotaryEmbedding(torch.nn.Module):
         if seq_len > self.max_seq_len_cached:
             self.max_seq_len_cached = seq_len
             if self.ntk:
-                base = self.base * ((self.ntk * seq_len / self.max_position_embeddings) - (self.ntk - 1)) ** (self.dim / (self.dim-2))
+                base = self.base * ((self.ntk * seq_len / self.max_position_embeddings) - (self.ntk - 1)) ** (
+                    self.dim / (self.dim - 2)
+                )
                 inv_freq = 1.0 / (base ** (torch.arange(0, self.dim, 2).float().to(x.device) / self.dim))
                 self.register_buffer("inv_freq", inv_freq)
             t = torch.arange(self.max_seq_len_cached, device=x.device, dtype=self.inv_freq.dtype)
