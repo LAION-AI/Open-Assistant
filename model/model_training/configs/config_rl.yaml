@@ -70,7 +70,7 @@ vietcuna_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: /home/ubuntu/OA/model/.saved_models/sft_model/checkpoint-3000
+    model_name: toanbku/vc-sft
     cache_dir: /home/ubuntu/OA/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
