@@ -176,3 +176,54 @@ or run with:
         if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
+            
+        
+from .RWNTKScaledRope import RWNTKScaledRotary
+ROPE_DICT = {
+    "RWForCausalLM":{
+        "ntk": RWNTKScaledRotary
+    }
+}
+from transformers import AutoConfig
+import numpy as np
+            
+class RopePatch:
+    
+    def __init__(self, training_config):
+        if training_config.superhot:
+            self.do_patch = True
+            self.args = training_config.superhot_config
+            rope_type = self.args.pop("type")
+            config = AutoConfig.from_pretrained(training_config.model_name, trust_remote_code=True)
+            architecture = np.intersect1d(config.architectures, list(ROPE_DICT.keys()))
+            if architecture:
+                self.model_name = architecture[0]
+                self.patch_fun = ROPE_DICT.get(self.model_name)[rope_type]
+            else:
+                raise NotImplementedError()
+        else:
+            self.do_patch = False
+
+        
+    def patch(self, model):
+        
+        if self.do_patch:
+            if self.model_name == "RWForCausalLM":
+                self.patch_rw_model(model, **self.args)
+            else:
+                raise NotImplementedError()
+                
+    
+    def patch_rw_model(self, model, **kwargs):
+        
+        for each in model.transformer.h:
+            each.self_attention.maybe_rotary = self.patch_fun(model.config.head_dim, **kwargs)
+    
+            
+            
+            
+            
+        
+        
+    
+    
