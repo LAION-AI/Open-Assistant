@@ -331,6 +331,7 @@ def main():
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         tokenizer_sanity_check(tokenizer)
 
+    print("POINT 1")
     train_collate_fn = DialogueDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
@@ -362,7 +363,6 @@ def main():
     )
 
     train, evals = get_dataset(training_conf)
-
     show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (
         not training_conf.deepspeed or training_conf.local_rank == 0
     )
@@ -416,8 +416,11 @@ def main():
         sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-
     model = get_model(training_conf, tokenizer)
+    
+    from model_training.models.patching import RopePatch
+    superhot = RopePatch(training_conf)
+    superhot.patch(model)
 
     if training_conf.peft_model:
         print("Using PEFT model")
