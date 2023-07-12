@@ -40,14 +40,12 @@
     "desc": "Pomagajte izboljšati Open Assistant odgovore med konverzacijami z ostalimi uporabniki.",
     "overview": "Sledeče odgovore uporabnikov razvrstite od najboljših do najslabših, začenši z najboljšimi in končavši z najslabšimi",
     "unchanged_title": "Vrstni red nespremenjen",
-
     "unchanged_message": "Niste spremenili vrstnega reda ukazov. Ali ste prepričani, da želite nadaljevati?",
     "continue_anyway": "Nadaljujte vseeno"
   },
   "rank_assistant_replies": {
     "label": "Razvrstite odgovore Asistenta",
     "desc": "Ocena ukazov podeljena s strani Open Assistant bazira glede na njihovo točnost in berljivost.",
-
     "overview": "Sledeče odgovore Asistenta razvrstite od najboljših do najslabših, začenši z najboljšimi in končavši z najslabšimi.",
     "unchanged_title": "Vrstni red nespremenjen.",
     "unchanged_message": "Niste spremenili vrstnega reda ukazov. Ali ste prepričani, da želite nadaljevati?",
@@ -94,7 +92,6 @@
   "submitted_as": "To bo predloženo kot {{submit_lang}}",
   "tab_write": "Vpišite",
   "tab_preview": "Predogled",
-
   "writing_wrong_langauge_a_b": "Zdi se, da pišete v {{detected_lang}} vendar bo to predloženo kot {{submit_lang}}.",
   "not_rankable": "Vsi odgovori so dejansko napačni in jih ni mogoče uvrstiti."
 }
