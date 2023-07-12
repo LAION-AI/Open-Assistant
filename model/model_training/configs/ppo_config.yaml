@@ -9,7 +9,7 @@ train:
   trainer: "CustomPPOTrainer"
   tracker: wandb
   project_name: rlhf
-  entity_name: open-assistant
+  entity_name: df-research
 
 model:
   model_path:

@@ -22,7 +22,7 @@ oasst_export_latin_cyrillic_rlhf:
         lang: "en"
         #top_k: 2
         #input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
-        input_file_path: 2023-04-08_ready_with_prompt_lottery_en.jsonl.gz
+        input_file_path: 2023-04-12_oasst_all.trees.jsonl.gz
   sort_by_length: false
   use_custom_sampler: false
 
@@ -38,6 +38,7 @@ pythia_rlhf:
     use_flash_attention: false
     dtype: fp16
     batch_size: 8
+    residual_dropout_lima: false
 
   sft_config:
     is_reward_model: false
@@ -53,6 +54,8 @@ pythia_rlhf:
     use_flash_attention: false
     dtype: fp16
     batch_size: 1
+    peft_type: "lora"
+    residual_dropout_lima: false
 
 vietcuna_rlhf:
   triton_host_rm: localhost:8002/pythia-rm
@@ -65,7 +68,7 @@ vietcuna_rlhf:
     residual_dropout: 0.01
     use_flash_attention: false
     residual_dropout_lima: false
-    dtype: fp16
+    dtype: bfloat16
     batch_size: 8
 
   sft_config:
@@ -79,7 +82,7 @@ vietcuna_rlhf:
     residual_dropout: 0.2
     use_flash_attention: false
     residual_dropout_lima: false
-    dtype: fp16
+    dtype: bfloat16
     batch_size: 1
     peft_type: "lora"
 

@@ -1,6 +1,6 @@
 compute_environment: LOCAL_MACHINE
 deepspeed_config:
-  deepspeed_config_file: /mnt/data/Open-Assistant-RLHF/model/model_training/configs/deepspeed_rl.json
+  deepspeed_config_file: /home/ubuntu/OA/model/model_training/configs/deepspeed_rl.json
   zero3_init_flag: false
 distributed_type: DEEPSPEED
 downcast_bf16: "no"
