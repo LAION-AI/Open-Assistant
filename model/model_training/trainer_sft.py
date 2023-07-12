@@ -425,7 +425,10 @@ def main():
     if training_conf.peft_model:
         print("Using PEFT model")
         model = peft_model(
-            model, peft_type=training_conf.peft_type, gradient_checkpointing=training_conf.gradient_checkpointing
+            model,
+            model_name=training_conf.model_name,
+            peft_type=training_conf.peft_type,
+            gradient_checkpointing=training_conf.gradient_checkpointing,
         )
 
     if training_conf.quantization:
@@ -447,6 +450,8 @@ def main():
         import wandb
 
         wandb_name = training_conf.model_name.replace(os.getenv("HOME", "/home/ubuntu"), "")
+        if training_conf.peft_model:
+            wandb_name = f"peft-{training_conf.peft_type}-{wandb_name}"
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
