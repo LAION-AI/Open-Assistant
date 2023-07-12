@@ -9,9 +9,8 @@ def rotate_half(x):
 
 class RWNTKScaledRope(torch.nn.Module):
 
-    """Implementation of RotaryEmbedding from GPT-NeoX.
-    This implementation is design to operate on queries and keys that are compatible with
-    [batch_size, n_heads_per_partition, seq_len, head_dim] (e.g. MinGPTAttention format).
+    """
+    NTK-Scaled RoPE for RefinedWebModel
     """
 
     def __init__(
@@ -61,6 +60,10 @@ class RWNTKScaledRope(torch.nn.Module):
 
 
 class LlamaLinearScaledRope(torch.nn.Module):
+    """
+    reference: https://huggingface.co/kaiokendev/superhot-13b-8k-no-rlhf-test
+    """
+
     def __init__(self, dim, max_position_embeddings=2048, base=10000, scale=1, device=None):
         super().__init__()
         self.scale = 1 / scale
@@ -97,6 +100,11 @@ class LlamaLinearScaledRope(torch.nn.Module):
 
 
 class LlamaNTKScaledRope(torch.nn.Module):
+
+    """
+    reference: https://github.com/jquesnelle/scaled-rope
+    """
+
     def __init__(self, dim, max_position_embeddings=2048, base=10000, alpha=1, device=None):
         super().__init__()
         base = base * alpha ** (dim / (dim - 2))
@@ -131,6 +139,10 @@ class LlamaNTKScaledRope(torch.nn.Module):
 
 
 class LlamaDynamicScaledRotaryEmbedding(torch.nn.Module):
+    """
+    reference: https://github.com/jquesnelle/scaled-rope
+    """
+
     def __init__(self, dim, max_position_embeddings=2048, base=10000, ntk=False, device=None):
         super().__init__()
         self.ntk = ntk
