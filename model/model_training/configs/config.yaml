@@ -97,9 +97,6 @@ webgpt_dataset_only:
   datasets:
     - webgpt
 
-instruction_datasets:
-  datasets:
-    - dolly15k
 per_digit_tokens:
   per_digit_tokens: true
 
@@ -783,7 +780,7 @@ debug:
   num_train_epochs: 0.2
   dtype: fp32
 
-patching-test:
+rope_scaling_test:
   dtype: bf16
   log_dir: "llama_log_7b"
   learning_rate: 1e-5
