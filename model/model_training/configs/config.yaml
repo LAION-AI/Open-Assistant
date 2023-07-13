@@ -283,11 +283,11 @@ oasst-top1:
         val_split: 0.05
         top_k: 1
 
-oasst_test:
+oasst_df:
   save_strategy: epoch
   datasets:
     - oasst_export:
-        hf_dataset_name: toanbku/oa-test
+        hf_dataset_name: toanbku/oa-df
 
 falcon-7b:
   dtype: bf16
@@ -674,8 +674,8 @@ pythia-12b-pretrain:
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
-  eval_steps: 251
-  save_steps: 500
+  eval_steps: 100
+  save_steps: 1000
   num_train_epochs: 1
   save_total_limit: 2
   deepspeed_config: configs/zero_config_pretrain.json
