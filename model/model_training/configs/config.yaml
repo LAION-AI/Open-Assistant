@@ -689,13 +689,13 @@ reference-pythia-12b:
   output_dir: pythia_model_12b
   weight_decay: 0.0
   max_length: 2048
-  warmup_steps: 100
+  warmup_steps: 10
   gradient_checkpointing: true
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
   eval_steps: 100
-  save_steps: 1000
+  save_steps: 400
   num_train_epochs: 8
   save_total_limit: 4
 
