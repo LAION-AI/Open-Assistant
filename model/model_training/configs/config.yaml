@@ -287,6 +287,7 @@ oasst_df:
   save_strategy: epoch
   datasets:
     - oasst_export:
+        lang: "en"
         hf_dataset_name: toanbku/oa-df
 
 falcon-7b:
