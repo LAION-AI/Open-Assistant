@@ -682,7 +682,7 @@ pythia-12b-pretrain:
   deepspeed_config: configs/zero_config_pretrain.json
 
 reference-pythia-12b:
-  dtype: float32
+  dtype: fp16
   log_dir: "pythia_log_12b"
   learning_rate: 6e-6
   model_name: EleutherAI/pythia-12b-deduped
