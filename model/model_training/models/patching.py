@@ -6,12 +6,13 @@ from typing import Callable, Optional
 
 import torch.nn as nn
 import transformers
-from transformers import GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
+from transformers import AutoConfig, GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 
 from .patching_llama import llama_forward_with_flash_attn
 from .patching_neox import neox_forward_with_flash_attn
 from .reward_model import GPTNeoXRewardModel
+from .rope import LlamaDynamicScaledRotaryEmbedding, LlamaLinearScaledRope, LlamaNTKScaledRope, RWNTKScaledRope
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
@@ -176,3 +177,54 @@ or run with:
         if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
+
+
+class RopePatch:
+    def __init__(self, model_name, **kwargs):
+        self.args = kwargs
+        rope_type = self.args.pop("type")
+        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+        architecture = config.architectures
+        if architecture:
+            self.model_name = architecture[0]
+            if "RWForCausalLM" in architecture:
+                self.architecture = "RWForCausalLM"
+                if rope_type == "ntk":
+                    self.patch_fun = RWNTKScaledRope
+                else:
+                    raise NotImplementedError()
+            elif "LlamaForCausalLM" in architecture:
+                self.architecture = "LlamaForCausalLM"
+                if rope_type == "linear":
+                    self.patch_fun = LlamaLinearScaledRope
+                elif rope_type == "ntk":
+                    self.patch_fun = LlamaNTKScaledRope
+                elif rope_type == "dynamic-ntk":
+                    self.patch_fun = LlamaDynamicScaledRotaryEmbedding
+                else:
+                    raise NotImplementedError()
+            else:
+                raise NotImplementedError()
+
+    @classmethod
+    def from_config(cls, config):
+        model_name = config.model_name
+        args = config.superhot_config
+        return cls(model_name, **args)
+
+    def patch(self, model):
+        if self.architecture == "RWForCausalLM":
+            self.patch_rw_model(model, **self.args)
+        elif self.architecture == "LlamaForCausalLM":
+            self.patch_llama_model(model, **self.args)
+        else:
+            raise NotImplementedError()
+
+    def patch_rw_model(self, model, **kwargs):
+        for each in model.transformer.h:
+            each.self_attention.maybe_rotary = self.patch_fun(model.config.head_dim, **kwargs)
+
+    def patch_llama_model(self, model, **kwargs):
+        kwargs.update({"device": model.device})
+        for each in model.model.layers:
+            each.self_attn.rotary_emb = self.patch_fun(each.self_attn.head_dim, **kwargs)
