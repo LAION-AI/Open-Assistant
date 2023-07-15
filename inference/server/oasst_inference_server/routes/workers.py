@@ -133,6 +133,7 @@ class HandleWorkerContext(NamedTuple):
         return cls(
             websocket=websocket,
             worker_id=worker_id,
+            worker_info=worker_info,
             work_queue=work_queue,
             blocking_work_queue=blocking_work_queue
         )
@@ -176,20 +177,13 @@ class FuturesManager:
         future = self._as_typed_future(FutureType.WORKER_RESPONSE, worker_utils.receive_worker_response(websocket=self._context.websocket))
         self._futures.add(future)
 
-    def _as_typed_future(self, future_type: FutureType, awaitable: Awaitable[AwaitResult]) -> asyncio.Future:
-        async def wrapper():
-            result = await awaitable
-            return future_type, result
-
-        return asyncio.ensure_future(wrapper)
-
-    async def wait_for_event_our_timeout(self):
+    async def wait_for_event_or_timeout(self):
         completed_futures, pending_futures = await asyncio.wait(
             self._futures, timeout=settings.worker_ping_interval, return_when=asyncio.FIRST_COMPLETED
         )
         self._futures = pending_futures
 
-        return (future.result() for future in completed_futures)
+        return [future.result() for future in completed_futures]
 
     def cancel_all(self):
         logger.info(f"Cancelling {len(self._futures)} pending futures")
@@ -198,6 +192,14 @@ class FuturesManager:
                 ftr.cancel()
             except Exception:
                 logger.warning("Error while cancelling pending future")
+    
+    def _as_typed_future(self, future_type: FutureType, awaitable: Awaitable[AwaitResult]) -> asyncio.Future:
+        async def wrapper():
+            result = await awaitable
+            return future_type, result
+        
+        # Note: important to call the wrapper to create the coroutine
+        return asyncio.ensure_future(wrapper())
 
 
 class SessionManager:
@@ -220,6 +222,7 @@ class SessionManager:
 
 
     async def _add_worker_connect_event(
+        self,
         session: database.AsyncSession,
         worker_id: str,
         worker_info: inference.WorkerInfo,
@@ -345,11 +348,12 @@ async def handle_worker(
     protocol_version: str = worker_utils.protocol_version_header,
 ):
     await websocket.accept()
-    context = await HandleWorkerContext.build(websocket, api_key, protocol_version)
-    futures = FuturesManager(context)
-    session = SessionManager(context)
+    
 
     try:
+        context = await HandleWorkerContext.build(websocket, api_key, protocol_version)
+        futures = FuturesManager(context)
+        session = SessionManager(context)   
         await session.init()
         futures.ensure_listening_for_work_requests()
         futures.ensure_listening_to_worker_responses()
@@ -359,14 +363,14 @@ async def handle_worker(
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 raise WorkerDisconnectException("Worker disconnected")
 
-            results = await futures.wait_for_event_our_timeout()
+            results = await futures.wait_for_event_or_timeout()
             for type_, result in results:
                 if type_ == FutureType.WORK_REQUEST:
                     _, message_id = result
                     await _handle_work_request(message_id, context, futures)
                 elif type_ == FutureType.WORKER_RESPONSE:
                     worker_response = cast(inference.WorkerResponse, result)
-                    await _handle_worker_response(worker_response, futures)
+                    await _handle_worker_response(worker_response, context, futures, session)
                 else:
                     raise ValueError(f"Unexpected future type: {type_}")
 
