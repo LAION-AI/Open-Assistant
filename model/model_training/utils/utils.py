@@ -432,3 +432,22 @@ def process_output(output: str, method: str = "v2", bot_name: str = "Joi") -> st
         answer = output.split("\n\n{}:".format(bot_name))[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
     return answer
+
+def merge_dicts(default:dict, config:dict):
+    """
+    merge default dict with config dict to override params
+    """
+    for k, v in default.items():
+        if k not in config.keys():
+            config.update({k:v})
+    
+    return config
+
+def get_all_linear_layers(model):
+    
+    layers = set()
+    for name, module in model.named_parameters():
+        if isinstance(module, torch.nn.Linear):
+            layers.add(name.split('.')[-1])
+            
+    return layers

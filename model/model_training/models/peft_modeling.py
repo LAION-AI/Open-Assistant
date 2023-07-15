@@ -3,7 +3,7 @@ from pathlib import Path
 
 import torch
 from huggingface_hub import hf_hub_download
-from model_training.utils.utils import get_model, get_tokenizer
+from model_training.utils.utils import get_model, get_tokenizer, get_all_linear_layers, merge_dicts
 from peft import LoraConfig, PeftModel, PrefixTuningConfig, get_peft_model, prepare_model_for_int8_training
 
 
@@ -46,17 +46,6 @@ def prepare_model_for_gradient_checkpointing(model):
     return model
 
 
-def get_all_linear_layers(model):
-    
-    layers = set()
-    for name, module in model.named_parameters():
-        if isinstance(module, torch.nn.Linear):
-            layers.add(name.split('.')[-1])
-            
-    return layers
-
-
-
 def peft_model(model, config):
     
     peft_config = config.peft_config
@@ -65,7 +54,7 @@ def peft_model(model, config):
         default_args = {"r":16, "lora_alpha":32, "target_modules":"all",
             "lora_dropout":0.05, "bias":"none", "task_type":"CAUSAL_LM",
             "modules_to_save":["wte","lm_head"]}
-        kwargs = {**default_args, **peft_config}
+        kwargs = merge_dicts(default_args, peft_config)
         if kwargs.get("target_modules") == "all":
             kwargs.update({"target_modules":get_all_linear_layers(model)})
         config = LoraConfig(
@@ -76,7 +65,7 @@ def peft_model(model, config):
             "num_virtual_tokens":30, "prefix_projection":True, 
             "encoder_hidden_size":1024, "task_type":"CAUSAL_LM"
         }
-        kwargs = {**default_args, **peft_config}
+        kwargs = merge_dicts(default_args, peft_config)
         config = PrefixTuningConfig(
             **kwargs
         )
