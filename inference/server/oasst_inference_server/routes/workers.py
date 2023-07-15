@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from enum import Enum
-from typing import Awaitable, Coroutine, Generator, TypeVar, cast, NamedTuple
+from typing import Awaitable, TypeVar, cast, NamedTuple
 
 import fastapi
 import pydantic
@@ -11,7 +11,6 @@ from oasst_inference_server import chat_repository, database, deps, models, queu
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
-import redis.asyncio as redis
 
 
 class WorkerDisconnectException(Exception):
@@ -101,7 +100,7 @@ class HandleWorkerContext(NamedTuple):
     @property
     def num_requests_in_progress(self) -> int:
         return len(self.work_request_map)
-    
+
     @classmethod
     async def build(cls, websocket: fastapi.WebSocket, api_key: str, protocol_version: str):
         try:
@@ -126,7 +125,7 @@ class HandleWorkerContext(NamedTuple):
 
 
         work_queue = queueing.work_queue(deps.redis_client, worker_info.config.compat_hash)
-        
+
         # Make a new Redis client that we can use for the blocking requests without affecting the non-blocking calls
         redis_client = deps.make_redis_client()
         blocking_work_queue = queueing.work_queue(redis_client, worker_info.config.compat_hash)
@@ -137,7 +136,7 @@ class HandleWorkerContext(NamedTuple):
             work_queue=work_queue,
             blocking_work_queue=blocking_work_queue
         )
-    
+
     async def close(self):
         try:
             await self.blocking_work_queue.redis_client.close()
@@ -155,7 +154,7 @@ class FutureType(str, Enum):
     WORK_REQUEST = 'WORK_REQUEST'
     WORKER_RESPONSE = 'WORKER_RESPONSE'
 
-AwaitResult = TypeVar('AwaitResult')  
+AwaitResult = TypeVar('AwaitResult')
 
 class FuturesManager:
 
@@ -166,7 +165,7 @@ class FuturesManager:
         self._context = context
         self._futures = set()
 
-    
+
     def ensure_listening_for_work_requests(self):
         requests_in_progress = self._context.num_requests_in_progress
         if requests_in_progress < self._context.config.max_parallel_requests:
@@ -181,9 +180,9 @@ class FuturesManager:
         async def wrapper():
             result = await awaitable
             return future_type, result
-        
+
         return asyncio.ensure_future(wrapper)
-    
+
     async def wait_for_event_our_timeout(self):
         completed_futures, pending_futures = await asyncio.wait(
             self._futures, timeout=settings.worker_ping_interval, return_when=asyncio.FIRST_COMPLETED
@@ -191,7 +190,7 @@ class FuturesManager:
         self._futures = pending_futures
 
         return (future.result() for future in completed_futures)
-    
+
     def cancel_all(self):
         logger.info(f"Cancelling {len(self._futures)} pending futures")
         for ftr in self._futures:
@@ -199,8 +198,8 @@ class FuturesManager:
                 ftr.cancel()
             except Exception:
                 logger.warning("Error while cancelling pending future")
-        
-    
+
+
 class SessionManager:
 
     _context: HandleWorkerContext
@@ -247,7 +246,7 @@ class SessionManager:
             await worker_utils.delete_worker_session(self._session.id)
         except Exception:
             logger.warning("Error while deleting worker session")
-        
+
 
 async def _handle_work_request(message_id: str, context: HandleWorkerContext, futures: FuturesManager):
     try:
@@ -323,7 +322,6 @@ async def _handle_worker_response(worker_response: inference.WorkerResponse, con
 
 
 async def _reset_or_abort_open_work_requests(context: HandleWorkerContext):
-    logger.exception(f"Error while handling worker {context.worker_id}: {str(e)}")
     logger.info(f"Handling {context.num_requests_in_progress} work requests outstanding")
     for container in context.work_request_map.values():
         try:
@@ -360,7 +358,7 @@ async def handle_worker(
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 raise WorkerDisconnectException("Worker disconnected")
-            
+
             results = await futures.wait_for_event_our_timeout()
             for type_, result in results:
                 if type_ == FutureType.WORK_REQUEST:
@@ -371,11 +369,12 @@ async def handle_worker(
                     await _handle_worker_response(worker_response, futures)
                 else:
                     raise ValueError(f"Unexpected future type: {type_}")
-                    
+
             if len(results) == 0:
                 await worker_utils.send_worker_request(websocket, inference.PingRequest())
 
     except Exception as e:
+        logger.exception(f"Error while handling worker {context.worker_id}: {str(e)}")
         await _reset_or_abort_open_work_requests(context)
     finally:
         logger.info(f"Worker {context.worker_id} disconnected")
