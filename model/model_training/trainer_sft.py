@@ -424,9 +424,7 @@ def main():
 
     if training_conf.peft_model:
         print("Using PEFT model")
-        model = peft_model(
-            model, training_conf
-        )
+        model = peft_model(model, training_conf)
 
     if training_conf.quantization:
         import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
