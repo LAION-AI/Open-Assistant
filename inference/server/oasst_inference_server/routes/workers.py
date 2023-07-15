@@ -83,7 +83,6 @@ class HandleWorkerContext(NamedTuple):
     worker_id: str
     worker_info: inference.WorkerInfo
 
-    """"""
     work_queue: queueing.RedisQueue
 
     blocking_work_queue: queueing.RedisQueue
@@ -134,7 +133,7 @@ class HandleWorkerContext(NamedTuple):
 
         return cls(
             websocket=websocket,
-            worker_id=worker_id
+            worker_id=worker_id,
             work_queue=work_queue,
             blocking_work_queue=blocking_work_queue
         )
