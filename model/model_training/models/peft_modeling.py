@@ -46,9 +46,9 @@ def prepare_model_for_gradient_checkpointing(model):
     return model
 
 
-def peft_model(model, config):
+def peft_model(model, training_config):
     
-    peft_config = config.peft_config
+    peft_config = training_config.peft_config
     peft_type = peft_config.pop("peft_type","lora")
     if peft_type == "lora":
         default_args = {"r":16, "lora_alpha":32, "target_modules":"all",
@@ -73,10 +73,10 @@ def peft_model(model, config):
         raise ValueError("peft_method config is lora or prefix-tuning")
     model = get_peft_model(model, config)
     
-    if config.int8_training:
+    if training_config.int8_training:
         model = prepare_model_for_int8_training(model)
 
-    if config.gradient_checkpointing:
+    if training_config.gradient_checkpointing:
         model = prepare_model_for_gradient_checkpointing(model)
     model.print_trainable_parameters()
     return model

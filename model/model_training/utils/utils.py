@@ -445,9 +445,15 @@ def merge_dicts(default:dict, config:dict):
 
 def get_all_linear_layers(model):
     
-    layers = set()
-    for name, module in model.named_parameters():
-        if isinstance(module, torch.nn.Linear):
-            layers.add(name.split('.')[-1])
+    cls = torch.nn.Linear
+    
+    modules = {
+        name.split('.')[-1]
+        for name, module in model.named_modules()
+        if isinstance(module, cls)
+    }
+    if 'lm_head' in modules:
+        modules.remove('lm_head')
+    
+    return list(modules)
             
-    return layers
