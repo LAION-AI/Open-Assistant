@@ -803,7 +803,9 @@ rope_scaling_test:
   residual_dropout_lima: true
   log_wandb: true
   peft_model: true
-  peft_type: "lora"
+  peft_config:
+    peft_type: "lora"
+    r: 16
   superhot: true
   superhot_config:
     type: linear

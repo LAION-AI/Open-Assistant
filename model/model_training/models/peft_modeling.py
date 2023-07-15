@@ -18,11 +18,15 @@ def load_peft_model(model, peft_model_path, tokenizer):
         torch_dtype=model.dtype,
     )
     model.eos_token_id = tokenizer.eos_token_id
-    extra_embeds = hf_hub_download(peft_model_path, "extra_embeddings.pt")
-    embed_weights = torch.load(extra_embeds, map_location=model.device)
-    model.base_model.model.model.embed_tokens.weight[len(tokenizer) - embed_weights.shape[0] :, :] = embed_weights.to(
-        model.base_model.model.model.embed_tokens.weight.dtype
-    )
+    try:
+        extra_embeds = hf_hub_download(peft_model_path, "extra_embeddings.pt")
+        embed_weights = torch.load(extra_embeds, map_location=model.device)
+        model.base_model.model.model.embed_tokens.weight[len(tokenizer) - embed_weights.shape[0] :, :] = embed_weights.to(
+            model.base_model.model.model.embed_tokens.weight.dtype
+        )
+    except Exception as e:
+        print(f"Warning:Extra embeddings not added. This is expected if adapter file contains WTE")
+        
     return model
 
 
@@ -42,27 +46,48 @@ def prepare_model_for_gradient_checkpointing(model):
     return model
 
 
-def peft_model(model, peft_type="lora", int8_training=False, gradient_checkpointing=False):
+def get_all_linear_layers(model):
+    
+    layers = set()
+    for name, module in model.named_parameters():
+        if isinstance(module, torch.nn.Linear):
+            layers.add(name.split('.')[-1])
+            
+    return layers
+
+
+
+def peft_model(model, config):
+    
+    peft_config = config.peft_config
+    peft_type = peft_config.pop("peft_type","lora")
     if peft_type == "lora":
+        default_args = {"r":16, "lora_alpha":32, "target_modules":"all",
+            "lora_dropout":0.05, "bias":"none", "task_type":"CAUSAL_LM",
+            "modules_to_save":["wte","lm_head"]}
+        kwargs = {**default_args, **peft_config}
+        if kwargs.get("target_modules") == "all":
+            kwargs.update({"target_modules":get_all_linear_layers(model)})
         config = LoraConfig(
-            r=16,
-            lora_alpha=32,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-            lora_dropout=0.05,
-            bias="none",
-            task_type="CAUSAL_LM",
+            **kwargs
         )
     elif peft_type == "prefix-tuning":
+        default_args = {
+            "num_virtual_tokens":30, "prefix_projection":True, 
+            "encoder_hidden_size":1024, "task_type":"CAUSAL_LM"
+        }
+        kwargs = {**default_args, **peft_config}
         config = PrefixTuningConfig(
-            num_virtual_tokens=30, prefix_projection=True, encoder_hidden_size=1024, task_type="CAUSAL_LM"
+            **kwargs
         )
     else:
         raise ValueError("peft_method config is lora or prefix-tuning")
     model = get_peft_model(model, config)
-    if int8_training:
+    
+    if config.int8_training:
         model = prepare_model_for_int8_training(model)
 
-    if gradient_checkpointing:
+    if config.gradient_checkpointing:
         model = prepare_model_for_gradient_checkpointing(model)
     model.print_trainable_parameters()
     return model
