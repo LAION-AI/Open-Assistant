@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from enum import Enum
-from typing import Awaitable, TypeVar, cast, NamedTuple
+from typing import Awaitable, NamedTuple, TypeVar, cast
 
 import fastapi
 import pydantic
@@ -88,7 +88,6 @@ class HandleWorkerContext(NamedTuple):
 
     work_request_map: dict[str, WorkRequestContainer] = dict()
 
-
     @property
     def config(self) -> inference.WorkerConfig:
         return self.worker_info.config
@@ -123,7 +122,6 @@ class HandleWorkerContext(NamedTuple):
         worker_info = await worker_utils.receive_worker_info(websocket)
         logger.info(f"handle_worker: {worker_info=}")
 
-
         work_queue = queueing.work_queue(deps.redis_client, worker_info.config.compat_hash)
 
         # Make a new Redis client that we can use for the blocking requests without affecting the non-blocking calls
@@ -135,7 +133,7 @@ class HandleWorkerContext(NamedTuple):
             worker_id=worker_id,
             worker_info=worker_info,
             work_queue=work_queue,
-            blocking_work_queue=blocking_work_queue
+            blocking_work_queue=blocking_work_queue,
         )
 
     async def close(self):
@@ -150,15 +148,15 @@ class HandleWorkerContext(NamedTuple):
             logger.warning("Error while closing websocket")
 
 
-
 class FutureType(str, Enum):
-    WORK_REQUEST = 'WORK_REQUEST'
-    WORKER_RESPONSE = 'WORKER_RESPONSE'
+    WORK_REQUEST = "WORK_REQUEST"
+    WORKER_RESPONSE = "WORKER_RESPONSE"
 
-AwaitResult = TypeVar('AwaitResult')
+
+AwaitResult = TypeVar("AwaitResult")
+
 
 class FuturesManager:
-
     _context: HandleWorkerContext
     _futures: set[asyncio.Future]
 
@@ -166,15 +164,18 @@ class FuturesManager:
         self._context = context
         self._futures = set()
 
-
     def ensure_listening_for_work_requests(self):
         requests_in_progress = self._context.num_requests_in_progress
         if requests_in_progress < self._context.config.max_parallel_requests:
-            future = self._as_typed_future(FutureType.WORK_REQUEST, self._context.blocking_work_queue.dequeue(timeout=0))
+            future = self._as_typed_future(
+                FutureType.WORK_REQUEST, self._context.blocking_work_queue.dequeue(timeout=0)
+            )
             self._futures.add(future)
 
     def ensure_listening_to_worker_responses(self):
-        future = self._as_typed_future(FutureType.WORKER_RESPONSE, worker_utils.receive_worker_response(websocket=self._context.websocket))
+        future = self._as_typed_future(
+            FutureType.WORKER_RESPONSE, worker_utils.receive_worker_response(websocket=self._context.websocket)
+        )
         self._futures.add(future)
 
     async def wait_for_event_or_timeout(self):
@@ -192,18 +193,17 @@ class FuturesManager:
                 ftr.cancel()
             except Exception:
                 logger.warning("Error while cancelling pending future")
-    
+
     def _as_typed_future(self, future_type: FutureType, awaitable: Awaitable[AwaitResult]) -> asyncio.Future:
         async def wrapper():
             result = await awaitable
             return future_type, result
-        
+
         # Note: important to call the wrapper to create the coroutine
         return asyncio.ensure_future(wrapper())
 
 
 class SessionManager:
-
     _context: HandleWorkerContext
     _session: worker_utils.WorkerSession
 
@@ -219,7 +219,6 @@ class SessionManager:
         if metrics:
             self._session.metrics = metrics
             await worker_utils.store_worker_session(self._session)
-
 
     async def _add_worker_connect_event(
         self,
@@ -238,9 +237,7 @@ class SessionManager:
     async def init(self):
         async with deps.manual_create_session() as session:
             await self._add_worker_connect_event(
-                session=session,
-                worker_id=self._context.worker_id,
-                worker_info=self._context.worker_info
+                session=session, worker_id=self._context.worker_id, worker_info=self._context.worker_info
             )
         await worker_utils.store_worker_session(self._session)
 
@@ -271,7 +268,13 @@ async def _handle_work_request(message_id: str, context: HandleWorkerContext, fu
     finally:
         futures.ensure_listening_for_work_requests()
 
-async def _handle_worker_response(worker_response: inference.WorkerResponse, context: HandleWorkerContext, futures: FuturesManager, session: SessionManager):
+
+async def _handle_worker_response(
+    worker_response: inference.WorkerResponse,
+    context: HandleWorkerContext,
+    futures: FuturesManager,
+    session: SessionManager,
+):
     try:
         match worker_response.response_type:
             case "pong":
@@ -348,12 +351,11 @@ async def handle_worker(
     protocol_version: str = worker_utils.protocol_version_header,
 ):
     await websocket.accept()
-    
 
     try:
         context = await HandleWorkerContext.build(websocket, api_key, protocol_version)
         futures = FuturesManager(context)
-        session = SessionManager(context)   
+        session = SessionManager(context)
         await session.init()
         futures.ensure_listening_for_work_requests()
         futures.ensure_listening_to_worker_responses()
