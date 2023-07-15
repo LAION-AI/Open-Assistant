@@ -54,7 +54,7 @@ defaults:
   #  - cmu_wiki_qa
   #  - youtube_subs_howto100M
   #  - iapp_wiki_qa_squad
-  #  - zhihu-kol
+  #  - zhihu_kol
   datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
