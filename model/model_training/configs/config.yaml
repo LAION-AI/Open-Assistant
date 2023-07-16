@@ -293,6 +293,7 @@ falcon-7b:
   save_total_limit: 4
   residual_dropout: 0.2
   residual_dropout_lima: true
+  max_seq_length: 128
 
 llama-7b:
   dtype: fp16
