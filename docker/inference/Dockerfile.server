@@ -78,9 +78,8 @@ USER ${APP_USER}
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
 VOLUME [ "${APP_BASE}/lib/oasst-data" ]
 
-# Start the server within pydebug to allow attaching a debugger; add "--wait-for-client" if you want to halt execution
-# until the debugger has been attached
-CMD python -m pydebug --listen 0.0.0.0:5678 main.py
+# In the dev image, we start uvicorn from Python so that we can attach the debugger
+CMD python main.py
 
 
 
