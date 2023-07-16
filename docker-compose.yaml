@@ -231,6 +231,7 @@ services:
       TRUSTED_CLIENT_KEYS: "6969"
       ALLOW_DEBUG_AUTH: "True"
       API_ROOT: "http://localhost:8000"
+      DEBUG: "True"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
@@ -255,6 +256,7 @@ services:
       MODEL_CONFIG_NAME: ${MODEL_CONFIG_NAME:-distilgpt2}
       BACKEND_URL: "ws://inference-server:8000"
       PARALLELISM: 2
+      DEBUG: "True"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"

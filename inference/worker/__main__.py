@@ -4,6 +4,8 @@ import sys
 import time
 from contextlib import closing
 
+import os
+
 import pydantic
 import transformers
 import utils
@@ -130,4 +132,12 @@ def main():
 
 
 if __name__ == "__main__":
+    is_debug = bool(os.getenv("DEBUG", "False"))
+
+    if is_debug:
+        import debugpy
+        debugpy.listen(("0.0.0.0", "5679"))
+        # Uncomment to wait here until a debugger is attached
+        # debugpy.wait_for_client()
+    
     main()

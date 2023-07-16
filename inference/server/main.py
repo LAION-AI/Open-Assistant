@@ -151,9 +151,16 @@ async def welcome_message():
 
 
 if __name__ == "__main__":
-    # Entrypoint for the server in dev environments
-    # pydebug needs a Python process to attach to, so we start uvicorn from Python instead of invoking it directly
     import uvicorn
     import os
+
     port = int(os.getenv('PORT', "8000"))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    is_debug = bool(os.getenv("DEBUG", "False"))
+
+    if is_debug:
+        import debugpy
+        debugpy.listen(("0.0.0.0", "5679"))
+        # Uncomment to wait here until a debugger is attached
+        # debugpy.wait_for_client()
+    
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=is_debug)
