@@ -237,6 +237,7 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+      - "5678:5678"  # Port to attach debugger
     depends_on:
       inference-redis:
         condition: service_healthy
@@ -257,6 +258,8 @@ services:
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
+    ports:
+      - "5679:5679"  # Port to attach debugger
     deploy:
       replicas: 1
     profiles: ["inference"]
