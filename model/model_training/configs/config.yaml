@@ -205,24 +205,6 @@ oasst_only:
   sort_by_length: false
   use_custom_sampler: false
 
-oasst_split:
-  save_strategy: epoch
-  datasets:
-    - oasst_export:
-        lang: "en"
-        hf_dataset_name: toanbku/oa_split_1000
-  sort_by_length: false
-  use_custom_sampler: false
-
-oa_financial:
-  save_strategy: epoch
-  datasets:
-    - oasst_export:
-        lang: "vi"
-        hf_dataset_name: toanbku/oa_financial
-  sort_by_length: false
-  use_custom_sampler: false
-
 reference-data:
   datasets:
     - oasst_export:
@@ -307,7 +289,7 @@ falcon-7b:
   eval_steps: 100
   save_steps: 500
   save_strategy: steps
-  num_train_epochs: 8
+  num_train_epochs: 2
   save_total_limit: 4
   residual_dropout: 0.2
   residual_dropout_lima: true
