@@ -271,6 +271,7 @@ oasst_df:
     - oasst_export:
         lang: "en"
         hf_dataset_name: toanbku/oa-df
+        val_split: 0.01
 
 falcon-7b:
   dtype: bf16
