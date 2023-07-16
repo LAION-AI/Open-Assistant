@@ -148,3 +148,12 @@ for app_prefix, sub_app in plugins.plugin_apps.items():
 async def welcome_message():
     logger.warning("Inference server started")
     logger.warning("To stop the server, press Ctrl+C")
+
+
+if __name__ == "__main__":
+    # Entrypoint for the server in dev environments
+    # pydebug needs a Python process to attach to, so we start uvicorn from Python instead of invoking it directly
+    import uvicorn
+    import os
+    port = int(os.getenv('PORT', "8000"))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

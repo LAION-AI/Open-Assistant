@@ -78,8 +78,9 @@ USER ${APP_USER}
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
 VOLUME [ "${APP_BASE}/lib/oasst-data" ]
 
-
-CMD uvicorn main:app --reload --host 0.0.0.0 --port "${PORT}"
+# Start the server within pydebug to allow attaching a debugger; add "--wait-for-client" if you want to halt execution
+# until the debugger has been attached
+CMD python -m pydebug --listen 0.0.0.0:5678 main.py
 
 
 
