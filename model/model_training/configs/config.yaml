@@ -292,24 +292,24 @@ oasst_df:
 
 falcon-7b:
   dtype: bf16
-  log_dir: "llama_log_7b"
+  log_dir: "falcon_log_7b"
   learning_rate: 1e-5
   model_name: "tiiuae/falcon-7b"
-  deepspeed_config: configs/zero_config_falcon.json
+  deepspeed_config: configs/zero_config.json
   output_dir: falcon
   weight_decay: 0.0
   max_length: 2048
-  warmup_steps: 100
+  warmup_steps: 20
   gradient_checkpointing: true
-  gradient_accumulation_steps: 2
-  per_device_train_batch_size: 1
-  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 8
   eval_steps: 100
   save_steps: 500
+  save_strategy: steps
   num_train_epochs: 8
   save_total_limit: 4
-  use_flash_attention: false
-  residual_dropout: 0.3
+  residual_dropout: 0.2
   residual_dropout_lima: true
 
 llama-7b:
