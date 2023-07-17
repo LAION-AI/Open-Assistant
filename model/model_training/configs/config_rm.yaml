@@ -140,27 +140,25 @@ oasst-rm-1-pythia-1.4b:
   pooling: last
   datasets:
     - oasst_export:
-        hf_dataset_name: toanbku/oa-test
-    # - oasst_export:
-    #     lang: "en,es,de,fr"
-    #     hf_dataset_name: OpenAssistant/oasst1
-    #     val_split: 0.1
-    # - augment_oasst:
-    #     input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
-    # - anthropic_rlhf:
-    #     fraction: 0.1
-    #     max_val_set: 1000
-    # - shp:
-    #     max_val_set: 1000
-    # - hellaswag:
-    #     fraction: 0.5
-    #     max_val_set: 1000
-    # - webgpt:
-    #     val_split: 0.05
-    #     max_val_set: 1000
-    # - hf_summary_pairs:
-    #     fraction: 0.1
-    #     max_val_set: 250
+        lang: "en,es,de,fr"
+        hf_dataset_name: OpenAssistant/oasst1
+        val_split: 0.1
+    - augment_oasst:
+        input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
+    - anthropic_rlhf:
+        fraction: 0.1
+        max_val_set: 1000
+    - shp:
+        max_val_set: 1000
+    - hellaswag:
+        fraction: 0.5
+        max_val_set: 1000
+    - webgpt:
+        val_split: 0.05
+        max_val_set: 1000
+    - hf_summary_pairs:
+        fraction: 0.1
+        max_val_set: 250
   use_custom_sampler: true
   sort_by_length: false
   model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
@@ -171,6 +169,34 @@ oasst-rm-1-pythia-1.4b:
   max_length: 2048
   use_flash_attention: true
   warmup_steps: 50
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 5
+  num_train_epochs: 2
+  eval_steps: 500
+  save_steps: 1000
+  use_system_tag: false
+  system_property_dropout: 0.5
+  system_add_length: false
+
+oasst-rm-2.1-pythia-1.4b:
+  is_reward_model: true
+  pooling: last
+  datasets:
+    - oasst_export:
+      lang: "en"
+      hf_dataset_name: toanbku/oa-df
+      val_split: 0.1
+  use_custom_sampler: true
+  sort_by_length: false
+  model_name: OpenAssistant/oasst-rm-2.1-pythia-1.4b-epoch-2.5
+  learning_rate: 8e-6
+  residual_dropout: 0.01
+  weight_decay: 0.0
+  dtype: float32
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 10
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 1
   per_device_eval_batch_size: 5
