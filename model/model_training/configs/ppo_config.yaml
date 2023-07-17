@@ -9,7 +9,7 @@ train:
   trainer: "CustomPPOTrainer"
   tracker: wandb
   project_name: rlhf
-  entity_name: df-research
+  entity_name: toanbku
 
 model:
   model_path:
