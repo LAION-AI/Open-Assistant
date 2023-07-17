@@ -98,8 +98,8 @@ export SFT_MODEL=$MODEL_PATH/sft_model/$(ls -t $MODEL_PATH/sft_model/ | head -n 
 5. Train the reward model
 
 ```bash
-cd ../reward/instructor
-python trainer.py configs/deberta-v3-base.yml --output_dir $MODEL_PATH/reward_model
+cd model_training
+python trainer_rm.py --configs defaults_rm oasst-rm-1-pythia-1b
 ```
 
 6. Get RM trained model
@@ -117,7 +117,7 @@ export REWARD_MODEL=$MODEL_PATH/reward_model/$(ls -t $MODEL_PATH/reward_model/ |
 7. Train the RL agent
 
 ```bash
-cd ../../model_training
+cd model_training
 python trainer_rl.py --configs defaults_rlhf --cache_dir $DATA_PATH --rank_model $REWARD_MODEL --sft_model $SFT_MODEL --output_dir $MODEL_PATH/rl_model
 ```
 
