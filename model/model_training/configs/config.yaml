@@ -257,10 +257,10 @@ oasst-top1:
 
 falcon-7b:
   dtype: bf16
-  log_dir: "llama_log_7b"
+  log_dir: "falcon_log_7b"
   learning_rate: 1e-5
   model_name: "tiiuae/falcon-7b"
-  deepspeed_config: configs/zero_config_falcon.json
+  deepspeed_config: configs/zero_config.json
   output_dir: falcon
   weight_decay: 0.0
   max_length: 2048
@@ -787,7 +787,7 @@ rope_scaling_test:
   log_dir: "llama_log_7b"
   learning_rate: 1e-5
   model_name: "huggyllama/llama-7b"
-  deepspeed_config: configs/zero_config_falcon.json
+  deepspeed_config: configs/zero_config.json
   output_dir: llama
   weight_decay: 0.0
   max_length: 4048
@@ -819,7 +819,7 @@ falcon_7b_ntk_test:
   dtype: bf16
   learning_rate: 1e-5
   model_name: "tiiuae/falcon-7b"
-  deepspeed_config: configs/zero_config_falcon.json
+  deepspeed_config: configs/zero_config.json
   log_dir: "falcon_7b_ntk"
   output_dir: falcon_7b_ntk
   weight_decay: 0.0
