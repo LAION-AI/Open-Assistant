@@ -78,7 +78,7 @@
     "react-i18next": "^12.2.2",
     "react-markdown": "^8.0.7",
     "react-syntax-highlighter": "^15.5.0",
-    "react-textarea-autosize": "^8.4.1",
+    "react-textarea-autosize": "^8.5.2",
     "rehype-katex": "^6.0.3",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
