@@ -26,25 +26,31 @@ oasst_export_latin_cyrillic_rlhf:
   sort_by_length: false
   use_custom_sampler: false
 
+oa_df:
+  datasets:
+    - oasst_export:
+        lang: "en"
+        hf_dataset_name: toanbku/oa-df
+  sort_by_length: false
+  use_custom_sampler: false
+
 pythia_rlhf:
-  triton_host_rm: localhost:8002/andreaskoepf-oasst-rm-2-pythia-1.4b-10000
-  triton_host_sft: localhost:8005/andreaskoepf-oasst-sft-4-pythia-12b-epoch-3.5
+  triton_host_rm: localhost:8002/toanbku-oa-rm-2.1-pythia-1.4b-df
+  triton_host_sft: localhost:8005/toanbku-oa-falcon-7b-sft-df
   rank_config:
     is_reward_model: true
-    model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-10000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
+    model_name: toanbku/oa-rm-2.1-pythia-1.4b-df # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
     cache_dir: /home/ubuntu/OA/model/model_training/.cache
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
-    dtype: fp16
-    batch_size: 8
+    dtype: float32
+    batch_size: 2
     residual_dropout_lima: false
 
   sft_config:
     is_reward_model: false
-    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
-    # model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
-    # model_name: OpenAssistant/llama_30b_sft-2_test
+    model_name: toanbku/oa-falcon-7b-sft-df
     cache_dir: /home/ubuntu/OA/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
@@ -56,35 +62,6 @@ pythia_rlhf:
     batch_size: 1
     peft_type: "lora"
     residual_dropout_lima: false
-
-vietcuna_rlhf:
-  triton_host_rm: localhost:8002/pythia-rm
-  triton_host_sft: localhost:8005/vietcuna-sft
-  rank_config:
-    is_reward_model: true
-    model_name: /home/ubuntu/OA/model/.saved_models/reward_model
-    cache_dir: /home/ubuntu/OA/model/model_training/.cache
-    pooling: last
-    residual_dropout: 0.01
-    use_flash_attention: false
-    residual_dropout_lima: false
-    dtype: bfloat16
-    batch_size: 8
-
-  sft_config:
-    is_reward_model: false
-    model_name: toanbku/vc-sft
-    cache_dir: /home/ubuntu/OA/model/model_training/.cache
-    quantization: false
-    seq2seqmodel: false
-    freeze_layer:
-    num_layers_unfrozen: -1
-    residual_dropout: 0.2
-    use_flash_attention: false
-    residual_dropout_lima: false
-    dtype: bfloat16
-    batch_size: 1
-    peft_type: "lora"
 
 llama_rlhf:
   triton_host_rm: localhost:8002/OpenAssistant-oasst-rm-2-pythia-6.9b-epoch-1
