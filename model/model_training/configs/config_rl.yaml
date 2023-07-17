@@ -36,7 +36,7 @@ oa_df:
 
 pythia_rlhf:
   triton_host_rm: localhost:8002/toanbku-oa-rm-2.1-pythia-1.4b-df
-  triton_host_sft: localhost:8005/toanbku-oa-falcon-7b-sft-df
+  triton_host_sft: localhost:8005/toanbku/oa-pythia-12b-sft-df
   rank_config:
     is_reward_model: true
     model_name: toanbku/oa-rm-2.1-pythia-1.4b-df # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
@@ -50,7 +50,7 @@ pythia_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: toanbku/oa-falcon-7b-sft-df
+    model_name: toanbku/oa-pythia-12b-sft-df
     cache_dir: /home/ubuntu/OA/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
