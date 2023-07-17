@@ -290,6 +290,7 @@ falcon-7b:
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 8
+  nproc_per_node: 8
   num_train_epochs: 8
   save_total_limit: 4
   residual_dropout: 0.2
