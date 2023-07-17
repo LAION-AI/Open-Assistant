@@ -271,7 +271,7 @@ oasst_df:
     - oasst_export:
         lang: "en"
         hf_dataset_name: toanbku/oa-df
-        val_split: 0.5
+        val_split: 0.3
 
 falcon-7b:
   dtype: bf16
@@ -285,14 +285,35 @@ falcon-7b:
   save_strategy: steps
   eval_steps: 80
   save_steps: 80
-  warmup_steps: 20
+  warmup_steps: 4
   gradient_checkpointing: true
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 8
-  nproc_per_node: 8
-  num_train_epochs: 8
-  save_total_limit: 4
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  num_train_epochs: 4
+  save_total_limit: 2
+  residual_dropout: 0.2
+  residual_dropout_lima: true
+
+oa-falcon-7b-top1:
+  dtype: bf16
+  log_dir: "falcon_log_7b"
+  learning_rate: 1e-5
+  model_name: "OpenAssistant/falcon-7b-sft-top1-696"
+  deepspeed_config: configs/zero_config.json
+  output_dir: falcon
+  weight_decay: 0.0
+  max_length: 2048
+  save_strategy: steps
+  eval_steps: 80
+  save_steps: 80
+  warmup_steps: 4
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  num_train_epochs: 4
+  save_total_limit: 2
   residual_dropout: 0.2
   residual_dropout_lima: true
 
