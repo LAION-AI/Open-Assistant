@@ -184,9 +184,10 @@ oasst-rm-2.1-pythia-1.4b:
   pooling: last
   datasets:
     - oasst_export:
-      lang: "en"
-      hf_dataset_name: toanbku/oa-df
-      val_split: 0.1
+        lang: "en"
+        hf_dataset_name: toanbku/oa-df
+        val_split: 0.1
+        fraction: 1
   use_custom_sampler: true
   sort_by_length: false
   model_name: OpenAssistant/oasst-rm-2.1-pythia-1.4b-epoch-2.5
@@ -196,13 +197,13 @@ oasst-rm-2.1-pythia-1.4b:
   dtype: float32
   max_length: 2048
   use_flash_attention: true
-  warmup_steps: 10
-  gradient_accumulation_steps: 4
+  warmup_steps: 2
+  gradient_accumulation_steps: 2
   per_device_train_batch_size: 1
-  per_device_eval_batch_size: 5
+  per_device_eval_batch_size: 2
   num_train_epochs: 2
-  eval_steps: 500
-  save_steps: 1000
+  eval_steps: 50
+  save_steps: 100
   use_system_tag: false
   system_property_dropout: 0.5
   system_add_length: false

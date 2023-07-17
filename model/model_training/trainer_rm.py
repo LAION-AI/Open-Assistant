@@ -134,7 +134,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
-    parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--wandb-entity", type=str, default="toanbku")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
     parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
