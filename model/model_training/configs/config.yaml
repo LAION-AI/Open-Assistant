@@ -800,7 +800,7 @@ rope_scaling_test:
   save_steps: 500
   num_train_epochs: 8
   save_total_limit: 4
-  use_flash_attention: true
+  use_flash_attention: false
   residual_dropout: 0.3
   residual_dropout_lima: true
   log_wandb: true
@@ -810,7 +810,7 @@ rope_scaling_test:
     r: 16
   superhot: true
   superhot_config:
-    type: ntk
+    type: linear
     scale: 2
   datasets:
     - dolly15k
