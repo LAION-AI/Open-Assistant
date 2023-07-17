@@ -6,22 +6,35 @@ from typing import Callable, Optional
 
 import torch.nn as nn
 import transformers
-from transformers import AutoConfig, GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
-from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
+from transformers import (
+    AutoConfig,
+    FalconForCausalLM,
+    FalconModel,
+    GPTNeoXForCausalLM,
+    GPTNeoXModel,
+    LlamaForCausalLM,
+    LlamaModel,
+)
 
+from .patching_falcon import falcon_forward_with_flash_attn
 from .patching_llama import llama_forward_with_flash_attn
 from .patching_neox import neox_forward_with_flash_attn
 from .reward_model import GPTNeoXRewardModel
 from .rope import LlamaDynamicScaledRotaryEmbedding, LlamaLinearScaledRope, LlamaNTKScaledRope, RWNTKScaledRope
+
+# from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
+
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
     LlamaForCausalLM,
     LlamaModel,
+    FalconForCausalLM,
+    FalconModel,
     GPTNeoXRewardModel,
     # Currently only supported by NeoX models; Will work on LLaMa models
-    AutoModelForCausalLMWithHydraValueHead,
+    # AutoModelForCausalLMWithHydraValueHead,
 ]
 
 
@@ -65,6 +78,8 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
         if not hasattr(module, "_attn"):
             warnings.warn("Provided module doesn't have a _attn() function to be patched.")
         module._attn = partial(neox_forward_with_flash_attn, module, flash_attn)
+    elif isinstance(module, transformers.models.falcon.modeling_falcon.FalconAttention):
+        module.forward = partial(falcon_forward_with_flash_attn, module, flash_attn)
     else:
         raise NotImplementedError(f"Flash attention is not implemented for {module.__class__.__name__}.")
 
@@ -133,33 +148,38 @@ or run with:
     if isinstance(model, LlamaForCausalLM):
         model = model.model
 
-    if isinstance(model, AutoModelForCausalLMWithHydraValueHead):
-        if isinstance(model.base_model, GPTNeoXForCausalLM):
-            model = model.base_model.gpt_neox
-        elif isinstance(model.base_model, LlamaForCausalLM):
-            model = model.base_model.model
-        else:
-            warnings.warn(
-                "Unfortunately there is currently only support for NeoX models and LLaMa models "
-                f"Please make sure that `{model.__class__.__name__}` is one of those model.\n"
-                "Or disable flash_attention and residual_dropout with:\n"
-                "--use_flash_attention=false  --no-residual_dropout"
-            )
+    # if isinstance(model, AutoModelForCausalLMWithHydraValueHead):
+    #     if isinstance(model.base_model, GPTNeoXForCausalLM):
+    #         model = model.base_model.gpt_neox
+    #     elif isinstance(model.base_model, LlamaForCausalLM):
+    #         model = model.base_model.model
+    #     else:
+    #         warnings.warn(
+    #             "Unfortunately there is currently only support for NeoX models and LLaMa models "
+    #             f"Please make sure that `{model.__class__.__name__}` is one of those model.\n"
+    #             "Or disable flash_attention and residual_dropout with:\n"
+    #             "--use_flash_attention=false  --no-residual_dropout"
+    #         )
 
     if model.__class__.__name__ == "RWForCausalLM":
         model = model.base_model
+
+    if isinstance(model, FalconForCausalLM):
+        model = model.transformer
 
     attention_key_lookup = {
         GPTNeoXModel: "attention",
         GPTNeoXRewardModel: "attention",
         LlamaModel: "self_attn",
+        FalconModel: "self_attention",
     }
     mlp_key_lookup = {
         GPTNeoXModel: "mlp",
         GPTNeoXRewardModel: "mlp",
         LlamaModel: "mlp",
+        FalconModel: "mlp",
     }
-    if model.__class__.__name__ == "RWModel":
+    if isinstance(model, FalconModel) or model.__class__.__name__ == "RWModel":
         layers = model.h
         attention_key = "self_attention"
         mlp_key = "mlp"
@@ -187,8 +207,8 @@ class RopePatch:
         architecture = config.architectures
         if architecture:
             self.model_name = architecture[0]
-            if "RWForCausalLM" in architecture:
-                self.architecture = "RWForCausalLM"
+            if "FalconForCausalLM" in architecture or "RWForCausalLM" in architecture:
+                self.architecture = "FalconForCausalLM"
                 if rope_type == "ntk":
                     self.patch_fun = RWNTKScaledRope
                 else:
@@ -213,14 +233,14 @@ class RopePatch:
         return cls(model_name, **args)
 
     def patch(self, model):
-        if self.architecture == "RWForCausalLM":
-            self.patch_rw_model(model, **self.args)
+        if self.architecture == "FalconForCausalLM":
+            self.patch_falcon_model(model, **self.args)
         elif self.architecture == "LlamaForCausalLM":
             self.patch_llama_model(model, **self.args)
         else:
             raise NotImplementedError()
 
-    def patch_rw_model(self, model, **kwargs):
+    def patch_falcon_model(self, model, **kwargs):
         for each in model.transformer.h:
             each.self_attention.maybe_rotary = self.patch_fun(model.config.head_dim, **kwargs)
 
