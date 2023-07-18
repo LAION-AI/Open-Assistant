@@ -697,14 +697,14 @@ pythia-12b:
   residual_dropout: 0.2
   max_length: 2048
   use_flash_attention: true
-  warmup_steps: 4
+  warmup_steps: 2
   gradient_checkpointing: true
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
-  eval_steps: 20
-  save_steps: 50
-  num_train_epochs: 4
+  per_device_eval_batch_size: 2
+  eval_steps: 4
+  save_steps: 4
+  num_train_epochs: 1000
   save_total_limit: 2
 
 reference-pythia-12b:
