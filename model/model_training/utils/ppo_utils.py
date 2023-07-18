@@ -577,7 +577,7 @@ class CustomPromptPipeline(BasePipeline):
     Tokenizes prompts, unless they are already tokenized, and truncates them to `max_prompt_length` from the right
     """
 
-    def __init__(self, prompts: List[str], max_prompt_length: int, tokenizer: PreTrainedTokenizer):
+    def __init__(self, prompts: List[str], max_prompt_length: int, tokenizer: PreTrainedTokenizer, **kwargs):
         super().__init__()
 
         if max_prompt_length < 16:  # sanity check
