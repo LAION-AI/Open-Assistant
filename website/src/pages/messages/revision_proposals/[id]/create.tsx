@@ -13,25 +13,40 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { diffChars } from "diff";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
+import { MessageTree } from "src/components/Messages/MessageTree";
+import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
+import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { get, post } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { Message, MessageWithChildren } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
-import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
-import { MessageTree } from "src/components/Messages/MessageTree";
-import { API_ROUTES } from "src/lib/routes";
 import useSWRMutation from "swr/mutation";
-import { diffChars } from "diff";
 
 const RenderedMarkdown = lazy(() => import("../../../../components/Messages/RenderedMarkdown"));
+
+function splitByAddingSeparator(str: string, sep: string): string[] {
+  const result: string[] = [];
+
+  const splitted = str.split(sep);
+  splitted.forEach((piece, i) => {
+    result.push(piece);
+
+    if (i < splitted.length - 1) {
+      result.push(sep);
+    }
+  });
+
+  return result;
+}
 
 const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["common", "tasks"]);
@@ -74,6 +89,48 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const cardColor = useColorModeValue("gray.50", "gray.800");
 
+  const changes = useMemo(() => data ? dbg(diffChars(data.message.text, messageText)) : [], [data, messageText]);
+  function dbg<T>(x: T): T {
+    console.log(x);
+    return x;
+  }
+
+  const changedPartsToRender = useMemo(
+    () =>
+      changes
+        .map((change) => 
+          splitByAddingSeparator(change.value, "\n").map(val => ({
+            ...change,
+            value: val
+          }))
+        )
+        .flat()
+        .map((change, i) => {
+          const v = change.value;
+          let element: string | JSX.Element | JSX.Element[] | (string | JSX.Element)[] = v;
+
+          const className = "change " + (change.added ? "bg-green-600" : change.removed ? "bg-rose-400" : "");
+
+          element = splitByAddingSeparator(v, " ").map((piece) => piece === " " ? <>&nbsp;</> : piece);
+
+          if (v === "\n") {
+            element = <div className={"new-line w-full block " + className}>&nbsp;</div>;
+          } else {
+            element = (
+              <span key={i} className={className}>
+                {element}
+              </span>
+            );
+          }
+
+          return {
+            ...change,
+            element,
+          };
+        }),
+    [changes]
+  );
+
   return (
     <>
       <Head>
@@ -96,7 +153,7 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
                 {t("common:edit")}
               </Text>
               <Text fontSize="md" color={labelColor}>
-                {t("tasks:moderator_edit_explain")}
+                {t("tasks:propose_revision_explain")}
               </Text>
             </Stack>
             <Box marginTop={4} borderRadius={"lg"} backgroundColor={cardColor} className="p-3 sm:p-6">
@@ -120,9 +177,7 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
                       textareaProps={{ minRows: 5 }}
                     />
                   </TabPanel>
-                  <TabPanel>
-                    <h1>TODO</h1>
-                  </TabPanel>
+                  <TabPanel>{changedPartsToRender.map((change) => change.element)}</TabPanel>
                   <TabPanel p="0" pt="4" marginBottom={2}>
                     {previewContent}
                   </TabPanel>
@@ -137,7 +192,7 @@ const CreateRevisionProposal = ({ id }: InferGetServerSidePropsType<typeof getSe
                     await submitRevisionProposal({
                       arg: {
                         new_content: messageText,
-                        changes: diffChars(data.message.text, messageText),
+                        changes,
                       },
                     });
                   }}

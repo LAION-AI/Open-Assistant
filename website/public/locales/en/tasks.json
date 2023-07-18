@@ -95,5 +95,6 @@
   "tab_preview": "Preview",
   "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
   "not_rankable": "All answers are factually incorrect and cannot be ranked",
-  "moderator_edit_explain": "Modify the highlighted message while keeping changes to a minimum. This action can cause the conversation to not make sense and cause ratings to no longer be accurate. Please use carefully."
+  "moderator_edit_explain": "Modify the highlighted message while keeping changes to a minimum. This action can cause the conversation to not make sense and cause ratings to no longer be accurate. Please use carefully.",
+  "propose_revision_explain": "Write down there the message you wanted to be here. Be aware that this is only proposing a revision to the message and only after it has been reviewed it can be merged."
 }
