@@ -57,11 +57,16 @@ Currently only these languages are supported via prompt translation:
 ar,de,fr,en,it,nl,tr,ru,ms,ko,ja,zh
 ```
 
+We provide many more datasets for training a list of these can be found in
+[here](https://github.com/LAION-AI/Open-Assistant/blob/main/model/model_training/custom_datasets/__init__.py)
+
 ## Dataset sub-sampling
 
 We can subsample the **training** data by passing either the `fraction` or
-`size` argument in the `configs/config.yml` file. Don't forget the additional
-colon ":" after the dataset name when doing this.
+`size` argument in the `configs/config.yml` (for RM training
+`configs/config_rm.yml` and for RL training `configs/config_rl.yml`
+respectively) file. Don't forget the additional colon ":" after the dataset name
+when doing this.
 
 Example:
 
