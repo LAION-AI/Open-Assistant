@@ -61,9 +61,5 @@ plugin.
 - The current approach is somewhat hybrid and relies on the zero-shot
   capabilities of a model.
 
-## Relevant files for the inference side of the plugin system
-
-- chat_chain.py
-- chat*chain_utils.py *(tweaking tools/plugin description string generation can
-  help for some models)\_
-- chat*chain_prompts.py *(tweaking prompts can help also)\_
+Relevant files for the inference side of the plugin system are contained in
+**oasst_inference_worker/chain/**.

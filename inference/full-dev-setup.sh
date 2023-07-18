@@ -5,13 +5,7 @@ export MODEL_CONFIG_NAME=${1:-distilgpt2}
 MODEL_ID=$(python3 worker/get_model_config_prop.py model_id)
 LOGLEVEL=${LOGLEVEL:-DEBUG}
 echo "MODEL_ID: $MODEL_ID"
-is_llama=$(python3 worker/get_model_config_prop.py is_llama)
-# if model is a llama, use the llama tag
-if [ "$is_llama" = "true" ]; then
-    INFERENCE_TAG=llama
-else
-    INFERENCE_TAG=latest
-fi
+INFERENCE_TAG=latest
 
 POSTGRES_PORT=${POSTGRES_PORT:-5732}
 

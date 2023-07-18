@@ -36,6 +36,7 @@ RUN --mount=type=cache,target=/var/cache/pip \
       /tmp/lib/oasst-shared
 
 COPY ./${APP_RELATIVE_PATH}/*.py .
+COPY ./${APP_RELATIVE_PATH}/oasst_inference_worker oasst_inference_worker
 
 COPY ./inference/worker/worker_hf_main.sh /entrypoint.sh
 

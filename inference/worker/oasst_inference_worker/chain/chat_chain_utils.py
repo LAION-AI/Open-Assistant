@@ -4,16 +4,22 @@ from typing import Callable
 
 import requests
 import transformers
-from chat_chain_prompts import INSTRUCTIONS, OBSERVATION_SEQ, TOOLS_PREFIX, V2_ASST_PREFIX, V2_PROMPTER_PREFIX
-from hf_langchain_inference import HFInference
 from langchain.agents import Tool
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from loguru import logger
+from oasst_inference_worker.chain.chat_chain_prompts import (
+    INSTRUCTIONS,
+    OBSERVATION_SEQ,
+    TOOLS_PREFIX,
+    V2_ASST_PREFIX,
+    V2_PROMPTER_PREFIX,
+)
+from oasst_inference_worker.chain.hf_langchain_inference import HFInference
+from oasst_inference_worker.openapi_parser import prepare_plugin_for_llm
+from oasst_inference_worker.settings import settings
+from oasst_inference_worker.utils import shared_tokenizer_lock
 from oasst_shared.schemas import inference
-from openapi_parser import prepare_plugin_for_llm
-from settings import settings
-from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
 DESCRIPTION_FOR_MODEL_MAX_LENGTH = 512

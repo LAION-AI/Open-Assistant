@@ -1,7 +1,7 @@
 import sys
 
+from oasst_inference_worker.settings import settings
 from oasst_shared import model_configs
-from settings import settings
 
 if __name__ == "__main__":
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)

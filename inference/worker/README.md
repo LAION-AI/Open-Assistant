@@ -15,7 +15,7 @@ This will download the latest version of the worker and start it.
 You can configure the script by setting the following environment variables
 (they go before the `bash`)):
 
-- `IMAGE_TYPE` (default: `full`): Set to `llama` for llama models
+- `IMAGE_TYPE` (default: `full`): Set to `hf` for basic HF server variant
 - `CUDA_VISIBLE_DEVICES` (default: `0,1,2,3,4,5,6,7`): Set to the GPU you want
   to use
 - `MODEL_CONFIG_NAME`: Set to the name of the model config you want to use, see
@@ -40,7 +40,7 @@ config ends in "q" (quantized to `int8`), in which case multiply it by 1.25.
 That number is the minimum Gigabytes of Memory your GPU needs to have. For
 example, the `OA_SFT_Llama_30B` model config has 30 billion parameters, so it
 needs at least 75 GB of memory, while the `OA_SFT_Llama_30Bq` model only needs
-like 40ish GB of memory, due to the quantization.
+40ish GB of memory, due to the quantization.
 
 ## Choosing `MAX_PARALLEL_REQUESTS`
 

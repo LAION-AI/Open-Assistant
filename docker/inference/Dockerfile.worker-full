@@ -21,6 +21,7 @@ RUN /opt/miniconda/envs/worker/bin/pip install -r requirements.txt
 
 COPY ./${APP_RELATIVE_PATH}/*.py .
 COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
+COPY ./${APP_RELATIVE_PATH}/oasst_inference_worker oasst_inference_worker
 
 ENV MODEL_CONFIG_NAME="distilgpt2"
 ENV NUM_SHARDS="1"
