@@ -2,7 +2,7 @@ import gzip
 import json
 import re
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
 import requests
 from datasets import load_dataset
@@ -166,3 +166,20 @@ class Gpt4All(Dataset):
             return dialogue
         elif self.mode == "rl":
             return tuple(dialogue[:-1])
+
+
+class OrcaChat(Dataset):
+    name = "orca-chat"
+
+    def __init__(self, data_files: Union[List[str], str] = "orca-chat-gpt4.json", cache_dir: str = None) -> None:
+        self.dataset = load_dataset("shahules786/orca-chat", split="train", data_files=data_files, cache_dir=cache_dir)
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        conversation, instruction = [self.dataset[idx][key] for key in ("conversation", "instruction")]
+        conversation = [(item["input"], item["output"]) for item in conversation]
+        conversation = list(sum(conversation, ()))
+        conversation[0] = instruction + "\n" + conversation[0]
+        return conversation
