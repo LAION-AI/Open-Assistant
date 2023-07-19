@@ -35,8 +35,6 @@ class PretrainDataset(Dataset):
                 segment_end = min(segment_begin + max_chunk_size, text_len)
                 self.index_map.append((i, segment_begin, segment_end))
 
-        print(dataset_name, len(self.dataset), len(self.index_map))
-
     def __len__(self) -> int:
         return len(self.index_map)
 
