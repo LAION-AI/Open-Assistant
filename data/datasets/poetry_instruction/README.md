@@ -12,7 +12,7 @@ Dataset Structure This dataset follows the OA format, which is:
 
 INSTRUCTION (string): The user asks for a poem (from a variety of premade
 prompts) with topics (tags). If the given poem has no tags, the user asks for a
-poem on it's own.
+poem on its own.
 
 RESPONSE (string): The assistant replies with the poem and title (from a variety
 of premade prompts).

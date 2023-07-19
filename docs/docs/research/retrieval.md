@@ -139,7 +139,7 @@ i.e. the 7B can utilize 40 nearest neighbor chunks, a 172M model only 10 NNs.
 ### Bertsch et al. 2023: Unlimiformer: Long-Range Transformers with Unlimited Length Input
 
 Idea: Use retrieval to actually maximize overlap of "query embeddings" with
-embeddings from an encoder (in a encoder-decoder architecture). Essentially it
+embeddings from an encoder (in an encoder-decoder architecture). Essentially it
 is an ideal approximation of the softmax in the Cross-Attention over all
 previous tokens (in the encoder inputs).
 
