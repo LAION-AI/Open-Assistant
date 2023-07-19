@@ -120,7 +120,6 @@ class DatasetEntrySft(DatasetEntry):
         use_system_tag: bool = False,
         system_property_dropout: float = 0.5,
         system_add_length: bool = False,
-        system_message: str = "",
     ) -> list[str]:
         output: list[str] = []
 
