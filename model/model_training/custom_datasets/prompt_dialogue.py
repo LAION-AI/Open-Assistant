@@ -2,10 +2,11 @@ import gzip
 import json
 import re
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
 import requests
 from datasets import load_dataset
+from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
 from model_training.custom_datasets.oasst_dataset import ListDataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
@@ -166,3 +167,29 @@ class Gpt4All(Dataset):
             return dialogue
         elif self.mode == "rl":
             return tuple(dialogue[:-1])
+
+
+class OrcaChat(Dataset):
+    name = "orca-chat"
+
+    def __init__(self, data_files: Union[List[str], str] = "orca-chat-gpt4.json", cache_dir: str = None) -> None:
+        self.dataset = load_dataset("shahules786/orca-chat", split="train", data_files=data_files, cache_dir=cache_dir)
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        conversation, instruction = [self.dataset[idx][key] for key in ("conversation", "instruction")]
+        conversation = [(item["input"], item["output"]) for item in conversation]
+        conversation = list(sum(conversation, ()))
+        conv_utt: list[Utterance] = [
+            (
+                Utterance(
+                    text=conv,
+                    role=Role.prompter if i % 2 == 0 else Role.assistant,
+                )
+            )
+            for i, conv in enumerate(conversation)
+        ]
+
+        return DatasetEntrySft(conversation=conv_utt, system_message=instruction)
