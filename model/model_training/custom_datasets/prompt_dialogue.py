@@ -10,6 +10,7 @@ from model_training.custom_datasets.oasst_dataset import ListDataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
 from torch.utils.data import Dataset, random_split
+from model_training.custom_datasets.formatting import Utterance, DatasetEntrySft, Role
 
 
 def load_oig_file(
@@ -181,5 +182,9 @@ class OrcaChat(Dataset):
         conversation, instruction = [self.dataset[idx][key] for key in ("conversation", "instruction")]
         conversation = [(item["input"], item["output"]) for item in conversation]
         conversation = list(sum(conversation, ()))
-        conversation[0] = instruction + "\n" + conversation[0]
-        return conversation
+        conv_utt: list[Utterance] = [(Utterance(
+                    text = conv,
+                    role = Role.prompter if i % 2 == 0 else Role.assistant,
+                )) for i, conv in enumerate(conversation) ]
+
+        return DatasetEntrySft(conversation=conv_utt, system_message=instruction)
