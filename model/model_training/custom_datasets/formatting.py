@@ -137,7 +137,9 @@ class DatasetEntrySft(DatasetEntry):
                 else:
                     system_tag = ""
                 if i == 0 and self.system_message:
-                    output.append(f"{QA_SPECIAL_TOKENS['System']}{self.system_message}{eos_token}{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
+                    output.append(
+                        f"{QA_SPECIAL_TOKENS['System']}{self.system_message}{eos_token}{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}"
+                    )
                 else:
                     output.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
             else:
