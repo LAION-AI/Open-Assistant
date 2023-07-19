@@ -88,6 +88,7 @@ defaults:
   deepspeed_config: configs/zero_config.json
   peft_model: false
   peft_type: "lora"
+  superhot: false
 
 use_system_tag:
   use_system_tag: True
