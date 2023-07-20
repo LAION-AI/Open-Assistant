@@ -98,6 +98,8 @@ def load_oasst_export(
             elif mode == "rm":
                 # for reward models we use thread-fragments ending on prompter messages as prefix and
                 # their (ranked) replies as possible continuations.
+                if thread[-1].replies is None:
+                    return False
                 return (
                     thread[-1].role == "prompter"
                     and len([r for r in thread[-1].replies if r.rank is not None]) > 1
