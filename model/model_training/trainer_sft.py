@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import logging
 import os
 from functools import partial
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
+import pydantic
 import torch
+
+# packages i have added
+import wandb
 
 # from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
@@ -25,13 +31,57 @@ from model_training.utils.utils import (
     read_yamls,
 )
 from torch import nn
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Dataset, Subset
 from tqdm import tqdm
-from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
+
+QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
+QA_SPECIAL_TOKENS_V2_5 = {
+    "prompter": "<|prompter|>",
+    "assistant": "<|assistant|>",
+    "system": "<|system|>",
+    "prefix_begin": "<|prefix_begin|>",
+    "prefix_end": "<|prefix_end|>",
+}
+
+
+# pydantic classes to access noprefix2 and the sampling_params
+class SamplingConfig(pydantic.BaseModel):
+    name: Optional[str]
+    generate_args: dict[str, Any] = {}
+    pre_text: Optional[str]
+    add_prefix_tokens: Optional[bool] = False
+
+    # for legacy mode
+    human_name: Optional[str]
+    bot_name: Optional[str]
+
+
+class Configuration(pydantic.BaseModel):
+    default: Optional[SamplingConfig]
+    configurations: list[SamplingConfig]
+
+
+class SamplingResult(pydantic.BaseModel):
+    sampling_config: str
+    sampling_params: dict
+    outputs: list[str]
+
+
+class PromptResults(pydantic.BaseModel):
+    prompt: str
+    results: list[SamplingResult]
+
+
+class SamplingReport(pydantic.BaseModel):
+    model_name: str
+    date: str
+    args: dict
+    prompts: list[PromptResults]
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -52,15 +102,24 @@ class SFTTrainer(Trainer):
     def __init__(
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
+        reward_model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
         sampler: torch.utils.data.sampler.Sampler = None,
         loss_function: str = "CrossEntropyLoss",
         poly_eps: float = 1.0,
         train_collate_fn: Callable = None,
+        rm_tokenizer: Callable = None,
+        tokenizer: Callable = None,
+        sampling_params: Dict = None,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
+        self.reward_model = reward_model
+        self.model = model
         self.train_collate_fn = train_collate_fn
+        self.rm_tokenizer = rm_tokenizer
+        self.sampling_params = sampling_params
+        self.tokenizer = tokenizer
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function, poly_eps)
         self.sampler = sampler
@@ -96,6 +155,31 @@ class SFTTrainer(Trainer):
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
         return loss, logits, targets, labels_mask
+
+    def evaluate(
+        self, eval_dataset: Dataset | None = None, ignore_keys: List[str] | None = None, metric_key_prefix: str = "eval"
+    ) -> Dict[str, float]:
+        eval_dataloader = self.get_eval_dataloader(eval_dataset)
+        output_test = []
+        for x in eval_dataloader:
+            pred = self.model.generate(
+                x.input_ids,
+                **self.sampling_params,
+                pad_token_id=50280,  # padding left by using the |<prompter>| token required by decoder. dicussed with andreas
+                max_length=400,
+            )
+            output_test.append(pred.squeeze().tolist())
+
+        prompt_arr = [i.input_ids.squeeze().tolist() for i in eval_dataloader]
+        prompt_pred = []
+        for p, z in zip(prompt_arr, output_test):
+            prompt_pred.append(p + z)
+
+        full_text = self.tokenizer.batch_decode(prompt_pred)
+        rm_tokens = self.rm_tokenizer(full_text, padding=True, return_tensors="pt")
+        score = self.reward_model(**rm_tokens).logits.cpu().detach()
+        wandb.log({"average reward score": torch.mean(score)})
+        return score
 
     def prediction_step(
         self,
@@ -191,6 +275,21 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
+    # Arguments for Reward Model
+    parser.add_argument("--data_path", type=str, help="Path of the sampling data file")
+    parser.add_argument("--model", type=str, help="Path or url of the model file")
+    parser.add_argument("--max_length", type=int, help="max length of input")
+    parser.add_argument("--batch_size", type=int, help="device", default=4)
+    parser.add_argument("--device", type=str, help="device", default="cpu")
+    parser.add_argument("--save", type=bool, help="whether to save the results", default=True)
+    parser.add_argument(
+        "--sampling-mode",
+        type=str,
+        default="nucleus9",
+        help="Name of Sample Parameters defaults to nucleus9. Options include k50, greedy",
+    )
+    parser.add_argument("--sampling-config-file", type=str, help="file path to sampling parameters i.e. noprefix2.json")
+
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
     else:
@@ -218,6 +317,14 @@ def argument_parsing(notebook=False, notebook_args=None):
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
     conf["show_dataset_stats"] = args.show_dataset_stats
+    conf["device"] = args.device
+    conf["model"] = args.model
+    conf["max_length"] = args.max_length
+    conf["batch_size"] = args.batch_size
+    conf["save"] = args.save
+    conf["data_path"] = args.data_path
+    conf["sampling_mode"] = args.sampling_mode
+    conf["sampling_config_file"] = args.sampling_config_file
 
     # get the world size in deepspeed
     if conf["deepspeed"]:
@@ -281,6 +388,14 @@ def tokenizer_sanity_check(tokenizer):
     print("message_indices:", message_indices)
 
 
+# for reading noprefix2 or other configuration files for sampling
+def load_configs(path: Path) -> Configuration:
+    with path.open() as f:
+        json_data = json.load(f)
+
+    return pydantic.parse_obj_as(Configuration, json_data)
+
+
 def main():
     training_conf = argument_parsing()
     if not training_conf.deepspeed or training_conf.local_rank == 0:
@@ -291,6 +406,27 @@ def main():
         if training_conf.output_dir
         else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
     )
+
+    # device configuration for the reward model
+    training_conf = argument_parsing()
+    if training_conf.device != "cpu":
+        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    else:
+        device = torch.device("cpu")
+
+    # configuring sampling parameters nucleus9... etc
+    sampling_config_file = load_configs(Path(training_conf.sampling_config_file))
+    for sc in sampling_config_file.configurations:
+        if sc.name == training_conf.sampling_mode:
+            sampling_params = sc.generate_args
+
+    # instantiate reward model
+    reward_model_name = training_conf.model
+
+    rm_tokenizer = AutoTokenizer.from_pretrained(reward_model_name)
+    reward_model = AutoModelForSequenceClassification.from_pretrained(reward_model_name)
+    reward_model.eval()
+    reward_model.to(device)
 
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
@@ -457,6 +593,7 @@ def main():
 
     trainer = SFTTrainer(
         model=model,
+        reward_model=reward_model,
         args=args,
         sampler=sampler,
         train_collate_fn=train_collate_fn,
@@ -466,6 +603,8 @@ def main():
         eval_dataset=evals,
         data_collator=eval_collate_fn,
         tokenizer=tokenizer,
+        rm_tokenizer=rm_tokenizer,
+        sampling_params=sampling_params,
         compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
