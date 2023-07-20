@@ -33,7 +33,7 @@
     "@bytemd/plugin-math": "^1.21.0",
     "@bytemd/react": "^1.21.0",
     "@chakra-ui/icons": "^2.0.19",
-    "@chakra-ui/react": "^2.7.0",
+    "@chakra-ui/react": "^2.7.1",
     "@dnd-kit/core": "^6.0.8",
     "@dnd-kit/modifiers": "^6.0.1",
     "@dnd-kit/sortable": "^7.0.2",
