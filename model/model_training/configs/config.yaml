@@ -303,6 +303,7 @@ falcon-7b:
   save_total_limit: 2
   residual_dropout: 0.2
   residual_dropout_lima: true
+  superhot: false
 
 oa-falcon-7b-top1:
   dtype: bf16
@@ -714,6 +715,7 @@ pythia-12b:
   save_steps: 10
   num_train_epochs: 3 # number of scanning dataset
   save_total_limit: 2
+  superhot: false
 
 reference-pythia-12b:
   dtype: fp16
