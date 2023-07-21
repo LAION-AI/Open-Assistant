@@ -3,6 +3,7 @@ import math
 import os
 import random
 from argparse import Namespace
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -21,7 +22,7 @@ from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls
 from utils.utils_rl import prepare_tensor
 
 
-def argument_parsing(notebook=False, notebook_args=None, **kwargs):
+def argument_parsing(notebook: bool = False, notebook_args: Sequence[str] | None = None, **kwargs):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
