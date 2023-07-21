@@ -1,5 +1,6 @@
 {
   "available_task_count": "{{count}} Aufgaben verfügbar",
+  "skip_confirmation": "Sind Sie sicher das sie überspringen wollen?",
   "classify_assistant_reply": {
     "label": "Antwort des Assistenten klassifizieren",
     "desc": "Labeln Sie die Antwort.",

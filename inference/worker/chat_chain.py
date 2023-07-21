@@ -440,7 +440,7 @@ if __name__ == "__main__":
                         id="1",
                         chat_id="1",
                         parent_id=None,
-                        content="Hello, my name is Open Assisstant, how i can help you today?",
+                        content="Hello, my name is Open Assistant, how i can help you today?",
                         created_at=datetime.datetime.now(),
                         role="assistant",
                         state=inference.MessageState.complete,

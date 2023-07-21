@@ -1,5 +1,5 @@
 """
-    Recursive method to travese down the the conversation tree
+    Recursive method to traverse down the conversation tree
 
     Use fastlangid for language identification :
     >> pip install fastlangid

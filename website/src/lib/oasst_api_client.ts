@@ -209,7 +209,7 @@ export class OasstApiClient {
   }
 
   /**
-   * Returns a list of revisions assoicated with `message_id`.
+   * Returns a list of revisions associated with `message_id`.
    */
   async fetch_message_revision_history(message_id: string): Promise<MessageRevision[]> {
     return this.get<MessageRevision[]>(`/api/v1/messages/${message_id}/history`);

@@ -41,7 +41,7 @@ print(wg.generate("Q115564437"))
 
 >>> Questions and Answers on ChatGPT (also known as GPT-3.5, Generative Pre-trained Transformer):
 
-Q: What is the offical website for Generative Pre-trained Transformer?
+Q: What is the official website for Generative Pre-trained Transformer?
 A: Its web address is: https://chat.openai.com/chat
 
 Q: What's ChatGPT's license?

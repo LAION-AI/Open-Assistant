@@ -4,6 +4,7 @@ asyncpg
 authlib
 beautifulsoup4 # web_retriever plugin
 cryptography==39.0.0
+fastapi-limiter
 fastapi[all]==0.88.0
 google-api-python-client
 google-auth-httplib2

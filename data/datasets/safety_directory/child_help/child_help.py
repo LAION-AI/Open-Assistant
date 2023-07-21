@@ -951,7 +951,7 @@ child_hotline = {
     "Parent-Child Support Line": {
         "region": "Hong Kong (China)",
         "page": "https://childhelplineinternational.org/hong-kong-china-parent-child-support-line/",
-        "description": "Operated by Action Againt Abuse (ACA), the Parent-Child Support Line provides service where parents, children, professionals and the public can call the hotline 2755 1122, or go to the ACA centre to report suspected child abuse cases or ask questions about any issues they are facing. It is also a support and hotline for children to express their voices and opinions. The personal data and case content of the data provider/reporter are kept strictly confidential.",
+        "description": "Operated by Action Against Abuse (ACA), the Parent-Child Support Line provides service where parents, children, professionals and the public can call the hotline 2755 1122, or go to the ACA centre to report suspected child abuse cases or ask questions about any issues they are facing. It is also a support and hotline for children to express their voices and opinions. The personal data and case content of the data provider/reporter are kept strictly confidential.",
         "contacts": {
             "Website": {"type": "website", "link": "https://www.aca.org.hk/index.php#.YmRbANNBw-Q"},
             "116 111": {"type": "phone", "link": "tel:"},

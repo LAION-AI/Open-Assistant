@@ -117,7 +117,17 @@ async def create_prompter_message(
         return fastapi.Response(status_code=500)
 
 
-@router.post("/{chat_id}/assistant_message")
+@router.post(
+    "/{chat_id}/assistant_message",
+    dependencies=[
+        Depends(
+            deps.UserRateLimiter(
+                times=settings.rate_limit_messages_user_times,
+                seconds=settings.rate_limit_messages_user_seconds,
+            )
+        ),
+    ],
+)
 async def create_assistant_message(
     chat_id: str,
     request: chat_schema.CreateAssistantMessageRequest,
