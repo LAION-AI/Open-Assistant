@@ -81,6 +81,7 @@ class PerDatasetSampler(DistributedSampler):
         self.shuffle = shuffle
         self.rank = rank
         self.world_size = world_size
+        self.epoch = 0
 
         if world_size == 1:
             self.rank = 0
@@ -89,7 +90,7 @@ class PerDatasetSampler(DistributedSampler):
         self.seed = seed
         self.samples_length = samples_length
 
-    def set_epoch(self, epoch) -> None:
+    def set_epoch(self, epoch: int) -> None:
         self.epoch = epoch
 
     def __len__(self) -> int:
