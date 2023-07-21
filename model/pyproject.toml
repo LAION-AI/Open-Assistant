@@ -10,13 +10,13 @@ authors = [
     { name = "LAION-AI", email = "contact@laion.ai" }
 ]
 dependencies = [
-    "accelerate>=0.15.0",
-    "bitsandbytes>=0.36.0.post2",
-    "datasets>=2.8.0",
-    "deepspeed>=0.8.3",
+    "accelerate>=0.21.0",
+    "bitsandbytes>=0.40.2",
+    "datasets>=2.13.1",
+    "deepspeed>=0.9.5",
     "evaluate>=0.4.0",
     "fastlangid>=1.0.11",
-    "flash_attn>=0.2.8",
+    "flash_attn>=2.0.0",
     "gdown",
     "trlx @ git+https://github.com/CarperAI/trlx.git",
     "ninja>=1.11.1",
@@ -32,8 +32,8 @@ dependencies = [
     "langcodes==3.3.0",
     "tqdm>=4.65.0",
     "pydantic==1.10.7",
-    "transformers @ git+https://github.com/huggingface/transformers.git@6fc44656b43f1de939a1e62dd59c45d1fec9f1aa",
-    "wandb>=0.14.0",
+    "transformers @ git+https://github.com/huggingface/transformers.git@e4a52b6a1536b1d9ef1ac55168bc4fede25605bc",
+    "wandb>=0.15.5",
 ]
 
 [project.optional-dependencies]

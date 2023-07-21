@@ -91,6 +91,9 @@ class Utterance(BaseModel):
             else:
                 fragments.append(f"{k}: {v}")
 
+        if len(fragments) == 0:
+            return ""
+
         content = "\n".join(fragments)
         return f"{QA_SPECIAL_TOKENS['System']}{content}\n{eos_token}"
 
@@ -109,6 +112,7 @@ class DatasetEntrySft(DatasetEntry):
     """Supervised fine-tuning conversation dataset entry"""
 
     conversation: list[Utterance]
+    system_message: Optional[str]
 
     def get_formatted(
         self,
@@ -131,7 +135,12 @@ class DatasetEntrySft(DatasetEntry):
                     )
                 else:
                     system_tag = ""
-                output.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
+                if i == 0 and self.system_message:
+                    output.append(
+                        f"{QA_SPECIAL_TOKENS['System']}{self.system_message}{eos_token}{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}"
+                    )
+                else:
+                    output.append(f"{QA_SPECIAL_TOKENS['Question']}{m.text}{eos_token}{system_tag}")
             else:
                 output.append(f"{QA_SPECIAL_TOKENS['Answer']}{m.text}{eos_token}")
 
