@@ -274,6 +274,14 @@ oasst_df:
         hf_dataset_name: toanbku/oa-df
         val_split: 0.05
 
+oasst_df_x1000:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "en"
+        hf_dataset_name: toanbku/oa-df-x1000
+        val_split: 0.05
+
 falcon-7b:
   dtype: bf16
   log_dir: "falcon_log_7b"
@@ -694,17 +702,17 @@ pythia-12b:
   model_name: OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5
   output_dir: pythia_model_12b
   weight_decay: 0.0
-  residual_dropout: 0.2
+  residual_dropout: 0.2 # increase to avoid over fit
   max_length: 2048
   use_flash_attention: true
   warmup_steps: 2
   gradient_checkpointing: true
   gradient_accumulation_steps: 4
-  per_device_train_batch_size: 2
+  per_device_train_batch_size: 2 # depend on gpu
   per_device_eval_batch_size: 2
-  eval_steps: 4
-  save_steps: 4
-  num_train_epochs: 1000
+  eval_steps: 10
+  save_steps: 10
+  num_train_epochs: 3 # number of scanning dataset
   save_total_limit: 2
 
 reference-pythia-12b:
