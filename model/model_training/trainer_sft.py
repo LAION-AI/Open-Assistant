@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import datasets
 import torch
@@ -166,7 +166,7 @@ class SFTTrainer(Trainer):
         return dataloader
 
 
-def argument_parsing(notebook=False, notebook_args=None):
+def argument_parsing(notebook: bool = False, notebook_args: Sequence[str] | None = None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--configs",
