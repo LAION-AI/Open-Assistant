@@ -1,37 +1,45 @@
 ---
 dataset_info:
   features:
-  - name: text
-    dtype: string
-  - name: sentiment
-    dtype: string
+    - name: text
+      dtype: string
+    - name: sentiment
+      dtype: string
   splits:
-  - name: train
-    num_bytes: 104602
-    num_examples: 1061
+    - name: train
+      num_bytes: 104602
+      num_examples: 1061
   download_size: 48213
   dataset_size: 104602
 license: apache-2.0
 task_categories:
-- text-classification
+  - text-classification
 language:
-- en
+  - en
 pretty_name: sentiments-dataset-381-classes
 size_categories:
-- 1K<n<10K
+  - 1K<n<10K
 ---
+
 # Sentiments Dataset (381 Classes)
 
 ## Dataset Description
-This dataset contains a collection of labeled sentences categorized into 381 different sentiment classes. The dataset provides a wide range of sentiment labels to facilitate fine-grained sentiment analysis tasks. Each sentence is associated with a sentiment class name.
+
+This dataset contains a collection of labeled sentences categorized into 381
+different sentiment classes. The dataset provides a wide range of sentiment
+labels to facilitate fine-grained sentiment analysis tasks. Each sentence is
+associated with a sentiment class name.
 
 ## Dataset Information
+
 - Number of classes: 381
 - Features: `text` (string), `sentiment` (string)
 - Number of examples: 1,061
 
 ## Class Names
+
 The dataset includes the following sentiment class names as examples:
+
 - Positive
 - Negative
 - Neutral
@@ -312,7 +320,9 @@ The dataset includes the following sentiment class names as examples:
 - Whimsical
 - Intertwining
 - - and more
-##  Usage example
+
+## Usage example
+
 ```python
 from datasets import load_dataset
 #Load the dataset
@@ -326,14 +336,19 @@ for name in class_names:
     print(f"Class Name: {name}")
 
 ```
+
 ## Application
 
-The Sentiments Dataset (381 Classes) can be applied in various NLP applications, such as sentiment analysis and text classification.
+The Sentiments Dataset (381 Classes) can be applied in various NLP applications,
+such as sentiment analysis and text classification.
 
 ## Citation
-If you use this dataset in your research or publication, please cite it as follows:
 
-For more information or inquiries about the dataset, please contact the dataset author(s) mentioned in the citation.
+If you use this dataset in your research or publication, please cite it as
+follows:
+
+For more information or inquiries about the dataset, please contact the dataset
+author(s) mentioned in the citation.
 
 ```
 @dataset{sentiments_dataset_381_classes),
