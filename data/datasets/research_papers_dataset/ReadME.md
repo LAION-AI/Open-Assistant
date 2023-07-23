@@ -13,11 +13,13 @@ dataset_info:
   dataset_size: 2363569633
 ---
 
+<!-- markdownlint-disable -->
+
 ## Research Paper Dataset 2023
 
 [Check out this website](https://huggingface.co/datasets/Falah/research_paper2023)
 
-### Dataset Information:
+### Dataset Information
 
 The "Research Paper Dataset 2023" contains information related to research
 papers. It includes the following features:
@@ -25,7 +27,7 @@ papers. It includes the following features:
 - Title (dtype: string): The title of the research paper.
 - Abstract (dtype: string): The abstract of the research paper.
 
-### Dataset Splits:
+### Dataset Splits
 
 The dataset is divided into one split:
 
@@ -34,12 +36,12 @@ The dataset is divided into one split:
   - Number of Bytes: 2,363,569,633
   - Number of Examples: 2,311,491
 
-### Download Information:
+### Download Information
 
 - Download Size: 1,423,881,564 bytes
 - Dataset Size: 2,363,569,633 bytes
 
-### Dataset Citation:
+### Dataset Citation
 
 If you use this dataset in your research or project, please cite it as follows:
 
@@ -57,7 +59,7 @@ If you use this dataset in your research or project, please cite it as follows:
 
 ```
 
-### Apache License:
+### Apache License
 
 The "Research Paper Dataset 2023" is distributed under the Apache License 2.0.
 You can find a copy of the license in the LICENSE file of the dataset
@@ -67,7 +69,7 @@ The specific licensing and usage terms for this dataset can be found in the
 dataset repository or documentation. Please make sure to review and comply with
 the applicable license and usage terms before downloading and using the dataset.
 
-### Example Usage:
+### Example Usage
 
 To load the "Research Paper Dataset 2023" using the Hugging Face Datasets
 Library in Python, you can use the following code:
@@ -102,7 +104,7 @@ dataset can be utilized for these applications:
    book titles. This can be a useful feature for chatbot models that recommend
    books based on specific research topics or areas of interest.
 
-### Potential Benefits:
+### Potential Benefits
 
 - Improved Chatbot Recommendations: With the ability to generate book titles
   related to specific research topics, chatbot models can provide more relevant
@@ -114,7 +116,7 @@ dataset can be utilized for these applications:
   model to efficiently categorize large collections of research papers, enabling
   quicker access to relevant information in specific domains.
 
-### Considerations:
+### Considerations
 
 - Data Preprocessing: Before training the NLP models, appropriate data
   preprocessing steps may be required, such as text cleaning, tokenization, and
@@ -126,7 +128,7 @@ dataset can be utilized for these applications:
   predictions are used responsibly and ethically, respecting copyright and
   intellectual property rights.
 
-### Conclusion:
+### Conclusion
 
 The "Research Paper Dataset 2023" holds great potential for enhancing NLP text
 classification models and chatbot systems. By leveraging the dataset's features

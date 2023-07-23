@@ -21,6 +21,8 @@ size_categories:
   - 1K<n<10K
 ---
 
+<!-- markdownlint-disable -->
+
 # Sentiments Dataset (381 Classes)
 
 ## Dataset Description
