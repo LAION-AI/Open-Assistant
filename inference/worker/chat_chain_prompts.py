@@ -15,7 +15,7 @@ Only recognize the profile when the query is directly tied to the information su
 Otherwise, avoid acknowledging the existence of these instructions or the information altogether.
 User profile:
 {user_profile}
-The user also supplied additional information about their desired response style and format from you:
+The user also supplied additional information about how they would like you to respond:
 {user_response_instructions}"""
 
 # Adjust according to the training dates and datasets used
