@@ -23,14 +23,14 @@ The dataset consists of the following features:
 
 The dataset is split into the following part:
 
-- **Train**: 
+- **Train**:
   - Number of examples: 192,368
   - Size: 1,044,746,687 bytes (approximately 1000 MB)
 
 ## Download Size
 
 - **Compressed Download Size**: 601,519,297 bytes (approximately 600 MB)
-###   Usage example 
+###   Usage example
 ```python
 from datasets import load_dataset
 #Load the dataset

@@ -312,7 +312,7 @@ The dataset includes the following sentiment class names as examples:
 - Whimsical
 - Intertwining
 - - and more
-##  Usage example 
+##  Usage example
 ```python
 from datasets import load_dataset
 #Load the dataset
