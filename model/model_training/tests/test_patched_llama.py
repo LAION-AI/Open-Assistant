@@ -3,12 +3,12 @@ from model_training.models.patching import patch_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def test_flash_attention_patch(dtype=torch.float16, device="cuda:0"):
-    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/llama_hf/7B")
+def test_flash_attention_patch(dtype=torch.float16, device="cuda:0", llama_path="/mnt/data/llama2/Llama-2-7b"):
+    tokenizer = AutoTokenizer.from_pretrained(llama_path)
     tokenizer.add_special_tokens({"pad_token": "</s>", "eos_token": "</s>", "sep_token": "<s>"})
 
-    model = AutoModelForCausalLM.from_pretrained("/home/ubuntu/llama_hf/7B", torch_dtype=dtype).to(device)
-    patched_model = AutoModelForCausalLM.from_pretrained("/home/ubuntu/llama_hf/7B", torch_dtype=dtype).to(device)
+    model = AutoModelForCausalLM.from_pretrained(llama_path, torch_dtype=dtype).to(device)
+    patched_model = AutoModelForCausalLM.from_pretrained(llama_path, torch_dtype=dtype).to(device)
     patch_model(patched_model, resid_pdrop=None, flash_attention=True)
 
     device = model.device
