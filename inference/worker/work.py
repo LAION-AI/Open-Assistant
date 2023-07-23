@@ -49,8 +49,8 @@ def make_prompt_and_parameters(
     ):
         pre_prompt = f"""{V2_SYSTEM_PREFIX}{work_request.parameters.system_prompt if work_request.parameters.system_prompt else ""}\n{
         CUSTOM_INSTRUCTIONS_PREFIX.format(
-            user_profile=work_request.parameters.user_profile,
-            user_response_instructions=work_request.parameters.user_response_instructions,
+            user_profile=work_request.parameters.user_profile if work_request.parameters.user_profile else "",
+            user_response_instructions=work_request.parameters.user_response_instructions if work_request.parameters.user_response_instructions else "",
         )}{eos_token}"""
         messages = [pre_prompt] + messages
 
@@ -114,7 +114,7 @@ def handle_work_request(
             # When using plugins and final prompt is truncated due to length limit
             # LLaMA has tendency to leak internal prompts and generate bad continuations
             # So we add keywords/sequences to the stop sequences to reduce this
-            parameters.stop.extend([THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
+            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
             break
 
     if not used_plugin:

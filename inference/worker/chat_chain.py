@@ -407,7 +407,9 @@ def handle_conversation(
                 custom_instructions,
             )
 
-        return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
+        return handle_standard_usage(
+            original_prompt, prompt_template, language, memory, worker_config, tokenizer, custom_instructions
+        )
     except Exception as e:
         logger.error(f"Error while handling conversation: {e}")
         return "", None
