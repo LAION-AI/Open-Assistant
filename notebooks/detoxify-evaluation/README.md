@@ -1,7 +1,7 @@
 # Detoxify evaluation
 
-[Detoxify](https://github.com/unitaryai/detoxify) is an open source model used
-to identify prompts as toxic
+[Detoxify](https://github.com/unitaryai/detoxify) is a open source model used to
+identify prompts as toxic.
 
 <img  src="https://raw.githubusercontent.com/unitaryai/detoxify/master/examples.png"  alt="Image from detoxify github that shows the example input/output of their model"  />
 
@@ -16,7 +16,7 @@ trained on
 
 Unbiased and original models also have a 'small' version - but since normal
 models are not memory heavy, and small models perform noticeably worse, they are
-only described in the notebook
+only described in the notebook.
 
 ## All tests below were ran on a 3090TI
 
@@ -24,7 +24,7 @@ only described in the notebook
 
 Charts showing detailed memory usages and times for different sentence lengths
 and batch sizes are inside the notebook Quick overview batch size 16, sentence
-length 4k for training, batch size 128 sentence length 4k for Inference
+length 4k for training, batch size 128 sentence length 4k for Inference.
 
 |  Model name  | Training memory | Training speed | Inference Memory | Inference Speed |
 | :----------: | :-------------: | :------------: | :--------------: | :-------------: |
@@ -34,7 +34,7 @@ length 4k for training, batch size 128 sentence length 4k for Inference
 
 # Filtering quality
 
-Detoxify was tested on 4 different types of inputs
+Detoxify was tested on 4 different types of inputs:
 
 - Not obviously toxic
 - Not obviously non-toxic
@@ -57,7 +57,7 @@ toxicity if it's presented in formal language.
 
 With some caution it can be used to filter prompts but I would suggest also
 using someone for verification of messages that are marked as toxic but still
-below 90% confidence
+below 90% confidence.
 
 # Licensing
 

@@ -2,7 +2,7 @@
 
 Here we convert several existing recipe ingredient and instructions datasets
 into dialogue. Each notebook processes a different dataset and creates a final
-dataset to be uploaded to huggingface.
+dataset to be uploaded to HuggingFace.
 
 ## tasty_recipes.ipynb
 

@@ -3,7 +3,7 @@ from an annotated version of the code-search-net dataset. The annotated version
 of code-search-net dataset can be found
 [here](https://huggingface.co/datasets/Nan-Do/code-search-net-python).
 
-The dataset contains around 450000 python annotated functions. The dataset is
+The dataset contains around 450000 Python annotated functions. The dataset is
 split into two blocks, one in which the task is starting from the annotated
 summary to generate an instruction to generate the code as a response, and
 another one in which the expected response is to generate a description of the

@@ -7,14 +7,11 @@ def compute_flash_attention(flash_attn, q, k, v, attention_mask=None, head_mask=
     # attention_mask (float): [bs, seq_len]
     batch_size, max_len = q.size(0), q.size(1)
 
-    qkv = torch.stack([q, k, v], dim=2)
-    dtype_in = qkv.dtype
-    if dtype_in == torch.float32:
-        qkv = qkv.to(torch.float16)  # need to truncate in case input is fp32
+    qkv = torch.stack([q, k, v], dim=2).to(torch.float16)  # need to truncate in case input is fp32
     cu_seqlens, max_seqlen = None, None
 
     if attention_mask is None:
-        out = flash_attn(qkv, cu_seqlens=cu_seqlens, max_seqlen=max_seqlen)
+        return flash_attn(qkv, cu_seqlens=cu_seqlens, max_seqlen=max_seqlen)
     else:
         # Limitation: non-contiguous attention mask will not be handled correctly
         # model will be able to pay attention between the first and last non-masked token, i.e. left- and right-side padding is supported.
@@ -38,10 +35,7 @@ def compute_flash_attention(flash_attn, q, k, v, attention_mask=None, head_mask=
             for i in range(batch_size)
         ]
         out = torch.stack(padded_seqs)
-
-    if out.dtype != dtype_in:
-        out = out.to(dtype_in)
-    return out
+        return out
 
 
 if __name__ == "__main__":

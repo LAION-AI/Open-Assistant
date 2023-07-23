@@ -5,6 +5,7 @@
   "go": "Aller",
   "grab_a_task": "Attrape une tâche!",
   "label": "Étiquette",
+
   "welcome_message": {
     "label": "Bienvenue, {{username}}!",
     "contributor": "Contributeur",

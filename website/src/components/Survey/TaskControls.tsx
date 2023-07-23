@@ -1,12 +1,10 @@
-import { Card, Flex, IconButton, Progress, Tooltip } from "@chakra-ui/react";
+import { Button, Card, Flex, IconButton, Progress, Tooltip } from "@chakra-ui/react";
 import { Edit2 } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { TaskStatus } from "src/components/Tasks/Task";
 import { BaseTask } from "src/types/Task";
-
-import { SkipButton } from "../Buttons/Skip";
 
 export interface TaskControlsProps {
   task: BaseTask;
@@ -41,11 +39,9 @@ export const TaskControls = ({
         <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
           {taskStatus.mode === "EDIT" ? (
             <>
-              <SkipButton
-                onSkip={onSkip}
-                confirmSkip={taskStatus.replyValidity === "VALID"}
-                isLoading={isRejecting}
-              ></SkipButton>
+              <Button size="lg" variant="outline" onClick={onSkip} isLoading={isRejecting}>
+                {t("skip")}
+              </Button>
               <SubmitButton
                 colorScheme="blue"
                 data-cy="review"

@@ -21,7 +21,6 @@ export interface ChatItem {
   created_at: string; //timestamp
   modified_at: string; //timestamp
   messages: InferenceMessage[];
-  allow_data_use: boolean;
 
   // those are not available when you first create a chat
   title?: string;

@@ -2,8 +2,8 @@
 
 ## Running the worker
 
-To run the worker, you need to have docker installed, including the docker
-nvidia runtime if you want to use a GPU. We made a convenience-script you can
+To run the worker, you need to have Docker installed, including the Docker
+NVIDIA runtime if you want to use a GPU. We made a convenience-script you can
 download and run to start the worker:
 
 ```bash

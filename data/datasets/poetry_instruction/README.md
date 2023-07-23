@@ -10,17 +10,17 @@ Languages English
 
 Dataset Structure This dataset follows the OA format, which is:
 
-INSTRUCTION (string): The user asks for a poem (from a variety of premade
-prompts) with topics (tags). If the given poem has no tags, the user asks for a
-poem on its own.
+- INSTRUCTION (string): The user asks for a poem (from a variety of premade
+  prompts) with topics (tags). If the given poem has no tags, the user asks for
+  a poem on it's own.
 
-RESPONSE (string): The assistant replies with the poem and title (from a variety
-of premade prompts).
+- RESPONSE (string): The assistant replies with the poem and title (from a
+  variety of premade prompts).
 
-SOURCE (string): The source is PoetryFoundation.org and the poet's name.
+- SOURCE (string): The source is PoetryFoundation.org and the poet's name.
 
-METADATA (JSON String): {"author": "author of the original poem", "title":
-"title of the poem", "tags": "tags from poetry foundation."}
+- METADATA (JSON String): {"author": "author of the original poem", "title":
+  "title of the poem", "tags": "tags from poetry foundation."}
 
 Preparing the Dataset The dataset can be created with prepare.py. Make sure to
 install the required libraries in requirements.txt!

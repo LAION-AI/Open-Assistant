@@ -8,7 +8,7 @@ If you got the exception `ModuleNotFoundError: No module named 'oasst_data'` you
 first need to install the `oasst_data` package:
 
 Run `pip install -e .` in the `oasst-data/` directory of the Open-Assistant
-repository to install the `oasst_data` python package in editable mode.
+repository to install the `oasst_data` Python package in editable mode.
 
 ## Reading Open-Assistant Export Files
 
@@ -41,7 +41,7 @@ which is used to load Open-Assistant export data for supervised fine-tuning
 (training) of our language models.
 
 You can also load jsonl data completely without dependencies to `oasst_data`
-solely with standard python libraries. In this case the json objects are loaded
+solely with standard Python libraries. In this case the json objects are loaded
 as nested dicts which need to be 'parsed' manually by you:
 
 ```python
@@ -145,10 +145,10 @@ messages are those which have a `review_result` that is `false`.
 
 Conversation threads are a linear lists of messages. THese objects can be
 identified by the presence of the `"thread_id"` property which contains the UUID
-of the last message of the thread (which can be used to reconstruct the thread
-by returning the list of ancestor messages up to the prompt root message). The
-message_id of the first message is normally also the id of the message-tree that
-contains the thread.
+of the last message of the the thread (which can be used to reconstruct the
+thread by returning the list of ancestor messages up to the prompt root
+message). The message_id of the first message is normally also the id of the
+message-tree that contains the thread.
 
 ```json
 {

@@ -75,6 +75,6 @@ conversation, or at least as a prompt with replies.
 - Write script that matches the original tweets and their text with the archive
   data to create the prompt/reply dataset. (Optional)
 - Decide on final output format and storage options for the dataset. Currently
-  in JSONL with tree / node architecture as python dicts which is acceptable I
+  in JSONL with tree / node architecture as Python dicts which is acceptable I
   believe.
 - Alternatively: Store processed tweets into DB or alternative option.(Optional)
