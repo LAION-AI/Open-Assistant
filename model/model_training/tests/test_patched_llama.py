@@ -3,7 +3,7 @@ from model_training.models.patching import patch_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def test_flash_attention_patch(dtype=torch.float16, device="cuda:0", llama_path="meta-llama/Llama-2-7b-hf"):
+def test_flash_attention_patch(dtype=torch.float16, device="cuda:0", llama_path="/mnt/data/llama2/Llama-2-7b"):
     tokenizer = AutoTokenizer.from_pretrained(llama_path)
     tokenizer.add_special_tokens({"pad_token": "</s>", "eos_token": "</s>", "sep_token": "<s>"})
 
