@@ -56,7 +56,6 @@ def make_prompt_and_parameters(
 
     # Stringify and append assistant prefix to signify start of generation
     prompt = "".join(messages) + V2_ASST_PREFIX
-    print(prompt)
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     if settings.use_stop_sequences:
