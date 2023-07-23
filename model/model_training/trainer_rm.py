@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, Literal, Optional, Sequence, Union
 
 import datasets
 import torch
@@ -128,7 +128,7 @@ class RMTrainer(Trainer):
         return dataloader
 
 
-def argument_parsing(notebook=False, notebook_args=None):
+def argument_parsing(notebook: bool = False, notebook_args: Sequence[str] | None = None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
