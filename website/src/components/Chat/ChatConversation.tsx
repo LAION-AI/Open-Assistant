@@ -75,13 +75,15 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
+      const { model_config_name, plugins, custom_instructions, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
         model_config_name,
         sampling_parameters,
         plugins,
+        user_profile: custom_instructions?.user_profile,
+        user_response_instructions: custom_instructions?.user_response_instructions,
       };
 
       let assistant_message: InferenceMessage;
@@ -140,7 +142,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
   const createAssistantDrafts = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
+      const { model_config_name, plugins, custom_instructions, ...sampling_parameters } = getConfigValues();
 
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
@@ -148,6 +150,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         model_config_name: model_config_name,
         sampling_parameters: sampling_parameters,
         plugins: plugins,
+        user_profile: custom_instructions?.user_profile,
+        user_response_instructions: custom_instructions?.user_response_instructions,
       };
 
       let draft_messages: InferenceMessage[];

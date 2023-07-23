@@ -9,6 +9,7 @@ import utils
 import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
+    CUSTOM_INSTRUCTIONS_PREFIX,
     END_SEQ,
     OBSERVATION_SEQ,
     START_SEQ,
@@ -40,13 +41,22 @@ def make_prompt_and_parameters(
     # Construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
-    # Prepend system prompt if it was specified in work parameters
-    if work_request.parameters.system_prompt:
-        pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
+    # Prepend system prompt and custom_instructions if it was specified in work parameters
+    if (
+        work_request.parameters.system_prompt
+        or work_request.parameters.user_profile
+        or work_request.parameters.user_response_instructions
+    ):
+        pre_prompt = f"""{V2_SYSTEM_PREFIX}{work_request.parameters.system_prompt if work_request.parameters.system_prompt else ""}\n{
+        CUSTOM_INSTRUCTIONS_PREFIX.format(
+            user_profile=work_request.parameters.user_profile,
+            user_response_instructions=work_request.parameters.user_response_instructions,
+        )}{eos_token}"""
         messages = [pre_prompt] + messages
 
     # Stringify and append assistant prefix to signify start of generation
     prompt = "".join(messages) + V2_ASST_PREFIX
+    print(prompt)
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     if settings.use_stop_sequences:
@@ -104,7 +114,7 @@ def handle_work_request(
             # When using plugins and final prompt is truncated due to length limit
             # LLaMA has tendency to leak internal prompts and generate bad continuations
             # So we add keywords/sequences to the stop sequences to reduce this
-            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
+            parameters.stop.extend([THOUGHT_SEQ, f"{ASSISTANT_PREFIX}:"])
             break
 
     if not used_plugin:

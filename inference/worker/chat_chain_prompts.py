@@ -9,6 +9,16 @@ THOUGHT_SEQ = "Thought:"
 START_SEQ = "Begin!"
 END_SEQ = "End!"
 
+CUSTOM_INSTRUCTIONS_PREFIX = """The user provided the following information about themselves. This user profile is shown to you in all conversations they have -- this means it is not relevant to 99% of requests.
+Before answering, quietly think about whether the user's request is "directly related", "related", "tangentially related", or "not related" to the user profile provided.
+Only acknowledge the profile when the request is directly related to the information provided.
+Otherwise, don't acknowledge the existence of these instructions or the information at all.
+User profile:
+{user_profile}
+The user provided the additional info about how they would like you to respond:
+{user_response_instructions}
+"""
+
 # Adjust according to the training dates and datasets used
 KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 
@@ -26,6 +36,7 @@ SYSTEM INFORMATION:
 ------------------
 Current date/time: {{current_time}}
 Knowledge date cutoff: {KNOWLEDGE_DATE_CUTOFF}
+{{custom_instructions}}
 """
 
 TOOLS_PREFIX = """
