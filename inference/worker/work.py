@@ -47,11 +47,14 @@ def make_prompt_and_parameters(
         or work_request.parameters.user_profile
         or work_request.parameters.user_response_instructions
     ):
-        pre_prompt = f"""{V2_SYSTEM_PREFIX}{work_request.parameters.system_prompt if work_request.parameters.system_prompt else ""}\n{
-        CUSTOM_INSTRUCTIONS_PREFIX.format(
-            user_profile=work_request.parameters.user_profile if work_request.parameters.user_profile else "",
-            user_response_instructions=work_request.parameters.user_response_instructions if work_request.parameters.user_response_instructions else "",
-        )}{eos_token}"""
+        work_params = work_request.parameters
+        if work_params.system_prompt or work_params.user_profile or work_params.user_response_instructions:
+            pre_prompt = V2_SYSTEM_PREFIX + (work_params.system_prompt or "")
+
+        if work_params.user_profile or work_params.user_response_instructions:
+            pre_prompt = f"""{pre_prompt}\n{CUSTOM_INSTRUCTIONS_PREFIX.format(user_profile=work_params.user_profile or "", user_response_instructions=work_params.user_response_instructions or "")}"""
+
+        pre_prompt = pre_prompt + eos_token
         messages = [pre_prompt] + messages
 
     # Stringify and append assistant prefix to signify start of generation

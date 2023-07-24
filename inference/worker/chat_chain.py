@@ -385,10 +385,14 @@ def handle_conversation(
         # TODO: Consider passing language from the UI here
         prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
 
-        custom_instructions = f"""\n{CUSTOM_INSTRUCTIONS_PREFIX.format(
+        custom_instructions = (
+            f"""\n{CUSTOM_INSTRUCTIONS_PREFIX.format(
             user_profile=work_request.parameters.user_profile,
             user_response_instructions=work_request.parameters.user_response_instructions,
         )}"""
+            if work_request.parameters.user_response_instructions or work_request.parameters.user_profile
+            else ""
+        )
 
         if plugin_enabled:
             return handle_plugin_usage(
