@@ -15,13 +15,14 @@ from transformers import (
     LlamaForCausalLM,
     LlamaModel,
 )
+from transformers.models.llama.modeling_llama import LlamaLinearScalingRotaryEmbedding
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 
 from .patching_falcon import falcon_forward_with_flash_attn
 from .patching_llama import llama_forward_with_flash_attn
 from .patching_neox import neox_forward_with_flash_attn
 from .reward_model import GPTNeoXRewardModel
-from .rope import LlamaDynamicScaledRotaryEmbedding, LlamaLinearScaledRope, LlamaNTKScaledRope, RWNTKScaledRope
+from .rope import LlamaDynamicScaledRotaryEmbedding, LlamaNTKScaledRope, RWNTKScaledRope
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
@@ -218,7 +219,7 @@ class RopePatch:
             elif "LlamaForCausalLM" in architecture:
                 self.architecture = "LlamaForCausalLM"
                 if rope_type == "linear":
-                    self.patch_fun = LlamaLinearScaledRope
+                    self.patch_fun = LlamaLinearScalingRotaryEmbedding
                 elif rope_type == "ntk":
                     self.patch_fun = LlamaNTKScaledRope
                 elif rope_type == "dynamic-ntk":
