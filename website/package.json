@@ -85,7 +85,7 @@
     "sharp": "^0.32.1",
     "simplebar-react": "^3.2.4",
     "swr": "^2.2.0",
-    "tailwindcss": "^3.3.2",
+    "tailwindcss": "^3.3.3",
     "use-debounce": "^9.0.4",
     "usehooks-ts": "^2.9.1"
   },
