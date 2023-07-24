@@ -786,7 +786,7 @@ rope_scaling_test:
   dtype: bf16
   log_dir: "llama_log_7b"
   learning_rate: 1e-5
-  model_name: "huggyllama/llama-7b"
+  model_name: "meta-llama/Llama-2-13b-hf"
   deepspeed_config: configs/zero_config.json
   output_dir: llama
   weight_decay: 0.0
@@ -811,7 +811,7 @@ rope_scaling_test:
   superhot: true
   superhot_config:
     type: linear
-    scale: 2
+    scaling_factor: 2
   datasets:
     - dolly15k
 
