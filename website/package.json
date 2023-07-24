@@ -53,7 +53,7 @@
     "axios": "^1.4.0",
     "boolean": "^3.2.0",
     "chart.js": "^4.3.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "eslint": "^8.41.0",
     "eslint-config-next": "^13.4.6",
