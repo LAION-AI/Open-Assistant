@@ -42,14 +42,9 @@ def make_prompt_and_parameters(
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
     # Prepend system prompt and custom_instructions if it was specified in work parameters
-    if (
-        work_request.parameters.system_prompt
-        or work_request.parameters.user_profile
-        or work_request.parameters.user_response_instructions
-    ):
-        work_params = work_request.parameters
-        if work_params.system_prompt or work_params.user_profile or work_params.user_response_instructions:
-            pre_prompt = V2_SYSTEM_PREFIX + (work_params.system_prompt or "")
+    work_params = work_request.parameters
+    if work_params.system_prompt or work_params.user_profile or work_params.user_response_instructions:
+        pre_prompt = V2_SYSTEM_PREFIX + (work_params.system_prompt or "")
 
         if work_params.user_profile or work_params.user_response_instructions:
             pre_prompt = f"""{pre_prompt}\n{CUSTOM_INSTRUCTIONS_PREFIX.format(user_profile=work_params.user_profile or "", user_response_instructions=work_params.user_response_instructions or "")}"""
