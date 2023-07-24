@@ -91,7 +91,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
-    "@chakra-ui/storybook-addon": "^4.0.16",
+    "@chakra-ui/storybook-addon": "^5.0.1",
     "@faker-js/faker": "^8.0.2",
     "@stardazed/streams-text-encoding": "^1.0.2",
     "@storybook/addon-actions": "^7.0.5",
