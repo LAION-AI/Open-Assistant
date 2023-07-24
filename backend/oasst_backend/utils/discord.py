@@ -2,18 +2,21 @@ from uuid import UUID
 
 import requests
 from loguru import logger
+from oasst_backend.celery_worker import app as celery_app
 from oasst_backend.config import settings
-from oasst_backend.models.message import Message
 
 ROOT_ENDPOINT = "https://discord.com/api/v10"
 
 
-def send_new_report_message(message: Message, label_text: str, user_id: UUID):
+@celery_app.task(name="send_new_report_message")
+def send_new_report_message(message_details: dict, label_text: str, user_id: UUID):
     """
     Send a message to the Discord channel when a new message is flagged.
+    Note: this is a Celery task.
 
     Args:
-        message (Message): the flagged message
+        message_details (dict): some of the attributes of a Message instance that we will use to compose the discord
+        message.
         label_text (str): the label text
         user_id (UUID): the user ID
     """
@@ -22,14 +25,19 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID):
 
     try:
         logger.debug("Sending flagged message to Discord")
-        message_text = message.text[:500] + "..." if len(message.text) > 500 else message.text
         label_text = label_text[:4096]  # 4096 is the max length of discord embed description
         message_content_embed = {
             "title": "Message content",
-            "description": f"{message_text}",
+            "description": message_details["message_text"],
             "color": 0x3498DB,  # Blue
             "footer": {
-                "text": f"Role: {message.role.upper()}\t Lang: {message.lang.upper()}\t 👍{message.emojis.get('+1') or 0} 👎{message.emojis.get('-1') or 0} 🚩{message.emojis.get('red_flag') or 0}"
+                "text": (
+                    f"Role: {message_details['role']}\t "
+                    f"Lang: {message_details['lang']}\t "
+                    f"👍{message_details['thumbs_up']} "
+                    f"👎{message_details['thumbs_down']} "
+                    f"🚩{message_details['red_flag']}"
+                )
             },
         }
         label_text_embed = {
@@ -48,7 +56,7 @@ def send_new_report_message(message: Message, label_text: str, user_id: UUID):
                 "authorization": f"Bot {settings.DISCORD_API_KEY}",
             },
             json={
-                "content": f"New flagged message https://open-assistant.io/admin/messages/{message.id}",
+                "content": f"New flagged message https://open-assistant.io/admin/messages/{message_details['message_id']}",
                 "embeds": [message_content_embed, label_text_embed],
             },
         )
