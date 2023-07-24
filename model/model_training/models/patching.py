@@ -202,6 +202,10 @@ class RopePatch:
         self.args = kwargs
         rope_type = self.args.pop("type")
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+        if hasattr(config, "max_position_embeddings"):
+            self.args["max_position_embeddings"] = config.max_position_embeddings
+        if hasattr(config, "base"):
+            self.args["base"] = config.base
         architecture = config.architectures
         if architecture:
             self.model_name = architecture[0]
