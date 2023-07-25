@@ -57,7 +57,6 @@ def peft_model(model, training_config):
             "lora_dropout": 0.05,
             "bias": "none",
             "task_type": "CAUSAL_LM",
-            "modules_to_save": ["wte", "lm_head"],
         }
         kwargs = merge_dicts(default_args, peft_config)
         if kwargs.get("target_modules") == "all":
