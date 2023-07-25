@@ -420,7 +420,7 @@ def main():
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     if training_conf.peft_model:
-        logging.warning("PEFT, make sure this is a basemodel has been adapted to have special tokens!")
+        logging.warning("PEFT model: make sure this is an adapted base model which has added special tokens!")
         model = AutoModelForCausalLM.from_pretrained(
             training_conf.model_name, torch_dtype=torch.bfloat16 if training_conf.dtype == "bf16" else torch.float16
         )
