@@ -199,11 +199,11 @@ class OrcaChat(Dataset):
 class DolphinMix(Dataset):
     name = "dophin-mix"
 
-    def __init__(self, cache_dir, num_samples=100000, max_char_len=8000):
+    def __init__(self, cache_dir, num_samples=100000, max_char_len=8000, seed=42):
         self.dataset = load_dataset(
             "ehartford/dolphin", data_files="flan5m-alpaca-uncensored.jsonl", cache_dir=cache_dir
         )
-        self.dataset = self.dataset["train"].shuffle(42).select(range(num_samples))
+        self.dataset = self.dataset["train"].shuffle(seed).select(range(num_samples))
         self.max_char_len = max_char_len
         instructions = set([item["instruction"] for item in self.dataset])
 
