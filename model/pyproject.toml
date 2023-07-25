@@ -32,7 +32,7 @@ dependencies = [
     "langcodes==3.3.0",
     "tqdm>=4.65.0",
     "pydantic==1.10.7",
-    "transformers @ git+https://github.com/huggingface/transformers.git@e4a52b6a1536b1d9ef1ac55168bc4fede25605bc",
+    "transformers==4.31.0",
     "wandb>=0.15.5",
 ]
 
