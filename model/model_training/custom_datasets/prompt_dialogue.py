@@ -4,7 +4,6 @@ import re
 from pathlib import Path
 from typing import List, Optional, Union
 
-import numpy as np
 import requests
 from datasets import load_dataset
 from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
@@ -199,40 +198,30 @@ class OrcaChat(Dataset):
 class DolphinMix(Dataset):
     name = "dophin-mix"
 
-    def __init__(self, cache_dir, num_samples=100000, max_char_len=8000, seed=42):
+    def __init__(
+        self, cache_dir: Optional[str] = None, num_samples: int = 100000, max_char_len: int = 8000, seed: int = 42
+    ):
         self.dataset = load_dataset(
             "ehartford/dolphin", data_files="flan5m-alpaca-uncensored.jsonl", cache_dir=cache_dir
         )
         self.dataset = self.dataset["train"].shuffle(seed).select(range(num_samples))
         self.max_char_len = max_char_len
         instructions = set([item["instruction"] for item in self.dataset])
-
         self.conversations = []
         for inst in instructions:
             data_sample = self.dataset.filter(lambda example: example["instruction"] == inst)
-            available_indices = np.arange(0, len(data_sample)).tolist()
-            removed_indices = []
-            for idx in available_indices:
-                conversation_len = len(inst)
-                if idx not in removed_indices and conversation_len < self.max_char_len:
-                    conversation = {"conversation": []}
-                    conversation["instruction"] = inst
-                    input, output = [data_sample[idx][key] for key in ("input", "output")]
-                    conversation["conversation"].append({"input": input, "output": output})
-                    conversation_len += len(input) + len(output)
-                    removed_indices.append(idx)
-                    while conversation_len < self.max_char_len:
-                        indices_to_pick = np.setdiff1d(available_indices, removed_indices)
-                        if len(indices_to_pick) > 0:
-                            idx = np.random.choice(indices_to_pick, size=1)[0]
-                            input, output = [data_sample[int(idx)][key] for key in ("input", "output")]
-                            conversation["conversation"].append({"input": input, "output": output})
-                            conversation_len += len(input) + len(output)
-                            removed_indices.append(idx)
-                        else:
-                            break
-
+            conversation_len = len(inst)
+            conversation = {"conversation": [], "instruction": inst}
+            for idx in range(0, len(data_sample)):
+                input_, output = [data_sample[int(idx)][key] for key in ("input", "output")]
+                input_len = len(input_) + len(output)
+                if conversation_len + input_len < self.max_char_len:
+                    conversation["conversation"].append({"input": input_, "output": output})
+                    conversation_len += len(input_) + len(output)
+                else:
                     self.conversations.append(conversation)
+                    conversation_len = len(inst)
+                    conversation = {"conversation": [], "instruction": inst}
 
     def __len__(self):
         return len(self.conversations)
