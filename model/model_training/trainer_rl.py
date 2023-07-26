@@ -75,7 +75,7 @@ def create_reward_fn(rank_config, sft_config):  # noqa:  C901
     rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name, cache_dir=rank_config.cache_dir)
     sft_tokenizer = transformers.AutoTokenizer.from_pretrained(sft_config.model_name, cache_dir=sft_config.cache_dir)
 
-    def reward_fn(samples, prompts, outputs):
+    def reward_fn(samples, prompts, outputs, **kwargs):
         if len(samples) == 0:
             return []
 

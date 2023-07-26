@@ -16,7 +16,7 @@ dependencies = [
     "deepspeed>=0.9.5",
     "evaluate>=0.4.0",
     "fastlangid>=1.0.11",
-    "flash_attn>=2.0.0",
+    "flash_attn>=1.0.9",
     "gdown",
     "trlx @ git+https://github.com/CarperAI/trlx.git",
     "ninja>=1.11.1",

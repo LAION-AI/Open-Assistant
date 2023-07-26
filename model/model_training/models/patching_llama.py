@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotary_pos_emb, repeat_kv
+from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotary_pos_emb
 
 from .patching_utils import compute_flash_attention
 
@@ -63,8 +63,8 @@ def llama_forward_with_flash_attn(
     past_key_value = (key_states, value_states) if use_cache else None
 
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    # key_states = repeat_kv(key_states, self.num_key_value_groups)
+    # value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     if (
         query_states.shape == key_states.shape

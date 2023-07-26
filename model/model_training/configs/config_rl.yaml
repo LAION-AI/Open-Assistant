@@ -3,13 +3,13 @@ defaults_rlhf:
   datasets: []
   batch_size: 1
   chunk_size: 1
-  num_rollouts: 16
-  total_steps: 10000
+  num_rollouts: 4
+  total_steps: 2
   datasets_extra: []
   cache_dir: /home/ubuntu/data_cache
   output_dir: model_rl
-  eval_size: 500
-  num_eval_prompts: 64
+  eval_size: 4
+  num_eval_prompts: 4
   rank_config:
   sft_config:
   debug: false
@@ -23,6 +23,14 @@ oasst_export_latin_cyrillic_rlhf:
         #top_k: 2
         #input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
         input_file_path: 2023-04-12_oasst_all.trees.jsonl.gz
+  sort_by_length: false
+  use_custom_sampler: false
+
+oasst_df_x1000:
+  datasets:
+    - oasst_export:
+        lang: "en"
+        hf_dataset_name: toanbku/oa-df-x1000
   sort_by_length: false
   use_custom_sampler: false
 
@@ -40,7 +48,7 @@ pythia_rlhf:
   rank_config:
     is_reward_model: true
     model_name: toanbku/oa-rm-2.1-pythia-1.4b-df # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
-    cache_dir: /home/ubuntu/OA/model/model_training/.cache
+    cache_dir: /home/ubuntu/OA/model/model_training/.rank_cache
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
@@ -51,7 +59,7 @@ pythia_rlhf:
   sft_config:
     is_reward_model: false
     model_name: toanbku/oa-pythia-12b-sft-df
-    cache_dir: /home/ubuntu/OA/model/model_training/.cache
+    cache_dir: /home/ubuntu/OA/model/model_training/.sft_cache
     quantization: false
     seq2seqmodel: false
     freeze_layer:
