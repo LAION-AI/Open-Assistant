@@ -726,6 +726,27 @@ pythia-12b:
   save_total_limit: 2
   superhot: false
 
+pythia-12b-edited:
+  fp16: true
+  log_dir: "pythia_log_12b"
+  learning_rate: 6e-6
+  model_name: toanbku/oa-pythia-12b-rlhf-df
+  output_dir: pythia_model_12b
+  weight_decay: 0.0
+  residual_dropout: 0.2 # increase to avoid over fit
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 2
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 2 # depend on gpu
+  per_device_eval_batch_size: 2
+  eval_steps: 10
+  save_steps: 10
+  num_train_epochs: 3 # number of scanning dataset
+  save_total_limit: 2
+  superhot: false
+
 reference-pythia-12b:
   dtype: fp16
   log_dir: "pythia_log_12b"
