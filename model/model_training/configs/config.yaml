@@ -283,6 +283,14 @@ oasst_df_x1000:
         hf_dataset_name: toanbku/oa-df-x1000
         val_split: 0.05
 
+oasst_df_x1000_edited:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "en"
+        hf_dataset_name: toanbku/oa-df-x1000-edited
+        val_split: 0.05
+
 falcon-7b:
   dtype: bf16
   log_dir: "falcon_log_7b"
