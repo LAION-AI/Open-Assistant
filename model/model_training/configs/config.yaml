@@ -850,6 +850,7 @@ falcon_7b_ntk_test:
 
 llama2_13b_orcacode_8k:
   rng_seed: 0xe1291f21
+  random_offset_probability: 0.0
   use_custom_sampler: true
   sort_by_length: false
   dtype: fp16
@@ -872,12 +873,20 @@ llama2_13b_orcacode_8k:
   num_train_epochs: 1
   save_total_limit: 4
   datasets:
-    - dolphin-mix:
-        num_samples: 1000000 # total entries 2840090
-        max_char_len: 32000
+    - wizard_evol_instruct_v2:
         val_split: 0.1
-        max_val_set: 2000
-        seed: 44
+    - evol-codealpaca-v1:
+        fill_min_length: 20000
+        val_split: 0.1
+    - cot_submix_original:
+        fill_min_length: 20000
+        val_split: 0.1
+    - flan2021_submix_original:
+        fill_min_length: 20000
+        val_split: 0.01
+    - t0_submix_original:
+        fill_min_length: 20000
+        val_split: 0.01
     - megacode:
         fill_min_length: 24000
         val_split: 0.1
@@ -886,6 +895,17 @@ llama2_13b_orcacode_8k:
         fill_min_length: 24000
         val_split: 0.1
         max_val_set: 1000
+    - dolphin-mix:
+        num_samples: 1000000 # total entries 2840090
+        max_char_len: 32000
+        val_split: 0.1
+        max_val_set: 2000
+        seed: 44
+    # - oasst_export:
+    #     lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+    #     input_file_path: 2023-07-23_oasst_ready.tar.gz
+    #     top_k: 1
+    #     val_split: 0.05
 
   # Dataset composition:
   # Train:

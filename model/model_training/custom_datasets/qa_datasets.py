@@ -486,10 +486,6 @@ class Vicuna(Dataset):
                 elif speaker == "human":
                     # replace empty messages with one of the following
                     message = random.choice(["...", "Please continue", "Go on", ""])
-            # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
-            # python-markdownify with escape_asterisks & escape_underscores True is used
-            # for pre-processing the dataset.
-            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
             message = message.replace(r"\_", "_")
             message = message.replace(r"\*", "*")
             message = re_single_reference_remove.sub("", message)
@@ -514,9 +510,8 @@ class Vicuna(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
         super().__init__()
 
-        self.pairs = []
-        if mode not in ("sft", "rl"):
-            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        if mode != "sft":
+            raise NotImplementedError(f"Currently only the mode 'sft' is implemented. Received {mode}.")
         self.mode = mode
 
         dataset = load_dataset(
@@ -526,8 +521,37 @@ class Vicuna(Dataset):
             revision="7b8551404f3de5704d634e7516b9ff77be3e2700",
         )["train"]
 
+        self.pairs = []
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
+                if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
+                    self.pairs.append(create_dataset_entry_qa(mode=self.mode, questions=qa[0], answers=qa[1]))
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        return self.pairs[index]
+
+
+class WizardEvolInstructV2(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
+        super().__init__()
+
+        if mode != "sft":
+            raise NotImplementedError(f"Currently only the mode 'sft' is implemented. Received {mode}.")
+        self.mode = mode
+
+        dataset = load_dataset(
+            "ehartford/WizardLM_evol_instruct_V2_196k_unfiltered_merged_split",
+            cache_dir=cache_dir,
+            data_files=["WizardLM_evol_instruct_V2_196k_unfiltered_merged_split.json"],
+            revision="34f04cfbc280da93a79ad9ecf339923f9411c1fc",
+        )["train"]
+
+        self.pairs = []
+        for data in dataset:
+            if (qa := Vicuna.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
                 if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
                     self.pairs.append(create_dataset_entry_qa(mode="sft", questions=qa[0], answers=qa[1], lang="en"))
 
