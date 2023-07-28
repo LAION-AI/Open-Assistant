@@ -209,34 +209,26 @@ class DolphinMix(Dataset):
         instructions = sorted(set([item["instruction"] for item in self.dataset]))
 
         self.conversations = []
-        for j, inst in enumerate(instructions):
+        for inst in instructions:
             data_sample = self.dataset.filter(lambda example: example["instruction"] == inst)
+            conversation_len = len(inst)
+            conversation = []
+            for entry in data_sample:
+                input, output = entry["input"], entry["output"]
+                conversation.append({"input": input, "output": output})
+                conversation_len += len(input) + len(output)
+                if conversation_len >= self.max_char_len:
+                    self.conversations.append({"conversation": conversation, "instruction": inst})
+                    conversation_len = len(inst)
+                    conversation = []
 
-            available_indices = set(range(len(data_sample)))
+            if len(conversation) > 0:
+                self.conversations.append({"conversation": conversation, "instruction": inst})
 
-            while len(available_indices) > 0:
-                idx = available_indices.pop()
-
-                conversation_len = len(inst)
-                if conversation_len < self.max_char_len:
-                    conversation = {"conversation": [], "instruction": inst}
-
-                    input, output = [data_sample[idx][key] for key in ("input", "output")]
-                    conversation["conversation"].append({"input": input, "output": output})
-                    conversation_len += len(input) + len(output)
-
-                    while conversation_len < self.max_char_len and len(available_indices) > 0:
-                        idx = available_indices.pop()
-                        input, output = [data_sample[int(idx)][key] for key in ("input", "output")]
-                        conversation["conversation"].append({"input": input, "output": output})
-                        conversation_len += len(input) + len(output)
-
-                    self.conversations.append(conversation)
-
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.conversations)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> DatasetEntrySft:
         conversation, instruction = [self.conversations[idx][key] for key in ("conversation", "instruction")]
         conversation = [(item["input"], item["output"]) for item in conversation]
         conversation = list(sum(conversation, ()))
