@@ -7,10 +7,10 @@ from model_training.custom_datasets.rank_datasets import HellaSwagDataset, HFDat
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.metrics import RewardMetrics
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers.trainer_utils import EvalPrediction
 from utils import write_to_json
-from tqdm import tqdm
 
 DATASETS = ["SHP", "Hellaswag", "HFdataset"]
 
@@ -67,7 +67,9 @@ if __name__ == "__main__":
     model_name = args.get("model")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, torch_dtype="auto" if not args.dtype else args.dtype)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, torch_dtype="auto" if not args.dtype else args.dtype
+    )
     model.eval()
     model.to(device)
     max_length = args.get("max_length") or model.config.max_position_embeddings
