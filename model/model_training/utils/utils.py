@@ -188,7 +188,6 @@ TOKENIZER_CONFIGS = {
         special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", sep_token="<|endoftext|>")
     ),
     "LLongMA": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
-
 }
 
 
@@ -208,7 +207,7 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
     tokenizer_name = conf.model_name
-    
+
     if "cerebras" in conf.model_name:
         # Only 13B has a tokenizer available on HF
         tokenizer_name = "cerebras/Cerebras-GPT-13B"
