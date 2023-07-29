@@ -32,8 +32,6 @@ INSTRUCTION_DATASETS = {
     "evol_instruct_code": "nickrosh/Evol-Instruct-Code-80k-v1",
     "evol-codealpaca-v1": "theblackcat102/evol-codealpaca-v1",
     "cot_submix_original": "conceptofmind/cot_submix_original",
-    "flan2021_submix_original": "conceptofmind/flan2021_submix_original",
-    "t0_submix_original": "conceptofmind/t0_submix_original",
 }
 
 
@@ -49,7 +47,7 @@ class InstructionDataset(Dataset):
         elif dataset in ("wizardlm_70k", "evol_instruct_code", "evol-codealpaca-v1"):
             self.instruction_column = "instruction"
             self.response_column = "output"
-        elif dataset in ("cot_submix_original", "flan2021_submix_original", "t0_submix_original"):
+        elif dataset == "cot_submix_original":
             self.instruction_column = "inputs"
             self.response_column = "targets"
         elif dataset == "megacode":
