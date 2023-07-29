@@ -247,8 +247,6 @@ class RopePatch:
         else:
             raise NotImplementedError()
 
-        self.update_config(model, self.args.get("scaling_factor"))
-
     def patch_falcon_model(self, model, **kwargs):
         for each in model.transformer.h:
             each.self_attention.maybe_rotary = self.patch_fun(model.config.head_dim, **kwargs)
