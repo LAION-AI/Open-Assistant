@@ -2,7 +2,7 @@ import gzip
 import json
 import re
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Mapping, Optional, Sequence, Union
 
 import requests
 from datasets import load_dataset
@@ -198,11 +198,20 @@ class OrcaChat(Dataset):
 class DolphinMix(Dataset):
     name = "dophin-mix"
 
-    def __init__(self, cache_dir, num_samples: Optional[int] = None, max_char_len: int = 8000, seed: int = 42):
-        self.dataset = load_dataset(
-            "ehartford/dolphin", data_files="flan5m-alpaca-uncensored.jsonl", cache_dir=cache_dir
-        )  # total entries 2840090
-        self.dataset = self.dataset["train"].shuffle(seed).flatten_indices()
+    def __init__(
+        self,
+        cache_dir: Optional[str] = None,
+        num_samples: Optional[int] = None,
+        max_char_len: int = 8000,
+        seed: int = 42,
+        data_files: Union[
+            str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]
+        ] = "flan5m-alpaca-uncensored.jsonl",
+        split: str = "train",
+    ):
+        # flan5m-alpaca-uncensored.jsonl has total entries 2840090
+        self.dataset = load_dataset("ehartford/dolphin", data_files=data_files, cache_dir=cache_dir)
+        self.dataset = self.dataset[split].shuffle(seed).flatten_indices()
         if num_samples:
             self.dataset = self.dataset.select(range(num_samples))
         self.max_char_len = max_char_len
