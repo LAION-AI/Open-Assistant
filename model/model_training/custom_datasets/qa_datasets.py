@@ -486,6 +486,10 @@ class Vicuna(Dataset):
                 elif speaker == "human":
                     # replace empty messages with one of the following
                     message = random.choice(["...", "Please continue", "Go on", ""])
+            # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
+            # python-markdownify with escape_asterisks & escape_underscores True is used
+            # for pre-processing the dataset.
+            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
             message = message.replace(r"\_", "_")
             message = message.replace(r"\*", "*")
             message = re_single_reference_remove.sub("", message)
