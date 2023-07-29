@@ -236,9 +236,6 @@ class RopePatch:
         args = config.superhot_config
         return cls(model_name, **args)
 
-    def update_config(self, model, scaling_factor):
-        model.config["rope_scaling"] = {"type": self.rope_type, "factor": scaling_factor}
-
     def patch(self, model):
         if self.architecture == "FalconForCausalLM":
             self.patch_falcon_model(model, **self.args)
@@ -246,8 +243,6 @@ class RopePatch:
             self.patch_llama_model(model, **self.args)
         else:
             raise NotImplementedError()
-
-        self.update_config(model, self.args.get("scaling_factor"))
 
     def patch_falcon_model(self, model, **kwargs):
         for each in model.transformer.h:

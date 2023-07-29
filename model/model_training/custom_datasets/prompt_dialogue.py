@@ -2,9 +2,8 @@ import gzip
 import json
 import re
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Mapping, Optional, Sequence, Union
 
-import numpy as np
 import requests
 from datasets import load_dataset
 from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
@@ -199,45 +198,46 @@ class OrcaChat(Dataset):
 class DolphinMix(Dataset):
     name = "dophin-mix"
 
-    def __init__(self, cache_dir, num_samples=100000, max_char_len=8000, seed=42):
-        self.dataset = load_dataset(
-            "ehartford/dolphin", data_files="flan5m-alpaca-uncensored.jsonl", cache_dir=cache_dir
-        )
-        self.dataset = self.dataset["train"].shuffle(seed).select(range(num_samples))
+    def __init__(
+        self,
+        cache_dir: Optional[str] = None,
+        num_samples: Optional[int] = None,
+        max_char_len: int = 8000,
+        seed: int = 42,
+        data_files: Union[
+            str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]
+        ] = "flan5m-alpaca-uncensored.jsonl",
+        split: str = "train",
+    ):
+        # flan5m-alpaca-uncensored.jsonl has total entries 2840090
+        self.dataset = load_dataset("ehartford/dolphin", data_files=data_files, cache_dir=cache_dir)
+        self.dataset = self.dataset[split].shuffle(seed).flatten_indices()
+        if num_samples:
+            self.dataset = self.dataset.select(range(num_samples))
         self.max_char_len = max_char_len
-        instructions = set([item["instruction"] for item in self.dataset])
+        instructions = sorted(set([item["instruction"] for item in self.dataset]))
 
         self.conversations = []
         for inst in instructions:
             data_sample = self.dataset.filter(lambda example: example["instruction"] == inst)
-            available_indices = np.arange(0, len(data_sample)).tolist()
-            removed_indices = []
-            for idx in available_indices:
-                conversation_len = len(inst)
-                if idx not in removed_indices and conversation_len < self.max_char_len:
-                    conversation = {"conversation": []}
-                    conversation["instruction"] = inst
-                    input, output = [data_sample[idx][key] for key in ("input", "output")]
-                    conversation["conversation"].append({"input": input, "output": output})
-                    conversation_len += len(input) + len(output)
-                    removed_indices.append(idx)
-                    while conversation_len < self.max_char_len:
-                        indices_to_pick = np.setdiff1d(available_indices, removed_indices)
-                        if len(indices_to_pick) > 0:
-                            idx = np.random.choice(indices_to_pick, size=1)[0]
-                            input, output = [data_sample[int(idx)][key] for key in ("input", "output")]
-                            conversation["conversation"].append({"input": input, "output": output})
-                            conversation_len += len(input) + len(output)
-                            removed_indices.append(idx)
-                        else:
-                            break
+            conversation_len = len(inst)
+            conversation = []
+            for entry in data_sample:
+                input, output = entry["input"], entry["output"]
+                conversation.append({"input": input, "output": output})
+                conversation_len += len(input) + len(output)
+                if conversation_len >= self.max_char_len:
+                    self.conversations.append({"conversation": conversation, "instruction": inst})
+                    conversation_len = len(inst)
+                    conversation = []
 
-                    self.conversations.append(conversation)
+            if len(conversation) > 0:
+                self.conversations.append({"conversation": conversation, "instruction": inst})
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.conversations)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> DatasetEntrySft:
         conversation, instruction = [self.conversations[idx][key] for key in ("conversation", "instruction")]
         conversation = [(item["input"], item["output"]) for item in conversation]
         conversation = list(sum(conversation, ()))

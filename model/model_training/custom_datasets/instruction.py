@@ -30,6 +30,8 @@ INSTRUCTION_DATASETS = {
     "wizardlm_70k": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
     "megacode": "rombodawg/MegaCodeTraining112k",
     "evol_instruct_code": "nickrosh/Evol-Instruct-Code-80k-v1",
+    "evol-codealpaca-v1": "theblackcat102/evol-codealpaca-v1",
+    "cot_submix_original": "conceptofmind/cot_submix_original",
 }
 
 
@@ -42,9 +44,12 @@ class InstructionDataset(Dataset):
         if dataset == "minimath":
             self.instruction_column = "question"
             self.response_column = "answer"
-        elif dataset in ("wizardlm_70k", "evol_instruct_code"):
+        elif dataset in ("wizardlm_70k", "evol_instruct_code", "evol-codealpaca-v1"):
             self.instruction_column = "instruction"
             self.response_column = "output"
+        elif dataset == "cot_submix_original":
+            self.instruction_column = "inputs"
+            self.response_column = "targets"
         elif dataset == "megacode":
             self.instruction_column = "prompt"
             self.response_column = "completion"

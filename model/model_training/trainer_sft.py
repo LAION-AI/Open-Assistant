@@ -422,6 +422,9 @@ def main():
     if superhot:
         superhot.patch(model)
 
+    print(f"rope_scaling: {model.config.rope_scaling}")
+    print(f"max_position_embeddings: {model.config.max_position_embeddings}")
+
     if training_conf.peft_model:
         print("Using PEFT model")
         model = peft_model(model, training_conf)
