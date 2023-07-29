@@ -847,3 +847,75 @@ falcon_7b_ntk_test:
     alpha: 2
   datasets:
     - dolly15k
+
+llama2_13b_orcacode2_8k:
+  rng_seed: 0xe1291f21
+  random_offset_probability: 0.0
+  use_custom_sampler: true
+  sort_by_length: false
+  dtype: fp16
+  log_dir: "llama2_log_13b_orcacode2_8k"
+  output_dir: llama2_13b_orcacode2_8k
+  learning_rate: 1e-5
+  model_name: OpenAssistant/llama2-13b-orca-8k-3319
+  deepspeed_config: configs/zero_config_pretrain.json
+  weight_decay: 1e-6
+  max_length: 8192
+  warmup_steps: 100
+  peft_model: false
+  use_flash_attention: true
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 1
+  residual_dropout: 0.0
+  eval_steps: 200
+  save_steps: 500 # (total steps: 1558, bs: 64)
+  num_train_epochs: 1
+  save_total_limit: 4
+  datasets:
+    - dolphin-mix:
+        num_samples: 1000000 # total entries 2840090
+        max_char_len: 32000
+        val_split: 0.1
+        max_val_set: 2000
+        seed: 44
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-07-23_oasst_ready.tar.gz
+        top_k: 1
+        val_split: 0.05
+    - wizard_evol_instruct_v2:
+        val_split: 0.01
+        fraction: 0.1
+    - evol-codealpaca-v1:
+        fill_min_length: 20000
+        val_split: 0.1
+    - cot_submix_original:
+        fill_min_length: 20000
+        val_split: 0.1
+    - megacode:
+        fill_min_length: 24000
+        val_split: 0.1
+        max_val_set: 1000
+    - evol_instruct_code:
+        fill_min_length: 24000
+        val_split: 0.1
+        max_val_set: 1000
+  # Dataset composition:
+  # Train:
+  #   dolphin-mix:             40374
+  #   oasst_export:            11441
+  #   wizard_evol_instruct_v2: 15236
+  #   evol-codealpaca-v1:       5623
+  #   cot_submix_original:      8651
+  #   megacode:                14320
+  #   evol_instruct_code:       4093
+  # Valid:
+  #   dolphin-mix:              2000
+  #   oasst_export:              603
+  #   wizard_evol_instruct_v2:  1540
+  #   evol-codealpaca-v1:        625
+  #   cot_submix_original:       962
+  #   megacode:                 1000
+  #   evol_instruct_code:        455

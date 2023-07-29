@@ -20,6 +20,7 @@ from model_training.custom_datasets.qa_datasets import (
     TranslatedQA,
     Vicuna,
     WebGPT,
+    WizardEvolInstructV2,
     load_alpaca_dataset,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
@@ -110,7 +111,7 @@ def get_one_dataset(
             eval = SummarizationDataset(dataset_name, data_path, "validation")
             train = dataset
     elif dataset_name in INSTRUCTION_DATASETS:
-        dataset = InstructionDataset(dataset_name, data_path, "train")
+        dataset = InstructionDataset(dataset_name, data_path, "train", **kwargs)
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")
@@ -143,6 +144,8 @@ def get_one_dataset(
         dataset = TranslatedQA(data_path)
     elif dataset_name == "vicuna":
         dataset = Vicuna(cache_dir=data_path, **kwargs)
+    elif dataset_name == "wizard_evol_instruct_v2":
+        dataset = WizardEvolInstructV2(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":

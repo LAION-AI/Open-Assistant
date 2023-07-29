@@ -6,7 +6,7 @@ authors = [
     { name = "LAION-AI", email = "contact@laion.ai" }
 ]
 dependencies = [
-    "pydantic==1.10.4",
+    "pydantic==1.10.7",
     "aiohttp==3.8.3",
     "aiohttp[speedups]",
     "loguru==0.6.0",
