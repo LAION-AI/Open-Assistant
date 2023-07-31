@@ -68,7 +68,7 @@
     "next-i18next": "^13.3.0",
     "nodemailer": "^6.9.3",
     "pino": "^8.14.1",
-    "postcss-focus-visible": "^7.1.0",
+    "postcss-focus-visible": "^9.0.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-cookie": "^4.1.1",
