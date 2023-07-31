@@ -15,6 +15,8 @@ class CreateAssistantMessageRequest(pydantic.BaseModel):
     model_config_name: str
     sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
     system_prompt: str | None = None
+    user_profile: str | None = None
+    user_response_instructions: str | None = None
     plugins: list[inference.PluginEntry] = pydantic.Field(default_factory=list[inference.PluginEntry])
     used_plugin: inference.PluginUsed | None = None
 

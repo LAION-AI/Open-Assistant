@@ -223,7 +223,7 @@ class RequestsForLLM:
     def process_response(self, res: requests.Response) -> str:
         logger.info(f"Request response: {res.text}")
         if res.status_code != 200:
-            return f"ERROR! That didn't work, try modifying Action Input.\n{res.text}. Try again!"
+            return f"ERROR! Please modify Action Input. according to this error message: \n{res.text}. Try again!"
 
         if res.text is None or len(res.text) == 0:
             return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
@@ -329,6 +329,7 @@ def prepare_prompt(
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
     action_input_format: str,
+    custom_instructions: str = "",
 ) -> str:
     max_input_length = worker_config.model_config.max_input_length
 
@@ -337,6 +338,7 @@ def prepare_prompt(
         "language": language,
         "current_time": current_time,
         "chat_history": memory.buffer,
+        "custom_instructions": custom_instructions,
     }
 
     if tools_names:
@@ -356,6 +358,7 @@ def prepare_prompt(
             "language": language,
             "current_time": current_time,
             "chat_history": memory.buffer,
+            "custom_instructions": custom_instructions,
         }
 
         if tools_names:

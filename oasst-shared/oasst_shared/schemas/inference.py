@@ -208,6 +208,8 @@ class WorkParameters(pydantic.BaseModel):
         default_factory=make_seed,
     )
     system_prompt: str | None = None
+    user_profile: str | None = None
+    user_response_instructions: str | None = None
     plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
     plugin_max_depth: int = 4
 

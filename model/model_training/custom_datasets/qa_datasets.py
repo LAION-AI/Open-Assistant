@@ -514,9 +514,8 @@ class Vicuna(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
         super().__init__()
 
-        self.pairs = []
-        if mode not in ("sft", "rl"):
-            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        if mode != "sft":
+            raise NotImplementedError(f"Currently only the mode 'sft' is implemented. Received {mode}.")
         self.mode = mode
 
         dataset = load_dataset(
@@ -525,8 +524,37 @@ class Vicuna(Dataset):
             data_files=["ShareGPT_V4.3_unfiltered_cleaned_split.json"],
         )["train"]
 
+        self.pairs = []
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
+                if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
+                    self.pairs.append(create_dataset_entry_qa(mode=self.mode, questions=qa[0], answers=qa[1]))
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        return self.pairs[index]
+
+
+class WizardEvolInstructV2(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
+        super().__init__()
+
+        if mode != "sft":
+            raise NotImplementedError(f"Currently only the mode 'sft' is implemented. Received {mode}.")
+        self.mode = mode
+
+        dataset = load_dataset(
+            "ehartford/WizardLM_evol_instruct_V2_196k_unfiltered_merged_split",
+            cache_dir=cache_dir,
+            data_files=["WizardLM_evol_instruct_V2_196k_unfiltered_merged_split.json"],
+            revision="34f04cfbc280da93a79ad9ecf339923f9411c1fc",
+        )["train"]
+
+        self.pairs = []
+        for data in dataset:
+            if (qa := Vicuna.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
                 if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
                     self.pairs.append(create_dataset_entry_qa(mode="sft", questions=qa[0], answers=qa[1], lang="en"))
 

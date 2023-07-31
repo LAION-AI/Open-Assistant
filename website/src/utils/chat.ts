@@ -1,5 +1,5 @@
 import { PluginEntry } from "src/types/Chat";
-import { SamplingParameters } from "src/types/Chat";
+import { SamplingParameters, CustomInstructionsType } from "src/types/Chat";
 
 const CHAT_CONFIG_KEY = "CHAT_CONFIG_V2";
 
@@ -12,6 +12,7 @@ export type CachedChatConfig = {
   custom_presets: CustomPreset[];
   selectedPlugins: PluginEntry[];
   plugins: PluginEntry[]; // all plugins user added
+  custom_instructions: CustomInstructionsType;
 };
 
 export const setConfigCache = (config: CachedChatConfig) => {

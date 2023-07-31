@@ -10,8 +10,8 @@ loguru==0.6.0
 numpy>=1.23.2
 prometheus-fastapi-instrumentator==5.9.1
 psycopg2-binary==2.9.5
-pydantic==1.10.4
-pydantic[email]==1.10.4
+pydantic==1.10.7
+pydantic[email]==1.10.7
 python-dotenv==0.21.0
 python-jose[cryptography]==3.3.0
 redis==4.5.5
