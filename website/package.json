@@ -120,7 +120,7 @@
     "msw": "^1.2.1",
     "msw-storybook-addon": "^1.8.0",
     "path-browserify": "^1.0.1",
-    "pino-pretty": "^10.0.0",
+    "pino-pretty": "^10.2.0",
     "prettier": "^2.8.8",
     "prisma": "^4.14.0",
     "storybook": "^7.0.9",
