@@ -9,6 +9,7 @@ import utils
 import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
+    CUSTOM_INSTRUCTIONS_PREFIX,
     END_SEQ,
     OBSERVATION_SEQ,
     START_SEQ,
@@ -40,9 +41,15 @@ def make_prompt_and_parameters(
     # Construct prompt
     messages = [_prepare_message(message) for message in work_request.thread.messages]
 
-    # Prepend system prompt if it was specified in work parameters
-    if work_request.parameters.system_prompt:
-        pre_prompt = V2_SYSTEM_PREFIX + work_request.parameters.system_prompt + eos_token
+    # Prepend system prompt and custom_instructions if it was specified in work parameters
+    work_params = work_request.parameters
+    if work_params.system_prompt or work_params.user_profile or work_params.user_response_instructions:
+        pre_prompt = V2_SYSTEM_PREFIX + (work_params.system_prompt or "")
+
+        if work_params.user_profile or work_params.user_response_instructions:
+            pre_prompt = f"""{pre_prompt}\n{CUSTOM_INSTRUCTIONS_PREFIX.format(user_profile=work_params.user_profile or "", user_response_instructions=work_params.user_response_instructions or "")}"""
+
+        pre_prompt = pre_prompt + eos_token
         messages = [pre_prompt] + messages
 
     # Stringify and append assistant prefix to signify start of generation

@@ -60,5 +60,10 @@
   "preset_name_placeholder": "Enter name",
   "feedback_message": "How did I do? Your feedback will make me better!",
   "feedback_action_great": "Good",
-  "feedback_action_poor": "Could be better"
+  "feedback_action_poor": "Could be better",
+  "custom_instructions": "Custom instructions",
+  "custom_instructions_user_profile": "What info should Open-Assistant have about you to make its replies even better?",
+  "custom_instructions_response_instructions": "How do you want Open-Assistant to chat with you?",
+  "custom_instructions_user_profile_placeholder": "List some of your aspirations.\nDescribe your hobbies and interests.\nShare your location.\nWhat is your occupation?\nWhich topics could you discuss extensively?",
+  "custom_instructions_response_instructions_placeholder": "Should Open-Assistant express opinions or maintain neutrality?\nSpecify the desired formality level for Open-Assistant's responses.\nHow should Open-Assistant address you?\nDetermine the preferred length of responses."
 }

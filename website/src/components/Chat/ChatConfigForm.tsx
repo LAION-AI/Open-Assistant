@@ -20,7 +20,13 @@ import { useTranslation } from "next-i18next";
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
 import SimpleBar from "simplebar-react";
-import { ChatConfigFormData, ModelParameterConfig, PluginEntry, SamplingParameters } from "src/types/Chat";
+import {
+  ChatConfigFormData,
+  ModelParameterConfig,
+  PluginEntry,
+  SamplingParameters,
+  CustomInstructionsType,
+} from "src/types/Chat";
 import { CustomPreset, getConfigCache } from "src/utils/chat";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
@@ -28,6 +34,7 @@ import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatInitialData } from "./ChatInitialDataContext";
 import { DeletePresetButton } from "./DeletePresetButton";
 import { PluginsChooser } from "./PluginsChooser";
+import CustomInstructions from "./CustomInstructions";
 import { SavePresetButton } from "./SavePresetButton";
 import { areParametersEqual } from "./WorkParameters";
 
@@ -104,6 +111,10 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const selectedModel = getValues("model_config_name"); // have to use getValues to here to access latest value
   const selectedPlugins = getValues("plugins");
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
+  const [customInstructions, setCustomInstructions] = useState<CustomInstructionsType>({
+    user_profile: "",
+    user_response_instructions: "",
+  });
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
 
   const { customPresets, handleSavePreset, setCustomPresets, handleDeletePreset } = useCustomPresets({
@@ -114,6 +125,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const { hyrated, plugins, setPlugins } = useHydrateChatConfig({
     setCustomPresets,
     setSelectedPresetName,
+    setCustomInstructions,
   });
 
   const [lockPresetSelection, setLockPresetSelection] = useState(false);
@@ -131,6 +143,14 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       setSelectedPresetName(newPresetName);
     },
     [customPresets, presets, setValue]
+  );
+
+  const handleCustomInstructionsChange = useCallback(
+    (value: CustomInstructionsType) => {
+      setCustomInstructions(value);
+      setValue("custom_instructions", value);
+    },
+    [setCustomInstructions]
   );
 
   // Lock preset selection if any plugin is enabled
@@ -154,6 +174,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       >
         <Stack gap="4" maxW="full">
           <PluginsChooser plugins={plugins} setPlugins={setPlugins} />
+          <CustomInstructions onChange={handleCustomInstructionsChange} savedCustomInstructions={customInstructions} />
           <FormControl>
             <FormLabel>{t("model")}</FormLabel>
             <Select {...register("model_config_name")}>
@@ -203,6 +224,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
           hyrated={hyrated}
           selectedPresetName={selectedPresetName}
           customPresets={customPresets}
+          customInstructions={customInstructions}
         />
       </SimpleBar>
       {selectedPresetName === unKnownCustomPresetName && (
@@ -216,9 +238,11 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 const useHydrateChatConfig = ({
   setSelectedPresetName,
   setCustomPresets,
+  setCustomInstructions,
 }: {
   setSelectedPresetName: (preset: string) => void;
   setCustomPresets: (presets: CustomPreset[]) => void;
+  setCustomInstructions: (instructions: CustomInstructionsType) => void;
 }) => {
   const { modelInfos, builtInPlugins } = useChatInitialData();
   const hyrated = useRef(false);
@@ -235,8 +259,15 @@ const useHydrateChatConfig = ({
       return;
     }
 
-    const { selectedPresetName, model_config_name, custom_preset_config, selectedPlugins, plugins, custom_presets } =
-      cache;
+    const {
+      selectedPresetName,
+      model_config_name,
+      custom_preset_config,
+      selectedPlugins,
+      plugins,
+      custom_presets,
+      custom_instructions,
+    } = cache;
     const model = modelInfos.find((model) => model.name === model_config_name);
 
     if (model) {
@@ -257,6 +288,11 @@ const useHydrateChatConfig = ({
 
     if (custom_presets) {
       setCustomPresets(custom_presets);
+    }
+
+    if (custom_instructions) {
+      setCustomInstructions(custom_instructions);
+      setValue("custom_instructions", custom_instructions);
     }
 
     if (selectedPlugins && selectedPlugins.length > 0) {

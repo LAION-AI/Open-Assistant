@@ -187,6 +187,7 @@ TOKENIZER_CONFIGS = {
     "falcon": TokenizerConfig(
         special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", sep_token="<|endoftext|>")
     ),
+    "LLongMA": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
 
