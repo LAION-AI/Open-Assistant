@@ -1,6 +1,4 @@
-Here are some farsi datasets in order to train baseLLM. 
-
-I add these datasets since current model does not seem to know persian grammar at all. 
+Here are some Farsi datasets in order to train baseLLM.
 
 - [Wikipedia](https://www.kaggle.com/datasets/amirpourmand/fa-wikipedia)
 - [ISNA](ttps://www.kaggle.com/datasets/amirpourmand/isna-news)
