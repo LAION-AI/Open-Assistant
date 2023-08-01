@@ -2,7 +2,7 @@ Here are some Farsi (Persian) datasets in order to train baseLLM.
 
 Hosted on kaggle:
 - [Wikipedia](https://www.kaggle.com/datasets/amirpourmand/fa-wikipedia)
-- [ISNA](ttps://www.kaggle.com/datasets/amirpourmand/isna-news)
+- [Isna](https://www.kaggle.com/datasets/amirpourmand/isna-news)
 - [AsrIran](https://www.kaggle.com/datasets/amirpourmand/asriran-news)
 - [TasnimNews](https://www.kaggle.com/datasets/amirpourmand/tasnimdataset)
 
