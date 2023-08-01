@@ -9,4 +9,5 @@ Hosted on kaggle:
 Hosted on huggingface:
 - [Naab Dataset](https://huggingface.co/datasets/SLPL/naab).
 
-The Naab dataset is one of the biggest datasets on Farsi language. It contains 126 GB of Farsi data. 
+The Naab dataset is one of the biggest datasets on Farsi language. 
+It contains 126 GB of Farsi data. 
