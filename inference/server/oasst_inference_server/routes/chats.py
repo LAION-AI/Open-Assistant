@@ -153,6 +153,8 @@ async def create_assistant_message(
                 system_prompt=request.system_prompt,
                 plugins=request.plugins,
                 plugin_max_depth=settings.plugin_max_depth,
+                user_profile=request.user_profile,
+                user_response_instructions=request.user_response_instructions,
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,

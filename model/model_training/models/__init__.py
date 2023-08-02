@@ -1,9 +1,5 @@
 import transformers
 
-# from .gptj import get_model as get_gptj_model
-
-SUPPORTED_MODELS = ["galactica", "gpt-j"]
-
 
 def freeze_top_n_layers(model, target_layers):
     # its possible we can simply detect which module is a ModuleList
@@ -25,17 +21,27 @@ def freeze_top_n_layers(model, target_layers):
 
 
 def get_specific_model(
-    model_name, seq2seqmodel=False, without_head=False, cache_dir=".cache", quantization=False, **kwargs
+    model_name,
+    seq2seqmodel=False,
+    without_head=False,
+    cache_dir=".cache",
+    quantization=False,
+    **kwargs,
 ):
-    # encoder-decoder support for Flan-T5 like models
-    # for now, we can use an argument but in the future,
-    # we can automate this
     if without_head:
         model = transformers.AutoModel.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     elif seq2seqmodel:
+        # encoder-decoder support for Flan-T5 like models
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     else:
-        if "falcon" in model_name:
-            kwargs["trust_remote_code"] = True
-        model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
+        if "falcon-7b" in model_name:
+            # temporary hack until tiiuae/falcon-7b uses the transformer's Falcon impl by default
+            # in-library PR was reverted https://huggingface.co/tiiuae/falcon-7b/commit/378337427557d1df3e742264a2901a49f25d4eb1
+            model = transformers.models.falcon.modeling_falcon.FalconForCausalLM.from_pretrained(
+                model_name, cache_dir=cache_dir, **kwargs
+            )
+        else:
+            if "falcon" in model_name:
+                kwargs["trust_remote_code"] = True
+            model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     return model

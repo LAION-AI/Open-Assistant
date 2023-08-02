@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import datasets
 import torch
@@ -166,7 +166,7 @@ class SFTTrainer(Trainer):
         return dataloader
 
 
-def argument_parsing(notebook=False, notebook_args=None):
+def argument_parsing(notebook: bool = False, notebook_args: Sequence[str] | None = None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--configs",
@@ -421,6 +421,9 @@ def main():
     superhot = RopePatch.from_config(training_conf) if training_conf.superhot else None
     if superhot:
         superhot.patch(model)
+
+    print(f"rope_scaling: {model.config.rope_scaling}")
+    print(f"max_position_embeddings: {model.config.max_position_embeddings}")
 
     if training_conf.peft_model:
         print("Using PEFT model")

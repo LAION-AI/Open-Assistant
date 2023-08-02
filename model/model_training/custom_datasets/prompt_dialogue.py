@@ -2,10 +2,11 @@ import gzip
 import json
 import re
 from pathlib import Path
-from typing import Optional
+from typing import List, Mapping, Optional, Sequence, Union
 
 import requests
 from datasets import load_dataset
+from model_training.custom_datasets.formatting import DatasetEntrySft, Role, Utterance
 from model_training.custom_datasets.oasst_dataset import ListDataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
@@ -166,3 +167,88 @@ class Gpt4All(Dataset):
             return dialogue
         elif self.mode == "rl":
             return tuple(dialogue[:-1])
+
+
+class OrcaChat(Dataset):
+    name = "orca-chat"
+
+    def __init__(self, data_files: Union[List[str], str] = "orca-chat-gpt4.json", cache_dir: str = None) -> None:
+        self.dataset = load_dataset("shahules786/orca-chat", split="train", data_files=data_files, cache_dir=cache_dir)
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        conversation, instruction = [self.dataset[idx][key] for key in ("conversation", "instruction")]
+        conversation = [(item["input"], item["output"]) for item in conversation]
+        conversation = list(sum(conversation, ()))
+        conv_utt: list[Utterance] = [
+            (
+                Utterance(
+                    text=conv,
+                    role=Role.prompter if i % 2 == 0 else Role.assistant,
+                )
+            )
+            for i, conv in enumerate(conversation)
+        ]
+
+        return DatasetEntrySft(conversation=conv_utt, system_message=instruction)
+
+
+class DolphinMix(Dataset):
+    name = "dophin-mix"
+
+    def __init__(
+        self,
+        cache_dir: Optional[str] = None,
+        num_samples: Optional[int] = None,
+        max_char_len: int = 8000,
+        seed: int = 42,
+        data_files: Union[
+            str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]
+        ] = "flan5m-alpaca-uncensored.jsonl",
+        split: str = "train",
+    ):
+        # flan5m-alpaca-uncensored.jsonl has total entries 2840090
+        self.dataset = load_dataset("ehartford/dolphin", data_files=data_files, cache_dir=cache_dir)
+        self.dataset = self.dataset[split].shuffle(seed).flatten_indices()
+        if num_samples:
+            self.dataset = self.dataset.select(range(num_samples))
+        self.max_char_len = max_char_len
+        instructions = sorted(set([item["instruction"] for item in self.dataset]))
+
+        self.conversations = []
+        for inst in instructions:
+            data_sample = self.dataset.filter(lambda example: example["instruction"] == inst)
+            conversation_len = len(inst)
+            conversation = []
+            for entry in data_sample:
+                input, output = entry["input"], entry["output"]
+                conversation.append({"input": input, "output": output})
+                conversation_len += len(input) + len(output)
+                if conversation_len >= self.max_char_len:
+                    self.conversations.append({"conversation": conversation, "instruction": inst})
+                    conversation_len = len(inst)
+                    conversation = []
+
+            if len(conversation) > 0:
+                self.conversations.append({"conversation": conversation, "instruction": inst})
+
+    def __len__(self) -> int:
+        return len(self.conversations)
+
+    def __getitem__(self, idx) -> DatasetEntrySft:
+        conversation, instruction = [self.conversations[idx][key] for key in ("conversation", "instruction")]
+        conversation = [(item["input"], item["output"]) for item in conversation]
+        conversation = list(sum(conversation, ()))
+        conv_utt: list[Utterance] = [
+            (
+                Utterance(
+                    text=conv,
+                    role=Role.prompter if i % 2 == 0 else Role.assistant,
+                )
+            )
+            for i, conv in enumerate(conversation)
+        ]
+
+        return DatasetEntrySft(conversation=conv_utt, system_message=instruction)

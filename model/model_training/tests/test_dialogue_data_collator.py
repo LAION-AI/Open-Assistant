@@ -53,7 +53,7 @@ def test_dataset_entry_no_context(pythia_tokenizer):
     # check if targets are as expected
     assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
 
-    # check if masking is correct. Note that we mask the system aswell
+    # check if masking is correct. Note that we mask the system as well
     assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
 
 
@@ -114,7 +114,7 @@ def test_dataset_entry(pythia_tokenizer):
     assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
     assert pythia_tokenizer.decode(batch.targets[1]) == expected_decoded_targets[1]
 
-    # check if masking is correct. Note that we mask the system aswell
+    # check if masking is correct. Note that we mask the system as well
     assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
     assert pythia_tokenizer.decode(batch.input_ids[1][batch.label_masks[1]]) == expected_masked[1]
 

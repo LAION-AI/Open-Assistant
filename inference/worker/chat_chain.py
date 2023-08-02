@@ -6,6 +6,7 @@ import utils
 import websocket
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
+    CUSTOM_INSTRUCTIONS_PREFIX,
     HUMAN_PREFIX,
     JSON_FORMAT_NO_PAYLOAD,
     JSON_FORMAT_PAYLOAD,
@@ -56,6 +57,7 @@ class PromptedLLM:
         tool_names: list[str],
         language: str,
         action_input_format: str,
+        custom_instructions: str = "",
     ):
         self.tokenizer = tokenizer
         self.worker_config = worker_config
@@ -66,6 +68,7 @@ class PromptedLLM:
         self.language = language
         self.action_input_format = action_input_format
         self.current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.custom_instructions = custom_instructions
 
     def call(self, prompt: str) -> tuple[str, str]:
         """Prepares and truncates prompt, calls LLM, returns used prompt and response."""
@@ -79,6 +82,7 @@ class PromptedLLM:
             self.tokenizer,
             self.worker_config,
             self.action_input_format,
+            self.custom_instructions,
         )
 
         # We do not strip() outputs as it seems to degrade instruction-following abilities of the model
@@ -111,6 +115,7 @@ def handle_plugin_usage(
     plugin_max_depth: int,
     ws: websocket.WebSocket,
     work_request_id: str,
+    custom_instructions: str = "",
 ) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
@@ -142,7 +147,15 @@ def handle_plugin_usage(
     tool_names = [tool.name for tool in tools]
 
     chain = PromptedLLM(
-        tokenizer, worker_config, parameters, prompt_template, memory, tool_names, language, action_input_format
+        tokenizer,
+        worker_config,
+        parameters,
+        prompt_template,
+        memory,
+        tool_names,
+        language,
+        action_input_format,
+        custom_instructions,
     )
 
     # send "thinking..." intermediate step to UI (This will discard queue position 0) immediately
@@ -245,6 +258,7 @@ def handle_plugin_usage(
                 tokenizer,
                 worker_config,
                 action_input_format,
+                custom_instructions,
             )
 
             inner_prompt = f"{inner_prompt}\n{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
@@ -296,6 +310,7 @@ def handle_standard_usage(
     memory: ConversationBufferMemory,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
+    custom_instructions: str = "",
 ):
     eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -306,7 +321,16 @@ def handle_standard_usage(
     )
     input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
     init_prompt = prepare_prompt(
-        input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
+        input,
+        prompt_template,
+        memory,
+        None,
+        current_time,
+        language,
+        tokenizer,
+        worker_config,
+        action_input_format,
+        custom_instructions,
     )
     return init_prompt, None
 
@@ -355,10 +379,20 @@ def handle_conversation(
             "language",
             "current_time",
             "action_input_format",
+            "custom_instructions",
         ] + (["tools_names"] if plugin_enabled else [])
 
         # TODO: Consider passing language from the UI here
         prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
+
+        custom_instructions = (
+            f"""\n{CUSTOM_INSTRUCTIONS_PREFIX.format(
+            user_profile=work_request.parameters.user_profile,
+            user_response_instructions=work_request.parameters.user_response_instructions,
+        )}"""
+            if work_request.parameters.user_response_instructions or work_request.parameters.user_profile
+            else ""
+        )
 
         if plugin_enabled:
             return handle_plugin_usage(
@@ -374,9 +408,12 @@ def handle_conversation(
                 work_request.parameters.plugin_max_depth,
                 ws,
                 work_request.id,
+                custom_instructions,
             )
 
-        return handle_standard_usage(original_prompt, prompt_template, language, memory, worker_config, tokenizer)
+        return handle_standard_usage(
+            original_prompt, prompt_template, language, memory, worker_config, tokenizer, custom_instructions
+        )
     except Exception as e:
         logger.error(f"Error while handling conversation: {e}")
         return "", None
@@ -440,7 +477,7 @@ if __name__ == "__main__":
                         id="1",
                         chat_id="1",
                         parent_id=None,
-                        content="Hello, my name is Open Assisstant, how i can help you today?",
+                        content="Hello, my name is Open Assistant, how i can help you today?",
                         created_at=datetime.datetime.now(),
                         role="assistant",
                         state=inference.MessageState.complete,

@@ -155,7 +155,7 @@ def get_answer_content(qid: str, aid) -> str:
     return content
 
 
-def reformat_csv_to_openassitant(df: pd.DataFrame) -> pd.DataFrame:
+def reformat_csv_to_openassistant(df: pd.DataFrame) -> pd.DataFrame:
     """
     Reformat the downloaded CSV into either Instruction or Text format
     so that it could be directly ingested into the training pipeline.
@@ -226,7 +226,7 @@ def save_answers_to_csv(url_token: str, csv_path: str, max_count: int = 10000) -
         start(qid, aid)
     multitasking.wait_for_tasks()
     df["回答内容"] = df["问题ID"].apply(lambda x: content_list[x])
-    updated_df = reformat_csv_to_openassitant(df)
+    updated_df = reformat_csv_to_openassistant(df)
     updated_df.to_csv(csv_path, encoding="utf-8-sig", index=None)
     bar.close()
     print(f"url_token 为 {url_token} 的用户回答数据已存储到文件:{csv_path}")

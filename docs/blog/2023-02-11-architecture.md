@@ -10,7 +10,7 @@ I thought it would make sense to document our architecture as a blog post, since
 it would be easily visible for everyone, and it would also be nice to look back
 a couple months from now and see how stuff has changed :)
 
-A lot of work was done in the past couple of week to establish the needed
+A lot of work was done in the past couple of weeks to establish the needed
 infrastructure both for data collection and inference purposes. Thanks to
 everyone, and especially community members who supported us so far!
 

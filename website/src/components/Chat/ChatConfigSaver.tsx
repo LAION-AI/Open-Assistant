@@ -1,6 +1,6 @@
 import { MutableRefObject, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
+import { ChatConfigFormData, PluginEntry, CustomInstructionsType } from "src/types/Chat";
 import { CachedChatConfig, CustomPreset, setConfigCache } from "src/utils/chat";
 
 export const ChatConfigSaver = ({
@@ -8,11 +8,13 @@ export const ChatConfigSaver = ({
   hyrated,
   plugins,
   customPresets,
+  customInstructions,
 }: {
   selectedPresetName: string;
   hyrated: MutableRefObject<boolean>;
   plugins: PluginEntry[];
   customPresets: CustomPreset[];
+  customInstructions: CustomInstructionsType;
 }) => {
   const { getValues, watch } = useFormContext<ChatConfigFormData>();
   const { model_config_name, plugins: selectedPlugins, ...preset_config } = { ...watch(), ...getValues() };
@@ -25,10 +27,20 @@ export const ChatConfigSaver = ({
         custom_presets: customPresets,
         custom_preset_config: preset_config,
         selectedPlugins: selectedPlugins,
+        custom_instructions: customInstructions,
       };
       setConfigCache(config);
     }
-  }, [customPresets, hyrated, model_config_name, plugins, preset_config, selectedPlugins, selectedPresetName]);
+  }, [
+    customPresets,
+    hyrated,
+    model_config_name,
+    plugins,
+    preset_config,
+    selectedPlugins,
+    selectedPresetName,
+    customInstructions,
+  ]);
 
   return null;
 };

@@ -47,7 +47,7 @@ if (process.env.GOOGLE_CLIENT_ID) {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         // NOTE: adding this will case the app to ask the user
-        // to login everytime, might be a bit annoying
+        // to login every time, might be a bit annoying
         params: {
           prompt: "consent",
           access_type: "offline",

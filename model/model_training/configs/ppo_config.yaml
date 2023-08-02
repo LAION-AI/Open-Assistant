@@ -18,7 +18,7 @@ model:
 tokenizer:
   tokenizer_path:
   truncation_side: "left" # AKo: changed this to "left", otherwise it sees only the beginning of conversations
-  padding_side: "left" # use with rotary positional embedidngs
+  padding_side: "left" # use with rotary positional embeddings
 
 optimizer:
   name: "adamw"
