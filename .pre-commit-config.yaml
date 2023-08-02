@@ -29,7 +29,7 @@
 exclude: build|stubs|^bot/templates/$|openassistant/templates|docs/docs/api/openapi.json|scripts/postprocessing/regex_pii_detector.py
 
 default_language_version:
-  python: python3
+  python: python3.10
 
 ci:
   autofix_prs: true

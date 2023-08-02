@@ -151,16 +151,18 @@ async def welcome_message():
 
 
 if __name__ == "__main__":
-    import uvicorn
     import os
 
-    port = int(os.getenv('PORT', "8000"))
+    import uvicorn
+
+    port = int(os.getenv("PORT", "8000"))
     is_debug = bool(os.getenv("DEBUG", "False"))
 
     if is_debug:
         import debugpy
-        debugpy.listen(("0.0.0.0", "5679"))
+
+        debugpy.listen(("0.0.0.0", 5678))
         # Uncomment to wait here until a debugger is attached
         # debugpy.wait_for_client()
-    
+
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=is_debug)

@@ -1,10 +1,9 @@
 import concurrent.futures
+import os
 import signal
 import sys
 import time
 from contextlib import closing
-
-import os
 
 import pydantic
 import transformers
@@ -136,8 +135,9 @@ if __name__ == "__main__":
 
     if is_debug:
         import debugpy
-        debugpy.listen(("0.0.0.0", "5679"))
+
+        debugpy.listen(("0.0.0.0", 5679))
         # Uncomment to wait here until a debugger is attached
         # debugpy.wait_for_client()
-    
+
     main()
