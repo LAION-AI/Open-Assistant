@@ -133,8 +133,8 @@
       },
       "pathMappings": [
         {
-          "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/opt"
+          "localRoot": "${workspaceFolder}/inference/worker",
+          "remoteRoot": "/opt/inference/worker"
         }
       ],
       "justMyCode": false
