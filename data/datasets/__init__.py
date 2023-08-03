@@ -4,6 +4,8 @@ TEXT_DATASETS = {
     "tv_dialogue": "sedthh/tv_dialogue",  # TV and Movie dialogues and transcripts
     "fd_dialogue": "sedthh/fd_dialogue",  # TV and Movie dialogues and transcripts from ForeverDreaming
     "tlcv2.0_oa": "pythainlp/tlcv2.0_oa",  # Thai classical literature texts
+    "fa-isna-news": "pourmand1376/isna-news",  # Isna Persian News
+    "fa-wikipedia": "pourmand1376/fa-wikipedia",  # Farsi Wikipedia texts
 }
 
 INSTRUCTION_DATASETS = {
