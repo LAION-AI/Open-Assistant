@@ -34,6 +34,7 @@ INSTRUCTION_DATASETS = {
     "reasoning_bg_oa": "0x22almostEvil/reasoning_bg_oa",
     "reasoning_gsm_qna_oa": "0x22almostEvil/reasoning-gsm-qna-oa",
     "semantics_ws_qna_oa": "0x22almostEvil/semantics-ws-qna-oa",
+    "alpaca-fa-instruction": "pourmand1376/alpaca-fa-instruction",
 }
 
 SAFETY_DATASETS = {

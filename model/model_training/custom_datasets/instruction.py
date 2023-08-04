@@ -32,6 +32,7 @@ INSTRUCTION_DATASETS = {
     "evol_instruct_code": "nickrosh/Evol-Instruct-Code-80k-v1",
     "evol-codealpaca-v1": "theblackcat102/evol-codealpaca-v1",
     "cot_submix_original": "conceptofmind/cot_submix_original",
+    "alpaca-fa-instruction": "pourmand1376/alpaca-fa-instruction",
 }
 
 
