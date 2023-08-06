@@ -2,7 +2,7 @@ import { withoutRole } from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
 /**
- * Updates the user's `name` field in the `User` table.
+ * Updates the user's paper ack info
  */
 const handler = withoutRole("banned", async (req, res, token) => {
   // handle GET
@@ -16,13 +16,12 @@ const handler = withoutRole("banned", async (req, res, token) => {
         paperackName: true,
       },
     });
-    res.json(user);
-    return;
+    return res.status(200).json(user);
   }
 
   const { paperackYes, paperackName } = req.body;
 
-  const udpates = await prisma.user.update({
+  const user = await prisma.user.update({
     where: {
       id: token.sub,
     },
@@ -30,8 +29,12 @@ const handler = withoutRole("banned", async (req, res, token) => {
       paperackYes,
       paperackName,
     },
+    select: {
+      paperackYes: true,
+      paperackName: true,
+    },
   });
-  res.json(udpates);
+  return res.status(200).json(user);
 });
 
 export default handler;

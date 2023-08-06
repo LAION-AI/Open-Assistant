@@ -71,8 +71,8 @@ export default function Account() {
                 </>
               )}
             </Grid>
-            <Button as={Link} href="/account/edit-paperack">
-              Edit paper acknowledgement
+            <Button as={Link} href="/account/paperack">
+              {t("account:edit_paper_ack")}
             </Button>
             <Divider my={4} />
             <XPBar />
