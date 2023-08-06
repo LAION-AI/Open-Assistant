@@ -43,6 +43,8 @@ model User {
   image         String?
   isNew         Boolean   @default(true)
   role          String    @default("general")
+  paperackYes   Boolean   @default(false)
+  paperackName  String    @default("")
 
   accounts Account[]
   sessions Session[]
