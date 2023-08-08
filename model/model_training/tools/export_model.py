@@ -18,6 +18,10 @@ def parse_args():
     parser.add_argument("--reward_model", action="store_true", default=False)
     parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
     parser.add_argument(
+        "--rope_scaling_type", type=str, help="set rope scaling type (linear, dynamic)", default="linear"
+    )
+    parser.add_argument("--rope_scaling_factor", type=float, help="set rope scaling factor (float >1.0)")
+    parser.add_argument(
         "--trust_remote_code",
         action="store_true",
         default=False,
@@ -84,6 +88,13 @@ def main():
 
     print("Model architecture:")
     print(model)
+
+    if args.rope_scaling_type is not None and args.rope_scaling_factor is not None:
+        assert args.rope_scaling_type in ("linear", "dynamic")
+        assert args.rope_scaling_factor >= 1.0
+        rope_scaling = {"type": args.rope_scaling_type, "factor": args.rope_scaling_factor}
+        print(f"setting new rope_scaling config: {rope_scaling} (old: {model.config.rope_scaling})")
+        model.config.rope_scaling = rope_scaling
 
     if args.output_folder:
         print(f"Saving model to: {args.output_folder}")
