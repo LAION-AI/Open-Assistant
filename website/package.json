@@ -74,7 +74,7 @@
     "react-cookie": "^4.1.1",
     "react-dom": "^18.2.0",
     "react-feature-flags": "^1.0.0",
-    "react-hook-form": "^7.44.3",
+    "react-hook-form": "^7.45.4",
     "react-i18next": "^12.2.2",
     "react-markdown": "^8.0.7",
     "react-syntax-highlighter": "^15.5.0",
