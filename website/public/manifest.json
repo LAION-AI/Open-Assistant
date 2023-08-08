@@ -1,0 +1,21 @@
+{
+  "name": "Open Assistant",
+  "short_name": "Open Assistant",
+  "description": "Open Assistant is a project meant to give everyone access to a great chat based large language model.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3182CE",
+  "icons": [
+    {
+      "src": "/images/logos/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logos/logo_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
