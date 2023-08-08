@@ -2,6 +2,7 @@ import {
   Avatar,
   Box,
   Button,
+  Flex,
   IconButton,
   Input,
   Menu,
@@ -32,6 +33,7 @@ import { post } from "src/lib/api";
 import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
+import Link from "next/link";
 
 import { JsonCard } from "../JsonCard";
 
@@ -234,6 +236,16 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
               placeholder={t("plugin_url_placeholder")}
             />
             {selectedForEditPluginIndex !== null && <JsonCard>{plugins[selectedForEditPluginIndex]}</JsonCard>}
+            <Box>
+              <Text fontSize="md" fontWeight="bold" my={2}>
+                {t("plugin_repositories")}
+              </Text>
+              <Flex gap={2}>
+                <Button as={Link} href="https://www.getit.ai/gpt-plugins" target="_blank" rel="noreferrer">
+                  GetIt.ai
+                </Button>
+              </Flex>
+            </Box>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={handlePluginSave} isLoading={loading}>
