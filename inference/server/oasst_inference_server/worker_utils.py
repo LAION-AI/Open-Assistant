@@ -53,7 +53,7 @@ def get_protocol_version(protocol_version: str = protocol_version_header) -> str
 async def get_worker_id(
     api_key: str = Depends(get_api_key),
     protocol_version: str = Depends(get_protocol_version),
-) -> str:
+) -> models.DbWorker:
     """Get the ID of a worker from its API key and protocol version."""
     logger.info(f"get_worker: {api_key=}, {protocol_version=}")
     query = sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)

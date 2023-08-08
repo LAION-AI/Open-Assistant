@@ -1,4 +1,4 @@
-import { Divider, Flex, Grid, Icon, Text } from "@chakra-ui/react";
+import { Divider, Flex, Grid, Icon, Text, Button } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -71,6 +71,9 @@ export default function Account() {
                 </>
               )}
             </Grid>
+            <Button as={Link} href="/account/paperack">
+              {t("account:edit_paper_ack")}
+            </Button>
             <Divider my={4} />
             <XPBar />
           </SurveyCard>

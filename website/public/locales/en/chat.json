@@ -33,6 +33,7 @@
     "typical_p": "Typical p: Typical sampling is an information-theoretic technique that, in addition to the probability, also considers the sequence entropy (i.e., the information content according to the probability). This means that typical sampling \"overweights\" some of the tokens with lower probability because they are deemed \"interesting,\" and underweights high probability tokens because they are deemed \"boring.\""
   },
   "plugin_url_placeholder": "Enter plugin URL",
+  "plugin_repositories": "Plugin Repositories",
   "plugins": "Plugins",
   "preset": "Preset",
   "preset_custom": "Custom",
