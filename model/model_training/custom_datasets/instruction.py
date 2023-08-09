@@ -142,7 +142,7 @@ class RAGDataset(Dataset):
             raise ValueError(f"Invalid dataset {dataset}")
 
         if dataset == "multi-chapter-summaries":
-            self.prompt, self.context, self.response = "prompt", "context", "response"
+            self.prompt, self.context, self.response = "prompt", "context", "summary"
 
         self.dataset = load_dataset(RAG_DATASETS[dataset], cache_dir=cache_dir)[split]
 
