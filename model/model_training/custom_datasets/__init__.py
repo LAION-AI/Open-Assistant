@@ -5,7 +5,12 @@ from typing import Optional
 
 import numpy as np
 from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
-from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
+from model_training.custom_datasets.instruction import (
+    INSTRUCTION_DATASETS,
+    RAG_DATASETS,
+    InstructionDataset,
+    RAGDataset,
+)
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.pretrain_datasets import FanFics, RedPajama
 from model_training.custom_datasets.prompt_dialogue import DolphinMix, Gpt4All, OrcaChat, load_oig_file
@@ -181,6 +186,8 @@ def get_one_dataset(
         dataset = OrcaChat(cache_dir=data_path, **kwargs)
     elif dataset_name == "dolphin-mix":
         dataset = DolphinMix(cache_dir=data_path, **kwargs)
+    elif dataset_name in RAG_DATASETS.keys():
+        dataset = RAGDataset(dataset_name, cache_dir=data_path, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
