@@ -124,3 +124,32 @@ class InstructionDataset(Dataset):
             answers=answers,
             lang=lang,
         )
+
+
+RAG_DATASETS = {
+    "multi-chapter-summaries": "shahules786/Multi-chapter-summaries",
+}
+
+
+class RAGDataset(Dataset):
+    def __init__(
+        self,
+        dataset,
+        split: str = "train",
+        cache_dir: str = ".cache/",
+    ):
+        if dataset not in RAG_DATASETS.keys():
+            raise ValueError(f"Invalid dataset {dataset}")
+
+        if dataset == "multi-chapter-summaries":
+            self.prompt, self.context, self.response = "prompt", "context", "summary"
+
+        self.dataset = load_dataset(RAG_DATASETS[dataset], cache_dir=cache_dir)[split]
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        prompt, context, response = [self.dataset[idx][key] for key in [self.prompt, self.context, self.response]]
+
+        return create_dataset_entry_qa(mode="sft", questions=[prompt + context], answers=[response])
