@@ -29,6 +29,7 @@ INSTRUCTION_DATASETS = {
     "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
     "wizardlm_70k": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
     "megacode": "rombodawg/MegaCodeTraining112k",
+    "megacode2": "rombodawg/LosslessMegaCodeTrainingV2_1m_Evol_Uncensored",
     "evol_instruct_code": "nickrosh/Evol-Instruct-Code-80k-v1",
     "evol-codealpaca-v1": "theblackcat102/evol-codealpaca-v1",
     "cot_submix_original": "conceptofmind/cot_submix_original",
@@ -54,6 +55,10 @@ class InstructionDataset(Dataset):
             self.instruction_column = "prompt"
             self.response_column = "completion"
             data_files = "RombosCodeTraining112k.json"
+        elif dataset == "megacode2":
+            self.instruction_column = "USER"
+            self.response_column = "ASSISTANT"
+            data_files = "DeDuped_LosslessMegaCodeTrainingV2_942k_Evol_Uncensored.json"
         else:
             self.instruction_column = "INSTRUCTION"
             self.response_column = "RESPONSE"
