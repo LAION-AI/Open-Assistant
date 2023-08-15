@@ -196,7 +196,7 @@ def get_one_dataset(
         train, eval = train_val_dataset(dataset, val_split=val_split)
 
     if eval and max_val_set and len(eval) > max_val_set:
-        subset_indices = np.random.choice(len(eval), max_val_set)
+        subset_indices = np.random.choice(len(eval), size=max_val_set, replace=False)
         eval = Subset(eval, subset_indices)
 
     return train, eval
