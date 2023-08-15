@@ -11,7 +11,8 @@ from model_training.custom_datasets.oasst_dataset import ListDataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
 from torch.utils.data import Dataset, random_split
-
+import datasets
+datasets.builder.has_sufficient_disk_space = lambda needed_bytes, directory='.': True
 
 def load_oig_file(
     source_url: str,
