@@ -1,7 +1,21 @@
-# OA pretokenizer
+# OA Pretokenizer Utility
 
 The pretokenizer allows to tokenize datasets before training with the
 [epfLLM/Megatron-LLM](https://github.com/epfLLM/Megatron-LLM) fork.
+
+## Requirements
+
+1. make sure the `model_training` module is installed:
+
+```bash
+pip install -e ..
+```
+
+2. Make sure the `oasst_data` module is installed:
+
+```bash
+python -m pip install ../../oasst-data/
+```
 
 ### Configuration
 
@@ -11,13 +25,13 @@ The datamix to proces can be configured with one or multiple sections in the
 ### Example usage
 
 ```
-python __main__.py --output_dir output--configs oasst_top1 llama2 --compress --write_json
+python pretokenize.py --output_dir output--configs oasst_top1 llama2 --compress --write_json
 ```
 
 ### Help message
 
 ```
-usage: pretokenizer [-h] --configs CONFIGS [CONFIGS ...] [--output_dir OUTPUT_DIR] [--write_json] [--compress]
+usage: pretokenize.py [-h] --configs CONFIGS [CONFIGS ...] [--output_dir OUTPUT_DIR] [--write_json] [--compress]
 
 Tokenize datamixes for LLama2/Falcon fine-tuning with Megatron-LLM.
 

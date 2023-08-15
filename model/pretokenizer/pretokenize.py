@@ -275,7 +275,7 @@ def tokenize_dataset(
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        prog="pretokenizer", description="Tokenize datamixes for LLama2/Falcon fine-tuning with Megatron-LLM."
+        prog="pretokenize.py", description="Tokenize datamixes for LLama2/Falcon fine-tuning with Megatron-LLM."
     )
     group = parser.add_argument_group(title="configuration")
     group.add_argument(
