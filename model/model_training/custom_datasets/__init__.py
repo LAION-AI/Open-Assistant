@@ -116,7 +116,8 @@ def get_one_dataset(
             eval = SummarizationDataset(dataset_name, data_path, "validation")
             train = dataset
     elif dataset_name in INSTRUCTION_DATASETS:
-        dataset = InstructionDataset(dataset_name, data_path, "train", **kwargs)
+        dataset_args = INSTRUCTION_DATASETS[dataset_name]
+        dataset = InstructionDataset(name=dataset_name, cache_dir=data_path, split="train", **(dataset_args | kwargs))
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")
