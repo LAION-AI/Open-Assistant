@@ -1,0 +1,58 @@
+defaults:
+  rng_seed: 42
+  cache_dir: .cache
+  use_system_prefix: false
+  datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
+  eval_size:
+  tokenizer_type:
+  vocab_extra_ids_list: "<|im_start|>,<|im_end|>"
+  dataset_impl: "mmap"
+  min_assistant_tokens:
+  output_dir_suffix: ""
+
+llama2:
+  vocab_file: "/home/ubuntu/megatron-data/llama2-7b/tokenizer.model"
+  tokenizer_type: "SentencePieceTokenizer"
+  output_dir_suffix: "_llama2"
+
+falcon:
+  tokenizer_type: "FalconTokenizer"
+  output_dir_suffix: "_falcon"
+
+oasst_top1:
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        #hf_dataset_name: OpenAssistant/oasst1
+        input_file_path: 2023-07-23_oasst_ready.tar.gz
+        top_k: 1
+        val_split: 0.05
+  output_dir: "output/oasst_top1_2023-07-23"
+  filename_prefix: "oasst_top1"
+
+megacode2_min100:
+  datasets:
+    - megacode2:
+        val_split: 0.01
+        max_val_set: 1000
+  output_dir: "output/megacode2_min100"
+  filename_prefix: "megacode2"
+  min_assistant_tokens: 100
+
+megacode2_min50:
+  datasets:
+    - megacode2:
+        val_split: 0.01
+        max_val_set: 1000
+  output_dir: "output/megacode2_min50"
+  filename_prefix: "megacode2"
+  min_assistant_tokens: 50
+
+megacode2_frac05:
+  datasets:
+    - megacode2:
+        fraction: 0.5
+        val_split: 0.01
+        max_val_set: 1000
+  output_dir: "output/megacode2_frac05"
+  filename_prefix: "megacode2"
