@@ -11,11 +11,11 @@ from torch.utils.data import Dataset
 
 INSTRUCTION_DATASETS = {
     # Note humaneval_mbpp_codegen_qa returns a code string that we would want to at least wrap in ``` marks`
-    "humaneval_mbpp_codegen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-codegen-qa"},
+    "humaneval_mbpp_codegen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-codegen-qa", "lang": "en"},
     # Write unit tests to do task X
-    "humaneval_mbpp_testgen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-testgen-qa"},
-    "grade_school_math_instructions": {"dataset_path": "qwedsacf/grade-school-math-instructions"},
-    "recipes": {"dataset_path": "dctanner/oa_recipes"},
+    "humaneval_mbpp_testgen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-testgen-qa", "lang": "en"},
+    "grade_school_math_instructions": {"dataset_path": "qwedsacf/grade-school-math-instructions", "lang": "en"},
+    "recipes": {"dataset_path": "dctanner/oa_recipes", "lang": "en"},
     "ubuntu_dialogue_qa": {"dataset_path": "sedthh/ubuntu_dialogue_qa"},
     "cmu_wiki_qa": {"dataset_path": "sedthh/cmu_wiki_qa"},
     "youtube_subs_howto100m": {"dataset_path": "totuta/youtube_subs_howto100M"},
@@ -28,9 +28,9 @@ INSTRUCTION_DATASETS = {
     },
     "oa_wiki_qa_bart_10000row": {"dataset_path": "michaelthwan/oa_wiki_qa_bart_10000row"},
     "oa_leet10k": {"dataset_path": "ehartford/oa_leet10k"},
-    "poem_instructions": {"dataset_path": "checkai/instruction-poems"},
+    "poem_instructions": {"dataset_path": "checkai/instruction-poems", "lang": "en"},
     "oa_stackexchange": {"dataset_path": "donfu/oa-stackexchange"},
-    "tell_a_joke": {"dataset_path": "mikegarts/oa_tell_a_joke_20000"},
+    "tell_a_joke": {"dataset_path": "mikegarts/oa_tell_a_joke_20000", "lang": "en"},
     "wizardlm_70k": {
         "dataset_path": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
         "instruction_column": "instruction",
@@ -82,7 +82,8 @@ class InstructionDataset(Dataset):
         mode: str = "sft",
         instruction_column: str = "INSTRUCTION",
         response_column: str = "RESPONSE",
-        data_files: str = None,
+        data_files: Optional[str] = None,
+        lang: Optional[str] = None,
         fill_min_length: Optional[int] = None,
         seed: int = 42,
     ):
@@ -93,6 +94,7 @@ class InstructionDataset(Dataset):
         self.instruction_column = instruction_column
         self.response_column = response_column
         self.data_files = data_files
+        self.lang = lang
 
         num_invalid = 0
 
@@ -134,7 +136,7 @@ class InstructionDataset(Dataset):
             self.dataset.append((questions, answers))
 
         if num_invalid > 0:
-            print(f"[Warning] {num_invalid} entries of {name} were invalid.")
+            print(f"[Warning] {num_invalid} entries of {name} ({dataset_path}) were invalid.")
 
     def __len__(self):
         return len(self.dataset)
@@ -142,23 +144,11 @@ class InstructionDataset(Dataset):
     def __getitem__(self, idx) -> DatasetEntry:
         questions, answers = self.dataset[idx]
 
-        lang: str | None = None
-        # use "en" for datasets which have more than 95% English messages
-        if self.name in [
-            "humaneval_mbpp_codegen_qa",
-            "humaneval_mbpp_testgen_qa",
-            "grade_school_math_instructions",
-            "recipes",
-            "poem_instructions",
-            "tell_a_joke",
-        ]:
-            lang = "en"
-
         return create_dataset_entry_qa(
             mode=self.mode,
             questions=questions,
             answers=answers,
-            lang=lang,
+            lang=self.lang,
         )
 
 
