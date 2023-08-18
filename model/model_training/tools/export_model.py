@@ -41,7 +41,7 @@ def main():
     elif args.dtype in ("bfloat16", "bf16"):
         torch_dtype = torch.bfloat16
     else:
-        print(f"Unsupported dtpye: {args.dtype}")
+        print(f"Unsupported dtype: {args.dtype}")
         sys.exit(1)
 
     if not args.hf_repo_name and not args.output_folder:
