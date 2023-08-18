@@ -601,6 +601,43 @@ class DatabricksDolly15k(Dataset):
         return dialogue
 
 
+class Dolly15kMultilingual(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
+        super().__init__()
+        self.rows = []
+        self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        splits = load_dataset("argilla/databricks-dolly-15k-curated-multilingual", cache_dir=cache_dir)
+        for lang in ("en", "de", "es", "fr"):
+            data = splits[lang]
+            for line in data:
+                if (c := self._process_instruction(line, lang=lang)) is not None:
+                    self.rows.append(c)
+
+    def _process_instruction(self, row: dict[str, str], lang: str) -> DatasetEntry | None:
+        context = re_reference_remove.sub("", row["context"])
+        # further remove references
+        context = context.replace("[citation needed]", "")
+        context = self.citation_regex.sub("", context)
+        if _filter_by_words(row["instruction"]) and _filter_by_words(row["response"]):
+            return create_dataset_entry_qa(
+                mode=self.mode,
+                questions=[row["instruction"]],
+                answers=[row["response"]],
+                context=context,
+                lang=lang,
+            )
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
 class AlpacaGpt4(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
         super().__init__()
