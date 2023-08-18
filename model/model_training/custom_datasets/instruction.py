@@ -11,61 +11,94 @@ from torch.utils.data import Dataset
 
 INSTRUCTION_DATASETS = {
     # Note humaneval_mbpp_codegen_qa returns a code string that we would want to at least wrap in ``` marks`
-    "humaneval_mbpp_codegen_qa": "OllieStanley/humaneval-mbpp-codegen-qa",
+    "humaneval_mbpp_codegen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-codegen-qa", "lang": "en"},
     # Write unit tests to do task X
-    "humaneval_mbpp_testgen_qa": "OllieStanley/humaneval-mbpp-testgen-qa",
-    "grade_school_math_instructions": "qwedsacf/grade-school-math-instructions",
-    "recipes": "dctanner/oa_recipes",
-    "ubuntu_dialogue_qa": "sedthh/ubuntu_dialogue_qa",
-    "cmu_wiki_qa": "sedthh/cmu_wiki_qa",
-    "youtube_subs_howto100m": "totuta/youtube_subs_howto100M",
-    "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
-    "zhihu-kol": "wangrui6/zhihu-kol",
-    "minimath": "kentsui/minimath",
-    "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
-    "oa_leet10k": "ehartford/oa_leet10k",
-    "poem_instructions": "checkai/instruction-poems",
-    "oa_stackexchange": "donfu/oa-stackexchange",
-    "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
-    "wizardlm_70k": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
-    "megacode": "rombodawg/MegaCodeTraining112k",
-    "megacode2": "rombodawg/LosslessMegaCodeTrainingV2_1m_Evol_Uncensored",
-    "evol_instruct_code": "nickrosh/Evol-Instruct-Code-80k-v1",
-    "evol-codealpaca-v1": "theblackcat102/evol-codealpaca-v1",
-    "cot_submix_original": "conceptofmind/cot_submix_original",
+    "humaneval_mbpp_testgen_qa": {"dataset_path": "OllieStanley/humaneval-mbpp-testgen-qa", "lang": "en"},
+    "grade_school_math_instructions": {"dataset_path": "qwedsacf/grade-school-math-instructions", "lang": "en"},
+    "recipes": {"dataset_path": "dctanner/oa_recipes", "lang": "en"},
+    "ubuntu_dialogue_qa": {"dataset_path": "sedthh/ubuntu_dialogue_qa"},
+    "cmu_wiki_qa": {"dataset_path": "sedthh/cmu_wiki_qa"},
+    "youtube_subs_howto100m": {"dataset_path": "totuta/youtube_subs_howto100M"},
+    "iapp_wiki_qa_squad": {"dataset_path": "wannaphong/iapp_wiki_qa_squad_oa"},
+    "zhihu-kol": {"dataset_path": "wangrui6/zhihu-kol"},
+    "minimath": {
+        "dataset_path": "kentsui/minimath",
+        "instruction_column": "question",
+        "response_column": "answer",
+    },
+    "oa_wiki_qa_bart_10000row": {"dataset_path": "michaelthwan/oa_wiki_qa_bart_10000row"},
+    "oa_leet10k": {"dataset_path": "ehartford/oa_leet10k"},
+    "poem_instructions": {"dataset_path": "checkai/instruction-poems", "lang": "en"},
+    "oa_stackexchange": {"dataset_path": "donfu/oa-stackexchange"},
+    "tell_a_joke": {"dataset_path": "mikegarts/oa_tell_a_joke_20000", "lang": "en"},
+    "wizardlm_70k": {
+        "dataset_path": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
+        "instruction_column": "instruction",
+        "response_column": "output",
+    },
+    "megacode": {
+        "dataset_path": "rombodawg/MegaCodeTraining112k",
+        "instruction_column": "prompt",
+        "response_column": "completion",
+        "data_files": "RombosCodeTraining112k.json",
+    },
+    "megacode2": {
+        "dataset_path": "rombodawg/LosslessMegaCodeTrainingV2_1m_Evol_Uncensored",
+        "instruction_column": "USER",
+        "response_column": "ASSISTANT",
+        "data_files": "DeDuped_LosslessMegaCodeTrainingV2_942k_Evol_Uncensored.json",
+    },
+    "megacode3": {
+        "dataset_path": "rombodawg/LosslessMegaCodeTrainingV3_2.2m_Evol",
+        "instruction_column": "USER",
+        "response_column": "ASSISTANT",
+        "data_files": "LosslessMegaCodeTrainingV3_2.2m_Evol.json",
+    },
+    "evol_instruct_code": {
+        "dataset_path": "nickrosh/Evol-Instruct-Code-80k-v1",
+        "instruction_column": "instruction",
+        "response_column": "output",
+    },
+    "evol-codealpaca-v1": {
+        "dataset_path": "theblackcat102/evol-codealpaca-v1",
+        "instruction_column": "instruction",
+        "response_column": "output",
+    },
+    "cot_submix_original": {
+        "dataset_path": "conceptofmind/cot_submix_original",
+        "instruction_column": "inputs",
+        "response_column": "targets",
+    },
 }
 
 
 class InstructionDataset(Dataset):
-    def __init__(self, dataset, cache_dir, split, mode="sft", fill_min_length: Optional[int] = None, seed: int = 42):
+    def __init__(
+        self,
+        name: str,
+        dataset_path: str,
+        cache_dir: str,
+        split: str,
+        mode: str = "sft",
+        instruction_column: str = "INSTRUCTION",
+        response_column: str = "RESPONSE",
+        data_files: Optional[str] = None,
+        lang: Optional[str] = None,
+        fill_min_length: Optional[int] = None,
+        seed: int = 42,
+    ):
         assert mode in ("sft", "rl")
-        self.name = dataset
+        self.name = name
         self.mode = mode
-        data_files = None
-        if dataset == "minimath":
-            self.instruction_column = "question"
-            self.response_column = "answer"
-        elif dataset in ("wizardlm_70k", "evol_instruct_code", "evol-codealpaca-v1"):
-            self.instruction_column = "instruction"
-            self.response_column = "output"
-        elif dataset == "cot_submix_original":
-            self.instruction_column = "inputs"
-            self.response_column = "targets"
-        elif dataset == "megacode":
-            self.instruction_column = "prompt"
-            self.response_column = "completion"
-            data_files = "RombosCodeTraining112k.json"
-        elif dataset == "megacode2":
-            self.instruction_column = "USER"
-            self.response_column = "ASSISTANT"
-            data_files = "DeDuped_LosslessMegaCodeTrainingV2_942k_Evol_Uncensored.json"
-        else:
-            self.instruction_column = "INSTRUCTION"
-            self.response_column = "RESPONSE"
+
+        self.instruction_column = instruction_column
+        self.response_column = response_column
+        self.data_files = data_files
+        self.lang = lang
 
         num_invalid = 0
 
-        ds = load_dataset(INSTRUCTION_DATASETS[dataset], cache_dir=cache_dir, split=split, data_files=data_files)
+        ds = load_dataset(dataset_path, cache_dir=cache_dir, split=split, data_files=data_files)
         self.dataset: list[tuple[list[str], list[str]]] = []
 
         questions, answers = [], []
@@ -103,7 +136,7 @@ class InstructionDataset(Dataset):
             self.dataset.append((questions, answers))
 
         if num_invalid > 0:
-            print(f"[Warning] {num_invalid} entries of {dataset} were invalid.")
+            print(f"[Warning] {num_invalid} entries of {name} ({dataset_path}) were invalid.")
 
     def __len__(self):
         return len(self.dataset)
@@ -111,23 +144,11 @@ class InstructionDataset(Dataset):
     def __getitem__(self, idx) -> DatasetEntry:
         questions, answers = self.dataset[idx]
 
-        lang: str | None = None
-        # use "en" for datasets which have more than 95% English messages
-        if self.name in [
-            "humaneval_mbpp_codegen_qa",
-            "humaneval_mbpp_testgen_qa",
-            "grade_school_math_instructions",
-            "recipes",
-            "poem_instructions",
-            "tell_a_joke",
-        ]:
-            lang = "en"
-
         return create_dataset_entry_qa(
             mode=self.mode,
             questions=questions,
             answers=answers,
-            lang=lang,
+            lang=self.lang,
         )
 
 
