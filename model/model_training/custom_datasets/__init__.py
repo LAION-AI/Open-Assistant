@@ -13,7 +13,7 @@ from model_training.custom_datasets.instruction import (
 )
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.pretrain_datasets import FanFics, RedPajama
-from model_training.custom_datasets.prompt_dialogue import DolphinMix, Gpt4All, OrcaChat, load_oig_file
+from model_training.custom_datasets.prompt_dialogue import DolphinMix, Gpt4All, OrcaChat, load_oig_file, BestOfMegacode
 from model_training.custom_datasets.qa_datasets import (
     SODA,
     AlpacaGpt4,
@@ -188,6 +188,8 @@ def get_one_dataset(
         dataset = DolphinMix(cache_dir=data_path, **kwargs)
     elif dataset_name in RAG_DATASETS.keys():
         dataset = RAGDataset(dataset_name, cache_dir=data_path, **kwargs)
+    elif dataset_name == "bestofmegacode":
+        dataset = BestOfMegacode(cache_dir=data_path, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
