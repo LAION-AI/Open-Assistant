@@ -87,5 +87,4 @@
   "writing_wrong_langauge_a_b": "Sie scheinen in {{detected_lang}} zu schreiben, aber dies wird als {{submit_lang}} eingereicht.",
   "not_rankable": "Alle Antworten sind sachlich falsch und können nicht gewertet werden",
   "moderator_edit_explain": "Ändern Sie die hervorgehobene Nachricht und beschränken Sie die Änderungen auf ein Minimum. Diese Aktion kann dazu führen, dass die Konversation keinen Sinn mehr ergibt und die Bewertungen nicht mehr korrekt sind. Bitte gehen Sie vorsichtig vor."
-
 }
