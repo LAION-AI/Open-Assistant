@@ -197,7 +197,7 @@ const EmailSignInForm = ({
           mt="4"
           isDisabled={!captchaSuccess && enableEmailSigninCaptcha}
         >
-          Continue with Email
+          {(!captchaSuccess && enableEmailSigninCaptcha) ?  'Please wait...' : "Continue with Email"}
         </SigninButton>
       </Stack>
     </form>
