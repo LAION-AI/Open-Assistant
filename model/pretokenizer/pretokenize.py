@@ -19,6 +19,7 @@ class IntRole(IntEnum):
     System = 0
     Prompter = 1
     Assistant = 2
+    Context = 3
 
 
 class Encoder(object):
@@ -72,6 +73,9 @@ def format_sft_entry(entry: DatasetEntrySft) -> tuple[list[str], list[int]]:
         turns.append(f"<|im_start|>system\n{entry.system_message}<|im_end|>\n")
         roles.append(IntRole.System.value)  # 0
     for m in entry.conversation:
+        if m.context:
+            turns.append(f"<|im_start|>context\n{m.context}<|im_end|>\n")
+            roles.append(IntRole.Context.value)  # 3
         if m.role == Role.prompter:
             turns.append(f"<|im_start|>user\n{m.text}<|im_end|>\n")
             roles.append(IntRole.Prompter.value)  # 1
@@ -88,6 +92,21 @@ def format_conversation(messages) -> str:
         return messages.text, [3]
     else:
         return format_pairs(messages)
+
+
+def get_dataset_name(d: Dataset):
+    if isinstance(d, Subset):
+        inner = d
+        while isinstance(inner, Subset):
+            inner = inner.dataset
+        name = f"Subset of {type(inner).__name__}"
+        if hasattr(inner, "name"):
+            name += f" ({inner.name})"
+    else:
+        name = type(d).__name__
+        if hasattr(d, "name"):
+            name += f" ({d.name})"
+    return name
 
 
 class TokenStats:
@@ -156,17 +175,7 @@ def tokenize_dataset(
 
         for i in range(len(datasets)):
             d = datasets[i]
-            if isinstance(d, Subset):
-                if hasattr(d.dataset, "name"):
-                    name = d.dataset.name
-                else:
-                    name = f"Subset of {type(d.dataset).__name__}"
-            else:
-                if hasattr(d, "name"):
-                    name = d.name
-                else:
-                    name = type(d).__name__
-
+            name = get_dataset_name(d)
             frac = 1
             if dataset_target_sizes:
                 frac = fractions[i]
@@ -257,20 +266,28 @@ def tokenize_dataset(
         if jsonl_file:
             jsonl_file.close()
 
-    print(f"\n# Stats for {full_prefix}*\n")
+    per_dataset_stats.append(total_stats)
 
-    for stats in per_dataset_stats:
-        print(f"## Stats for '{stats.name}' ({stats.total_samples} samples ({stats.fraction:.1%}))")
-        print("-----------------")
-        print(
-            f"  Accepted: {stats.accepted_samples}/{stats.processed_samples} ({stats.accepted_samples/stats.processed_samples:.1%})"
-        )
-        print(f"  Accepted tokens: {stats.accepted_tokens}")
-        print(f"  Skipped: {stats.skipped_samples} ({stats.skipped_samples/stats.processed_samples:.1%})")
-        print(f"  Min tokens per sample: {stats.min_tokens}")
-        print(f"  Max tokens per sample: {stats.max_tokens}")
-        print(f"  Avg tokens per sample: {stats.accepted_tokens/stats.accepted_samples}")
-        print("-----------------\n")
+    stats_path = Path(full_prefix + "_stats.txt")
+    with stats_path.open("w", encoding="UTF-8") as stats_file:
+        for f in (None, stats_file):
+            print(f"\n# Stats for {full_prefix}*\n", file=f)
+
+            for stats in per_dataset_stats:
+                print(f"## Stats for '{stats.name}' ({stats.total_samples} samples ({stats.fraction:.1%}))", file=f)
+                print("-----------------", file=f)
+                print(
+                    f"  Accepted: {stats.accepted_samples}/{stats.processed_samples} ({stats.accepted_samples/stats.processed_samples:.1%})",
+                    file=f,
+                )
+                print(f"  Accepted tokens: {stats.accepted_tokens}", file=f)
+                print(
+                    f"  Skipped: {stats.skipped_samples} ({stats.skipped_samples/stats.processed_samples:.1%})", file=f
+                )
+                print(f"  Min tokens per sample: {stats.min_tokens}", file=f)
+                print(f"  Max tokens per sample: {stats.max_tokens}", file=f)
+                print(f"  Avg tokens per sample: {stats.accepted_tokens/stats.accepted_samples}", file=f)
+                print("-----------------\n", file=f)
 
 
 def parse_args():
@@ -381,20 +398,13 @@ def main():
     print("Training dataset sizes (before sampling):")
     total = len(train)
     for d in train.datasets:
-        if isinstance(d, Subset):
-            name = f"Subset of {type(d.dataset).__name__}"
-            if hasattr(d.dataset, "name"):
-                name += f" ({d.dataset.name})"
-        else:
-            name = type(d).__name__
-            if hasattr(d, "name"):
-                name += f" ({d.name})"
+        name = get_dataset_name(d)
         print(f"{name}: {len(d)} ({len(d) / total:.2%})")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
     fn = output_dir / "special_tokens.json"
-    with fn.open("w") as f:
+    with fn.open("w", encoding="UTF-8") as f:
         json.dump(encoder.special_tokens, f)
 
     val = ConcatDataset(evals.values())
