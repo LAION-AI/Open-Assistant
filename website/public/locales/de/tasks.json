@@ -1,4 +1,5 @@
 {
+  "any_feedback_on_this_task": "Iregndwelches Feedback auf diese Aufgabe?",
   "available_task_count": "{{count}} Aufgaben verfügbar",
   "skip_confirmation": "Sind Sie sicher das sie überspringen wollen?",
   "classify_assistant_reply": {
@@ -79,5 +80,11 @@
     "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
     "instruction": "Geben Sie die Antwort des Benutzers an",
     "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
-  }
+  },
+  "submitted_as": "This will be submitted as {{submit_lang}}",
+  "tab_write": "Schreiben",
+  "tab_preview": "Vorschau",
+  "writing_wrong_langauge_a_b": "Sie scheinen in {{detected_lang}} zu schreiben, aber dies wird als {{submit_lang}} eingereicht.",
+  "not_rankable": "Alle Antworten sind sachlich falsch und können nicht gewertet werden",
+  "moderator_edit_explain": "Ändern Sie die hervorgehobene Nachricht und beschränken Sie die Änderungen auf ein Minimum. Diese Aktion kann dazu führen, dass die Konversation keinen Sinn mehr ergibt und die Bewertungen nicht mehr korrekt sind. Bitte gehen Sie vorsichtig vor."
 }

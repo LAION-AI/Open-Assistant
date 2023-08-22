@@ -21,6 +21,7 @@
   "send_report": "Senden",
   "stop_tree": "Nachrichtenbaum stoppen",
   "submit_labels": "Absenden",
+  "tree_restarted": "Nachrichtenbaum neugestartet {{id}}",
   "tree_stopped": "Nachrichtenbaum gestoppt {{id}}",
   "view_user": "Benutzer anzeigen",
   "your_recent_messages": "Ihre kürzlichen Nachrichten",

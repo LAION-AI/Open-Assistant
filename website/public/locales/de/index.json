@@ -1,6 +1,7 @@
 {
   "blurb": "Wir glauben, dass wir etwas Revolutionäres erschaffen können.",
   "blurb1": "Genauso wie Stable Diffusion es ermöglicht hat, Kunst und Bilder auf neue Weise zu erschaffen, wollen wir die Welt verbessern, indem wir eine erstklassige Konversations-KI bereitstellen.",
+  "chat_with_our_assistant": "Chatte mit unserem Assistenten",
   "description": "Konversations-KI für alle. Ein Open-Source-Projekt zur Erstellung eines Chat-fähigen GPT LLM, das von LAION und Mitwirkenden auf der ganzen Welt betrieben wird.",
   "faq_items": {
     "q0": "Was ist der aktuelle Stand des Projekts?",
