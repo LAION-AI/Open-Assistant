@@ -1,0 +1,38 @@
+{
+  "name": "os-shim",
+  "version": "0.1.3",
+  "description": "Native OS module API shim for older node.js versions",
+  "homepage": "http://github.com/h2non/node-os-shim",
+  "bugs": "https://github.com/h2non/node-os-shim/issues",
+  "contributors": [
+    {
+      "name": "Tomas Aparicio",
+      "email": "tomas@aparicio.me"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/h2non/node-os-shim.git"
+  },
+  "licenses": "MIT",
+  "main": "lib/os",
+  "directories": {
+    "lib": "./lib"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "keywords": [
+    "os",
+    "tmpdir",
+    "endianness",
+    "shim"
+  ],
+  "devDependencies": {
+    "mocha": "~1.15.1",
+    "expect.js": "~0.2.0"
+  }
+}

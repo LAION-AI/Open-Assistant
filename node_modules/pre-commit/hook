@@ -1,0 +1,50 @@
+#!/bin/bash
+
+HAS_NODE=`which node 2> /dev/null || which nodejs 2> /dev/null || which iojs 2> /dev/null`
+
+#
+# There are some issues with Source Tree because paths are not set correctly for
+# the given environment. Sourcing the bash_profile seems to resolve this for bash users,
+# sourcing the zshrc for zshell users.
+#
+# https://answers.atlassian.com/questions/140339/sourcetree-hook-failing-because-paths-don-t-seem-to-be-set-correctly
+#
+function source_home_file {
+  file="$HOME/$1"
+  [[ -f "${file}" ]] && source "${file}"
+}
+
+if [[ -z "$HAS_NODE" ]]; then
+  source_home_file ".bash_profile" || source_home_file ".zshrc" || source_home_file ".bashrc" || true
+fi
+
+NODE=`which node 2> /dev/null`
+NODEJS=`which nodejs 2> /dev/null`
+IOJS=`which iojs 2> /dev/null`
+LOCAL="/usr/local/bin/node"
+BINARY=
+
+#
+# Figure out which binary we need to use for our script execution.
+#
+if [[ -n "$NODE" ]]; then
+  BINARY="$NODE"
+elif [[ -n "$NODEJS" ]]; then
+  BINARY="$NODEJS"
+elif [[ -n "$IOJS" ]]; then
+  BINARY="$IOJS"
+elif [[ -x "$LOCAL" ]]; then
+  BINARY="$LOCAL"
+fi
+
+#
+# Add --dry-run cli flag support so we can execute this hook without side affects
+# and see if it works in the current environment
+#
+if [[ $* == *--dry-run* ]]; then
+  if [[ -z "$BINARY" ]]; then
+    exit 1
+  fi
+else
+  "$BINARY" "$("$BINARY" -e "console.log(require.resolve('pre-commit'))")"
+fi
