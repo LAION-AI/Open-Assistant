@@ -6,6 +6,7 @@
   "delete_chat": "Chat löschen",
   "delete_confirmation": "Sind Sie sicher, dass Sie den Chat löschen wollen?",
   "delete_confirmation_detail": "Wenn Sie diesen Chat löschen, ist er nicht mehr Teil unserer Daten und wir können ihn nicht mehr zur Verbesserung unserer Modelle verwenden. Bitte nehmen Sie sich die Zeit, Antworten in anderen Chats hoch- und runterzustufen, um uns zu helfen, Open Assistant zu verbessern!",
+  "drafts_generating_notify": "Die Drafts werden noch erstellt. Bitte warten Sie...",
   "edit_plugin": "Plugin bearbeiten",
   "empty": "(leer)",
   "input_placeholder": "Fragen Sie, was Sie wollen...",
@@ -18,7 +19,8 @@
     "button": "Keine Trainingsdaten zulassen",
     "success_message": "Sie haben sich gegen die Verwendung von Trainingsdaten entschieden.",
     "dialog": {
-      "title": "Trainingsdaten nicht mehr senden."
+      "title": "Trainingsdaten nicht mehr senden.",
+      "description": "Wenn Sie bestätigen, wird dieser Chat nicht zur Verbesserung unseres Modells verwendet. Bitte nehmen Sie sich die Zeit, Antworten in anderen Chats zu bewerten, um uns zu helfen, Open Assistant zu verbessern!"
     }
   },
   "parameter_description": {
@@ -55,5 +57,10 @@
   "preset_name_placeholder": "Namen eingeben",
   "feedback_message": "Wie war ich? Dein Feedback macht mich besser!",
   "feedback_action_great": "Gut",
-  "feedback_action_poor": "Könnte besser sein"
+  "feedback_action_poor": "Könnte besser sein",
+  "custom_instructions": "Benutzerdefinierte Anweisungen",
+  "custom_instructions_user_profile": "Welche Informationen sollte Open-Assistant über Sie haben, um die Antworten noch besser zu machen?",
+  "custom_instructions_response_instructions": "Wie soll der Open-Assistant mit Ihnen chatten?",
+  "custom_instructions_user_profile_placeholder": "Führen Sie einige Ihrer Wünsche auf.\nBeschreiben Sie Ihre Hobbys und Interessen.\nBeschreiben Sie Ihren Wohnort.\nWelchen Beruf üben Sie aus?\nWelche Themen könnten Sie ausführlich diskutieren?",
+  "custom_instructions_response_instructions_placeholder": "Soll der Open-Assistant seine Meinung äußern oder neutral bleiben?\nBestimmen Sie den gewünschten Formalitätsgrad für die Antworten des Open-Assistant.\nWie soll der Open-Assistant Sie ansprechen?\nBestimmen Sie die gewünschte Länge der Antworten."
 }
