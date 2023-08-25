@@ -315,7 +315,11 @@ def handle_standard_usage(
     tokenizer: transformers.PreTrainedTokenizer,
     custom_instructions: str = "",
 ):
-    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    eos_token = ""
+    if special_tokens["end"]:
+        eos_token = special_tokens["end"]
+    elif hasattr(tokenizer, "eos_token"):
+        eos_token = tokenizer.eos_token
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Non-plugin prompt template can include some external data e.g. datetime, language
