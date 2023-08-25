@@ -21,7 +21,7 @@ DESCRIPTION_FOR_MODEL_MAX_LENGTH = 512
 llm_json_parser = HFInference(
     inference_server_url=settings.inference_server_url,
     max_new_tokens=512,
-    stop_sequences=["</s>"],
+    stop_sequences=[special_tokens["end"] if special_tokens["end"] else "</s>"],
     top_k=5,
     temperature=0.20,
     repetition_penalty=(1 / 0.83),
@@ -151,7 +151,7 @@ RULES:
 1. If malformed JSON object string contains multiple objects, you merge them into one.
 2. You will never made up or add any new data, you will only fix the malformed JSON object string.
 
-Here is the fixed JSON object string:</s>{special_tokens['assistant']}"""
+Here is the fixed JSON object string:{special_tokens['end'] or '</s>'}{special_tokens['assistant']}"""
             logger.warning(f"JSON Fix Prompt: {prompt}")
             out = llm_json_parser.generate(prompts=[prompt]).generations[0][0].text
             out = out[: out.find("}") + 1]

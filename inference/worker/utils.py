@@ -95,6 +95,13 @@ def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: boo
     return max_input_length
 
 
+def get_tokens_until(tokens: list[int], target: int | list[int]) -> list[int]:
+    if isinstance(target, int):
+        return tokens[: tokens.index(target)]
+    else:
+        return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
+
+
 def truncate_prompt(
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
@@ -111,13 +118,14 @@ def truncate_prompt(
     """
     with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
-        prompter_prefix_id = tokenizer.convert_tokens_to_ids(special_tokens["prompter"])
+        # prompter_prefix_ids could be int or list of ints
+        prompter_prefix_ids = tokenizer.convert_tokens_to_ids(special_tokens["prompter"])
 
     system_prompt: str | None = None
     system_tokens: list[int] | None = None
     if prompt.startswith(special_tokens["system"]):
         system_prompt = prompt[: prompt.index(special_tokens["prompter"])]
-        system_tokens = ids[: ids.index(prompter_prefix_id)]
+        system_tokens = get_tokens_until(ids, prompter_prefix_ids)
 
     max_input_length = get_max_input_length(worker_config, plugin_used)
 
