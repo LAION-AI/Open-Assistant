@@ -147,7 +147,7 @@ MODEL_CONFIGS = {
     ),
     "OA_SFT_Llama2_70B_10": ModelConfig(
         model_id="OpenAssistant/llama2-70b-oasst-sft-v10",
-        max_input_length=2048,
+        max_input_length=3072,
         max_total_length=4096,
     ),
 }
