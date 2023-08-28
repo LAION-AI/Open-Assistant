@@ -14,8 +14,6 @@ from chat_chain_prompts import (
     PREFIX,
     SUFFIX,
     THOUGHT_SEQ,
-    V2_ASST_PREFIX,
-    V2_PROMPTER_PREFIX,
 )
 from chat_chain_utils import compose_tools_from_plugin, extract_tool_and_input, prepare_prompt, use_tool
 from hf_langchain_inference import HFInference
@@ -26,6 +24,7 @@ from loguru import logger
 from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
 from settings import settings
+from utils import special_tokens
 
 # Exclude tools description from final prompt. Saves ctx space but can hurt output
 # quality especially if truncation kicks in. Dependent on model used
@@ -143,7 +142,11 @@ def handle_plugin_usage(
     action_input_format = (
         JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
     )
-    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    eos_token = ""
+    if special_tokens["end"]:
+        eos_token = special_tokens["end"]
+    elif hasattr(tokenizer, "eos_token"):
+        eos_token = tokenizer.eos_token
     tool_names = [tool.name for tool in tools]
 
     chain = PromptedLLM(
@@ -170,7 +173,7 @@ def handle_plugin_usage(
         ),
     )
 
-    init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
+    init_prompt = f"{input_prompt}{eos_token}{special_tokens['assistant']}"
     init_prompt, chain_response = chain.call(init_prompt)
 
     inner_monologue.append("In: " + str(init_prompt))
@@ -203,7 +206,9 @@ def handle_plugin_usage(
 
         # Save previous chain response for use in final prompt
         prev_chain_response = chain_response
-        new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
+        new_prompt = (
+            f"{input_prompt}{eos_token}{special_tokens['assistant']}{chain_response}{OBSERVATION_SEQ} {tool_response}"
+        )
 
         new_prompt, chain_response = chain.call(new_prompt)
 
@@ -239,15 +244,13 @@ def handle_plugin_usage(
             chain_finished = True
 
             if REMOVE_TOOLS_FROM_FINAL_PROMPT:
-                TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{SUFFIX}"""
+                TEMPLATE = f"""{special_tokens['prompter']}{PREFIX}{SUFFIX}"""
                 input_variables = ["input", "chat_history", "language", "current_time"]
 
                 prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
                 tool_names = None
 
-            final_input = (
-                f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
-            )
+            final_input = f"{input_prompt}{eos_token}{special_tokens['assistant']}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
             inner_prompt = prepare_prompt(
                 final_input,
                 prompt_template,
@@ -312,14 +315,18 @@ def handle_standard_usage(
     tokenizer: transformers.PreTrainedTokenizer,
     custom_instructions: str = "",
 ):
-    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    eos_token = ""
+    if special_tokens["end"]:
+        eos_token = special_tokens["end"]
+    elif hasattr(tokenizer, "eos_token"):
+        eos_token = tokenizer.eos_token
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Non-plugin prompt template can include some external data e.g. datetime, language
     action_input_format = (
         JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
     )
-    input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
+    input = f"{original_prompt}{eos_token}{special_tokens['assistant']}"
     init_prompt = prepare_prompt(
         input,
         prompt_template,
@@ -372,7 +379,7 @@ def handle_conversation(
         plugin_enabled = len(tools) > 0
         memory: ConversationBufferMemory = build_memory(work_request)
 
-        TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{tools_instructions_template}{SUFFIX}"""
+        TEMPLATE = f"""{special_tokens['prompter']}{PREFIX}{tools_instructions_template}{SUFFIX}"""
         input_variables = [
             "input",
             "chat_history",

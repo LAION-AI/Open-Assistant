@@ -11,12 +11,27 @@ import requests
 import sseclient
 import transformers
 import websocket
-from chat_chain_prompts import V2_PROMPTER_PREFIX, V2_SYSTEM_PREFIX
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
 
 shared_tokenizer_lock = threading.Lock()
+
+
+if settings.model_prompt_format == "chatml":
+    special_tokens = {
+        "prompter": "<|im_start|>user\n",
+        "assistant": "<|im_start|>assistant\n",
+        "system": "<|im_start|>system\n",
+        "end": "<|im_end|>\n",
+    }
+else:
+    special_tokens = {
+        "prompter": "<|prompter|>",
+        "assistant": "<|assistant|>",
+        "system": "<|system|>",
+        "end": "",
+    }
 
 
 class TokenBuffer:
@@ -80,6 +95,13 @@ def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: boo
     return max_input_length
 
 
+def get_tokens_until(tokens: list[int], target: int | list[int]) -> list[int]:
+    if isinstance(target, int):
+        return tokens[: tokens.index(target)]
+    else:
+        return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
+
+
 def truncate_prompt(
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
@@ -96,13 +118,14 @@ def truncate_prompt(
     """
     with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
-        prompter_prefix_id = tokenizer.convert_tokens_to_ids(V2_PROMPTER_PREFIX)
+        # prompter_prefix_ids could be int or list of ints
+        prompter_prefix_ids = tokenizer.convert_tokens_to_ids(special_tokens["prompter"])
 
     system_prompt: str | None = None
     system_tokens: list[int] | None = None
-    if prompt.startswith(V2_SYSTEM_PREFIX):
-        system_prompt = prompt[: prompt.index(V2_PROMPTER_PREFIX)]
-        system_tokens = ids[: ids.index(prompter_prefix_id)]
+    if prompt.startswith(special_tokens["system"]):
+        system_prompt = prompt[: prompt.index(special_tokens["prompter"])]
+        system_tokens = get_tokens_until(ids, prompter_prefix_ids)
 
     max_input_length = get_max_input_length(worker_config, plugin_used)
 
@@ -117,9 +140,9 @@ def truncate_prompt(
         with shared_tokenizer_lock:
             prompt = tokenizer.decode(ids)
 
-            if V2_PROMPTER_PREFIX not in prompt:
-                prompt = V2_PROMPTER_PREFIX + prompt
-                ids = tokenizer.encode(V2_PROMPTER_PREFIX) + ids
+            if special_tokens["prompter"] not in prompt:
+                prompt = special_tokens["prompter"] + prompt
+                ids = tokenizer.encode(special_tokens["prompter"]) + ids
 
             if system_tokens:
                 prompt = system_prompt + prompt
