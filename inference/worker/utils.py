@@ -98,7 +98,11 @@ def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: boo
 def get_tokens_until(tokens: list[int], target: list[int]) -> list[int]:
     if len(target) == 1:
         return tokens[: tokens.index(target[0])]
-    return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
+
+    for i in range(len(tokens) - len(target)):
+        if tokens[i : i + len(target)] == target:
+            break
+    return tokens[:i]
 
 
 def truncate_prompt(
