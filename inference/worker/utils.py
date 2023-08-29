@@ -135,6 +135,8 @@ def truncate_prompt(
 
         num_system_tokens = len(system_tokens) if system_tokens else 0
         # Maximum token allowed for the conversation, ex system prompt
+        # We incorporate a buffer to allow for final inference tokenization differing from ours
+        # This is a slightly hacky workaround and it would be better to find a cleaner solution
         max_conversation_length = max_input_length - num_system_tokens - int(0.01 * max_input_length)
         ids = ids[-(max_conversation_length - 1) :]
 
