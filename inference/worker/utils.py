@@ -96,10 +96,11 @@ def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: boo
 
 
 def get_tokens_until(tokens: list[int], target: int | list[int]) -> list[int]:
+    if isinstance(target, list) and len(target) == 1:
+        return tokens[: tokens.index(target[0])]
     if isinstance(target, int):
         return tokens[: tokens.index(target)]
-    else:
-        return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
+    return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
 
 
 def truncate_prompt(
@@ -118,8 +119,8 @@ def truncate_prompt(
     """
     with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
-        # prompter_prefix_ids could be int or list of ints
-        prompter_prefix_ids = tokenizer.convert_tokens_to_ids(special_tokens["prompter"])
+        # list of int IDs
+        prompter_prefix_ids = tokenizer.encode(special_tokens["prompter"])
 
     system_prompt: str | None = None
     system_tokens: list[int] | None = None
@@ -134,7 +135,7 @@ def truncate_prompt(
 
         num_system_tokens = len(system_tokens) if system_tokens else 0
         # Maximum token allowed for the conversation, ex system prompt
-        max_conversation_length = max_input_length - num_system_tokens
+        max_conversation_length = max_input_length - num_system_tokens - int(0.01 * max_input_length)
         ids = ids[-(max_conversation_length - 1) :]
 
         with shared_tokenizer_lock:
