@@ -95,11 +95,9 @@ def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: boo
     return max_input_length
 
 
-def get_tokens_until(tokens: list[int], target: int | list[int]) -> list[int]:
-    if isinstance(target, list) and len(target) == 1:
+def get_tokens_until(tokens: list[int], target: list[int]) -> list[int]:
+    if len(target) == 1:
         return tokens[: tokens.index(target[0])]
-    if isinstance(target, int):
-        return tokens[: tokens.index(target)]
     return next((i for i in range(len(tokens) - len(target) + 1) if tokens[i : i + len(target)] == target))
 
 
