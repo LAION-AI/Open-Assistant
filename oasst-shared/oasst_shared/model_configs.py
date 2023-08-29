@@ -150,4 +150,9 @@ MODEL_CONFIGS = {
         max_input_length=3072,
         max_total_length=4096,
     ),
+    "OA_SFT_CodeLlama_13B_10": ModelConfig(
+        model_id="OpenAssistant/codellama-13b-oasst-sft-v10",
+        max_input_length=8192,
+        max_total_length=12288,
+    ),
 }

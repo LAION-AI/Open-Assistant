@@ -138,7 +138,7 @@ def load_models():
     hf_config = transformers.AutoConfig.from_pretrained(model_config.model_id)
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
-    logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {tokenizer.vocab_size}")
+    logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {len(tokenizer)}")
 
     # see `decode_token` method, taken from HF text-generation-inference
     tokenizer.add_special_tokens({"additional_special_tokens": ["<decode-token>"]})
