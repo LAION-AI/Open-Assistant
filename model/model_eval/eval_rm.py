@@ -7,6 +7,7 @@ from model_training.custom_datasets.rank_datasets import HellaSwagDataset, HFDat
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.metrics import RewardMetrics
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers.trainer_utils import EvalPrediction
 from utils import write_to_json
@@ -29,15 +30,16 @@ def get_ranking_dataset(dataset, split):
 def batch_inference(inputs, model):
     batch, cu_lens = inputs
     batch = {k: v.to(model.device) for k, v in batch.items()}
-    logits = (
-        model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-        )
-        .logits.detach()
-        .cpu()
-        .numpy()
-    )
+
+    with torch.no_grad():
+        logits = model(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]).logits.detach().cpu()
+
+    if logits.dtype == torch.bfloat16:
+        # As of Numpy 1.21.4, NumPy does not support bfloat16 (see
+        # https://github.com/numpy/numpy/blob/a47ecdea856986cd60eabbd53265c2ca5916ad5d/doc/source/user/basics.types.rst ).
+        # Until Numpy adds bfloat16, we must convert float32.
+        logits = logits.to(torch.float32)
+    logits = logits.numpy()
 
     labels = []
     for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--metrics", type=str, help="metrics to evaluate", default="accuracy")
     parser.add_argument("--batch_size", type=int, help="Batch Size", default=8)
     parser.add_argument("--device", type=str, help="device", default="cuda")
+    parser.add_argument("--dtype", type=str, help="data type", default=None)
     args = parser.parse_args().__dict__
 
     if args.get("device") != "cpu":
@@ -64,7 +67,9 @@ if __name__ == "__main__":
     model_name = args.get("model")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, torch_dtype="auto" if not args.dtype else args.dtype
+    )
     model.eval()
     model.to(device)
     max_length = args.get("max_length") or model.config.max_position_embeddings
@@ -77,7 +82,7 @@ if __name__ == "__main__":
     metrics = args.get("metrics").split(",")
     compute_metrics = RewardMetrics(metrics)
     score_dict = defaultdict(float)
-    for i, data in enumerate(dataset):
+    for i, data in enumerate(tqdm(dataset)):
         eval_pred = batch_inference(data, model)
         results = compute_metrics(eval_pred)
         for metric in metrics:

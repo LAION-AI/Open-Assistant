@@ -135,11 +135,9 @@ def get_one_dataset(
     elif dataset_name == "gpt4all":
         dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
-        train = ProsocialDialogue(cache_dir=data_path, split="train")
-        eval = ProsocialDialogue(cache_dir=data_path, split="validation")
+        dataset = ProsocialDialogue(cache_dir=data_path, split="train")
     elif dataset_name == "explain_prosocial":
-        train = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
-        eval = ProsocialDialogueExplaination(cache_dir=data_path, split="validation")
+        dataset = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
     elif dataset_name == "soda":
         dataset = SODA(data_path, **kwargs)
     elif dataset_name == "soda_dialogue":
