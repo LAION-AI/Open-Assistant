@@ -11,6 +11,9 @@ class Settings(pydantic.BaseSettings):
 
     oa_protocol_version: str = "v2"
 
+    # Supported: oasst, chatml
+    model_prompt_format: str = "oasst"
+
     retry_on_error: bool = True
     hf_pause: float = 0.075
     max_parallel_requests: int = 1

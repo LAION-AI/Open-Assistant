@@ -519,10 +519,9 @@ class Vicuna(Dataset):
         self.mode = mode
 
         dataset = load_dataset(
-            "gozfarb/ShareGPT_Vicuna_unfiltered",
+            "Aeala/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_2023.05.02v0_unfiltered_cleaned_split.json"],
-            revision="7b8551404f3de5704d634e7516b9ff77be3e2700",
+            data_files=["ShareGPT_V4.3_unfiltered_cleaned_split.json"],
         )["train"]
 
         self.pairs = []

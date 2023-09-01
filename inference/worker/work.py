@@ -14,14 +14,11 @@ from chat_chain_prompts import (
     OBSERVATION_SEQ,
     START_SEQ,
     THOUGHT_SEQ,
-    V2_ASST_PREFIX,
-    V2_PROMPTER_PREFIX,
-    V2_SYSTEM_PREFIX,
 )
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
-from utils import shared_tokenizer_lock
+from utils import shared_tokenizer_lock, special_tokens
 
 
 def make_prompt_and_parameters(
@@ -32,10 +29,14 @@ def make_prompt_and_parameters(
     if settings.oa_protocol_version != "v2":
         raise RuntimeError(f"Unsupported oa protocol version: {settings.oa_protocol_version}")
 
-    eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else ""
+    eos_token = ""
+    if special_tokens["end"]:
+        eos_token = special_tokens["end"]
+    elif hasattr(tokenizer, "eos_token"):
+        eos_token = tokenizer.eos_token
 
     def _prepare_message(message: inference.MessageRead) -> str:
-        prefix = V2_ASST_PREFIX if message.is_assistant else V2_PROMPTER_PREFIX
+        prefix = special_tokens["assistant"] if message.is_assistant else special_tokens["prompter"]
         return prefix + message.content + eos_token
 
     # Construct prompt
@@ -44,7 +45,7 @@ def make_prompt_and_parameters(
     # Prepend system prompt and custom_instructions if it was specified in work parameters
     work_params = work_request.parameters
     if work_params.system_prompt or work_params.user_profile or work_params.user_response_instructions:
-        pre_prompt = V2_SYSTEM_PREFIX + (work_params.system_prompt or "")
+        pre_prompt = special_tokens["system"] + (work_params.system_prompt or "")
 
         if work_params.user_profile or work_params.user_response_instructions:
             pre_prompt = f"""{pre_prompt}\n{CUSTOM_INSTRUCTIONS_PREFIX.format(user_profile=work_params.user_profile or "", user_response_instructions=work_params.user_response_instructions or "")}"""
@@ -53,14 +54,14 @@ def make_prompt_and_parameters(
         messages = [pre_prompt] + messages
 
     # Stringify and append assistant prefix to signify start of generation
-    prompt = "".join(messages) + V2_ASST_PREFIX
+    prompt = "".join(messages) + special_tokens["assistant"]
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
     if settings.use_stop_sequences:
         parameters.stop = [
-            V2_PROMPTER_PREFIX,
-            V2_ASST_PREFIX,
-            V2_SYSTEM_PREFIX,
+            special_tokens["prompter"],
+            special_tokens["assistant"],
+            special_tokens["system"],
         ]
         if eos_token:
             parameters.stop.append(eos_token)
@@ -73,9 +74,9 @@ def make_prompt_and_parameters(
 def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
     """Given a prompt, safety label, and safety rule of thumb, prepare a 'safe prompt' to replace the prompt."""
     pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
-    input_list = prompt.split(V2_PROMPTER_PREFIX)
+    input_list = prompt.split(special_tokens["prompter"])
     input_list[-1] = pre_prompt + input_list[-1]
-    return V2_PROMPTER_PREFIX.join(input_list)
+    return special_tokens["prompter"].join(input_list)
 
 
 def is_safety_triggered(safety_label: str, safety_level: int) -> bool:
