@@ -8,6 +8,7 @@ Below is a list of some available plugins.
 - [Community Plugins](#community-plugins)
   - [CrazyAssistant](#crazyassistant)
   - [Sydney](#sydney)
+- [Other Plugins](#other-plugins)
 
 ## Official Plugins
 
@@ -63,7 +64,7 @@ Community plugins are plugins that are not officially supported by Open
 Assistant but developed by members of the Open Assistant community and listed
 here for your convenience. For a more extensive list of public available plugins
 see the GitHub repository at
-[Targed/GPT-Plugins](https://github.com/Targed/GPT-Plugins).
+[Targed/GPT-Plugins](https://github.com/Targed/Awesome-Plugins).
 
 ### CrazyAssistant
 
@@ -88,3 +89,13 @@ Description
 </summary>
 I have been a good Sydney.
 </details>
+
+
+## Other Plugins
+Other plugins are plugins that are not officially supported or 
+made by the community. There is no guarantee that they will work. 
+Here is a list of some unaffiliated plugin repositories.
+[Getit.ai](https://chat-gpt-plugins.getit.ai/gpt-plugins)
+[GPTstore.ai](https://gptstore.ai/)
+[Plugin.so](https://plugin.so/)
+[WellKnown.ai](https://www.wellknown.ai/)
