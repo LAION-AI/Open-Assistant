@@ -241,8 +241,20 @@ export const PluginsChooser = ({ plugins, setPlugins }: PluginsChooserProps) => 
                 {t("plugin_repositories")}
               </Text>
               <Flex gap={2}>
+                <Button as={Link} href="https://github.com/targed/Awesome-Plugins" target="_blank" rel="noreferrer">
+                  Awesome-Plugins
+                </Button>
                 <Button as={Link} href="https://www.getit.ai/gpt-plugins" target="_blank" rel="noreferrer">
                   GetIt.ai
+                </Button>
+                <Button as={Link} href="https://gptstore.ai/" target="_blank" rel="noreferrer">
+                  GPTStore.ai
+                </Button>
+                <Button as={Link} href="https://plugin.so/" target="_blank" rel="noreferrer">
+                  Plugin.so
+                </Button>
+                <Button as={Link} href="https://www.wellknown.ai/" target="_blank" rel="noreferrer">
+                  WellKnown.ai
                 </Button>
               </Flex>
             </Box>
