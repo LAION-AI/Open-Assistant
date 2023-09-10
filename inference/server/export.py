@@ -27,19 +27,17 @@ from oasst_inference_server.models import DbChat, DbMessage
 from oasst_shared.utils import Anonymizer
 
 
-# see https://stackoverflow.com/questions/17602878/how-to-handle-both-with-open-and-sys-stdout-nicely
-@contextlib.contextmanager
-def smart_open(filename: str = None) -> TextIO:
-    if filename and filename != "-":
-        fh = open(filename, "wt", encoding="UTF-8")
-    else:
-        fh = sys.stdout
+import contextlib
 
-    try:
-        yield fh
-    finally:
-        if fh is not sys.stdout:
-            fh.close()
+@contextlib.contextmanager
+def smart_open(filename: str = None):
+    if filename and filename != "-":
+        with open(filename, "wt", encoding="UTF-8") as fh:
+            yield fh
+    else:
+        with contextlib.redirect_stdout(sys.stdout):
+            yield sys.stdout
+
 
 
 def maybe_anonymize(anonymizer: Anonymizer | None, collection: str, key: str) -> str:
