@@ -10,7 +10,18 @@
         "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-missing-translation@1/dist/index.js"
     ],
     "plugin.inlang.i18next": {
-        "pathPattern": "./website/public/locales/{languageTag}/*.json"
-    }
+            "pathPattern": {
+                "common": "./website/public/locales/{languageTag}/common.json",
+                "dashboard": "./website/public/locales/{languageTag}/dashboard.json",
+                "index": "./website/public/locales/{languageTag}/index.json",
+                "labelling": "./website/public/locales/{languageTag}/labelling.json",
+                "leaderboard": "./website/public/locales/{languageTag}/leaderboard.json",
+                "message": "./website/public/locales/{languageTag}/message.json",
+                "stats": "./website/public/locales/{languageTag}/stats.json",
+                "tasks": "./website/public/locales/{languageTag}/tasks.json",
+                "tos": "./website/public/locales/{languageTag}/tos.json"
+            }
+        }
+    
     
 }
