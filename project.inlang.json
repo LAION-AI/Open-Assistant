@@ -10,7 +10,7 @@
         "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-missing-translation@1/dist/index.js"
     ],
     "plugin.inlang.i18next": {
-        "pathPattern": "./website/public/locales/{language}/*.json"
+        "pathPattern": "./website/public/locales/{languageTag}/*.json"
     },
     "plugin.inlang.standardLintRules": {
         "identicalPattern": "on"
