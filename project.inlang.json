@@ -1,0 +1,18 @@
+{
+    "$schema": "https://inlang.com/schema/project-settings",
+    "sourceLanguageTag": "en",
+    "languageTags": ["ar", "bar", "bg", "ca", "cs", "da", "de", "el", "en", "eo", "es", "eu", "fa", "fi", "fr", "gl", "he", "hi", "hu", "id", "it", "ja", "ko", "lt", "ms", "nb-NO", "nl", "pl", "pt-BR", "ro", "ru", "sk", "sl", "sr", "sv", "swg", "th", "tr", "uk-UA", "vi", "zh"],
+    "modules": [
+        "https://cdn.jsdelivr.net/npm/@inlang/plugin-i18next@4/dist/index.js",
+        "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-empty-pattern@1/dist/index.js",
+        "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-identical-pattern@1/dist/index.js",
+        "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-without-source@1/dist/index.js",
+        "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-missing-translation@1/dist/index.js"
+    ],
+    "plugin.inlang.i18next": {
+        "pathPattern": "./website/public/locales/{language}/*.json"
+    },
+    "plugin.inlang.standardLintRules": {
+        "identicalPattern": "on"
+    }
+}
