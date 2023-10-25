@@ -5,6 +5,22 @@
     "description": "Home of the OpenAssistant blog.",
     "items": [
         {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed",
+            "content_html": "<div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed",
+            "title": "OpenAssistant is Completed!",
+            "summary": "OpenAssistant is Completed!",
+            "date_modified": "2023-10-25T00:00:00.000Z",
+            "author": {
+                "name": "Yannic Kilcher",
+                "url": "https://www.ykilcher.com/"
+            },
+            "tags": [
+                "open-assistant",
+                "youtube"
+            ]
+        },
+        {
             "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube",
             "content_html": "<p><img loading=\"lazy\" alt=\"Open Assistant\" src=\"/Open-Assistant/assets/images/img-e7661ee1cb91a60efe2130b8cc402f7e.png\" width=\"1783\" height=\"1198\" class=\"img_ev3q\"></p><p>Following the release of the OpenAssistant dataset, models and chat\ncapabilities, YouTube has been on fire (almost as much as our servers) with\nOpenAssistant videos.</p><p>Below are some to check out.</p><p>If you want more, here is a\n<a href=\"https://youtube.com/playlist?list=PL6Zhl9mK2r0L9h90uBaIKrHBQQEEPrsxq\" target=\"_blank\" rel=\"noopener noreferrer\">playlist</a>\nof all the recent videos we could find.</p><div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube",
