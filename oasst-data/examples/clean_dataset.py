@@ -1,3 +1,8 @@
+"""
+Example usage:
+
+    python clean_dataset.py "C:/Users/andre/Downloads/2023-11-05_oasst_all/2023-11-05_oasst_all.jsonl" "C:/Users/andre/Downloads/tmp.jsonl" --instructions "C:/Users/andre/Downloads/instructions.xlsx"
+"""
 import argparse
 from collections import OrderedDict
 
@@ -60,7 +65,9 @@ def main():
         else:
             parent_msg = message_by_id[msg.parent_id]
             parent_msg.replies.remove(msg)
-            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
+            print(
+                f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)"
+            )
 
     # cleaning
     print("Cleaning...")
