@@ -15,12 +15,12 @@ In this page, there are some of the most frequently asked questions.
 
 </summary>
 
-We have released candidate supervised finetuning (SFT) models using both Pythia
-and LLaMa, as well as candidate reward models for reinforcement learning from
-human feedback training using Pythia, which you can try, and are beginning the
-process of applying (RLHF). We have also released the first version of the
-OpenAssistant Conversations dataset
-[here](https://huggingface.co/datasets/OpenAssistant/oasst1).
+This project has concluded. We have released supervised finetuning (SFT) models
+using Llama 2, LLaMa, Falcon, Pythia, and StabeLM as well as reinforcement
+learning from human feedback trained models and reward models, all of which are
+available at [here](https://huggingface.co/OpenAssistant). In addition to our
+models, we have released three datasets from OpenAssistant conversations, and a
+[research paper](https://arxiv.org/abs/2304.07327).
 
 </details>
 
@@ -31,9 +31,8 @@ OpenAssistant Conversations dataset
 
 </summary>
 
-You can play with our best candidate model
-[here](https://open-assistant.io/chat) and provide thumbs up/down responses to
-help us improve the model in future!
+Our online demonstration is no longer available, but the models remain available
+to download [here](https://huggingface.co/OpenAssistant).
 
 </details>
 
@@ -44,37 +43,18 @@ help us improve the model in future!
 
 </summary>
 
-The candidate Pythia SFT models are
+All of our models are
 [available on HuggingFace](https://huggingface.co/OpenAssistant) and can be
-loaded via the HuggingFace Transformers library. As such you may be able to use
-them with sufficient hardware. There are also spaces on HF which can be used to
-chat with the OA candidate without your own hardware. However, these models are
-not final and can produce poor or undesirable outputs.
+loaded via the HuggingFace Transformers library or other runners if converted.
+As such you may be able to use them with sufficient hardware. There are also
+spaces on HF which can be used to chat with the OA candidate without your own
+hardware. However, some of these models are not final and can produce poor or
+undesirable outputs.
 
-LLaMa SFT models cannot be released directly due to Meta's license but XOR
+LLaMa (v1) SFT models cannot be released directly due to Meta's license but XOR
 weights are released on the HuggingFace org. Follow the process in the README
-there to obtain a full model from these XOR weights.
-
-</details>
-
-<details>
-<summary>
-
-### Is there an API available?
-
-</summary>
-
-There is no API currently available for Open Assistant. Any mention of an API in
-documentation is referencing the website's internal API. We understand that an
-API is a highly requested feature, but unfortunately, we can't provide one at
-this time due to a couple of reasons. Firstly, the inference system is already
-under high load and running off of compute from our sponsors. Secondly, the
-project's primary goal is currently data collection and model training, not
-providing a product.
-
-However, if you're looking to run inference, you can host the model yourself
-either on your own hardware or with a cloud provider. We appreciate your
-understanding and patience as we continue to develop this project.
+there to obtain a full model from these XOR weights. Llama 2 models are not
+required to be XORed.
 
 </details>
 
@@ -102,15 +82,13 @@ inference setup and UI locally unless you wish to assist in development.
 All Open Assistant code is licensed under Apache 2.0. This means it is available
 for a wide range of uses including commercial use.
 
-The Open Assistant Pythia based models are released as full weights and will be
-licensed under the Apache 2.0 license.
+Open Assistant models are released under the license of their respective base
+models, be that Llama 2, Falcon, Pythia, or StableLM. LLaMa (not 2) models are
+only released as XOR weights, meaning you will need the original LLaMa weights
+to use them.
 
-The Open Assistant LLaMa based models will be released only as delta weights
-meaning you will need the original LLaMa weights to use them, and the license
-restrictions will therefore be those placed on the LLaMa weights.
-
-The Open Assistant data is released under a Creative Commons license allowing a
-wide range of uses including commercial use.
+The Open Assistant data is released under Apache-2.0 allowing a wide range of
+uses including commercial use.
 
 </details>
 
@@ -138,9 +116,8 @@ you to everyone who has taken part!
 
 </summary>
 
-The model code, weights, and data are free. We are additionally hosting a free
-public instance of our best current model for as long as we can thanks to
-compute donation from Stability AI via LAION!
+The model code, weights, and data are free. Our free public instance of our best
+models is not longer available due to the project's conclusion.
 
 </details>
 
@@ -151,10 +128,9 @@ compute donation from Stability AI via LAION!
 
 </summary>
 
-The current smallest (Pythia) model is 12B parameters and is challenging to run
-on consumer hardware, but can run on a single professional GPU. In future there
-may be smaller models and we hope to make progress on methods like integer
-quantisation which can help run the model on smaller hardware.
+The current smallest models are 7B parameters and are challenging to run on
+consumer hardware, but can run on a single professional GPU or be quantized to
+run on more widely available hardware.
 
 </details>
 
@@ -165,13 +141,7 @@ quantisation which can help run the model on smaller hardware.
 
 </summary>
 
-If you want to help in the data collection for training the model, go to the
-website [https://open-assistant.io/](https://open-assistant.io/).
-
-If you want to contribute code, take a look at the
-[tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and comment on an
-issue stating your wish to be assigned. You can also take a look at this
-[contributing guide](https://github.com/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md).
+This project has now concluded.
 
 </details>
 
@@ -187,104 +157,6 @@ backend uses FastAPI. The frontend is built with NextJS and Typescript.
 
 The ML codebase is largely PyTorch-based and uses HuggingFace Transformers as
 well as accelerate, DeepSpeed, bitsandbytes, NLTK, and other libraries.
-
-</details>
-
-## Questions about the data collection website
-
-<details>
-<summary>
-
-### Can I use ChatGPT to help in training Open Assistant, for instance, by generating answers?
-
-</summary>
-
-No, it is against their terms of service to use it to help train other models.
-See
-[this issue](https://github.com/LAION-AI/Open-Assistant/issues/471#issuecomment-1374392299).
-ChatGPT-like answers will be removed.
-
-</details>
-
-<details>
-<summary>
-
-### What should I do if I don't know how to complete the task as an assistant?
-
-</summary>
-Skip it.
-</details>
-
-<details>
-<summary>
-
-### Should I fact check the answers by the assistant?
-
-</summary>
-
-Yes, you should try. If you are not sure, skip the task.
-
-</details>
-
-<details>
-<summary>
-
-### How can I see my score?
-
-</summary>
-
-In your [account settings](https://open-assistant.io/account).
-
-</details>
-
-<details>
-<summary>
-
-### Can we see how many data points have been collected?
-
-</summary>
-
-You can see a regularly updated interface at
-[https://open-assistant.io/stats](https://open-assistant.io/stats).
-
-</details>
-
-<details>
-<summary>
-
-### How do I write and label prompts?
-
-</summary>
-
-Check the
-[guidelines](https://projects.laion.ai/Open-Assistant/docs/guides/guidelines).
-
-</details>
-
-<details>
-<summary>
-
-### Where can I report a bug or create a new feature request?
-
-</summary>
-
-In the [GitHub issues](https://github.com/LAION-AI/Open-Assistant/issues).
-
-</details>
-
-<details>
-<summary>
-
-### Why am I not allowed to write about this topic, even though it isn't illegal?
-
-</summary>
-
-We want to ensure that the Open Assistant dataset is as accessible as possible.
-As such, it's necessary to avoid any harmful or offensive content that could be
-grounds for removal on sites such as Hugging Face. Likewise, we want the model
-to be trained to reject as few questions as possible, so it's important to not
-include prompts that leave the assistant with no other choice but to refuse in
-order to avoid the generation of harmful content.
 
 </details>
 

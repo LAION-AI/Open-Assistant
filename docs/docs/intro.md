@@ -1,3 +1,9 @@
+# Notice
+
+**Open Assistant has now concluded.** Please see
+[this video](https://www.youtube.com/watch?v=gqtmUHhaplo) for more information.
+Thanks you to all those who made this project possible.
+
 # Introduction
 
 > The FAQ page is available at
