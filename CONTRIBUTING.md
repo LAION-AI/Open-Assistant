@@ -149,5 +149,5 @@ See
 [![translation badge](https://inlang.com/badge?url=github.com/LAION-AI/Open-Assistant)](https://inlang.com/editor/github.com/LAION-AI/Open-Assistant?ref=badge)
 
 To add translations, you can manually edit the JSON translation files in
-`website/public/locales`, use the [inlang](https://inlang.com/) online editor,
-or run `npm run inlang:lint` inside `website` to find missing translations.
+`website/public/locales`, use the [inlang](https://inlang.com/editor/github.com/LAION-AI/Open-Assistant) online editor,
+or run `npx @inlang/cli@latest lint` to find missing translations.
