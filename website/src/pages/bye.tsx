@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Container } from "src/components/Container";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
 
@@ -20,7 +21,7 @@ const ByePage = () => {
               <h2 className="text-2xl font-bold mt-4 mb-2">Links:</h2>
               <ul className="text-2xl list-none text-blue-500">
                 <li>
-                  <a href="/contributors">List of contributors</a>
+                  <Link href="/contributors">List of contributors</Link>
                 </li>
                 <li>
                   <a href="https://ykilcher.com/oa-paper">Paper</a>

@@ -14,10 +14,12 @@ import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { API_ROUTES } from "src/lib/routes";
 import useSWR from "swr";
+import { useRouter } from "next/router";
 
 const Dashboard = () => {
   const { t } = useTranslation(["dashboard", "common", "tasks"]);
-  const { ENABLE_CHAT } = useBrowserConfig();
+  const { ENABLE_CHAT, BYE } = useBrowserConfig();
+  const router = useRouter();
   const lang = useCurrentLocale();
   const { data } = useSWR<AvailableTasks>(API_ROUTES.AVAILABLE_TASK({ lang }), get, {
     refreshInterval: 2 * 60 * 1000, //2 minutes
@@ -54,6 +56,11 @@ const Dashboard = () => {
       },
     },
   };
+
+  if (BYE) {
+    router.push("/bye");
+    return null;
+  }
 
   return (
     <>

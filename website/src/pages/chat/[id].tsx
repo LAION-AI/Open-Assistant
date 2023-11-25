@@ -8,9 +8,12 @@ import { get } from "src/lib/api";
 import { ModelInfo, PluginEntry } from "src/types/Chat";
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import useSWRImmutable from "swr/immutable";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 const Chat = () => {
-  const { query } = useRouter();
+  const { BYE } = useBrowserConfig();
+  const router = useRouter();
+  const { query } = router;
   const id = query.id as string;
   const { t } = useTranslation(["common", "chat"]);
   const { data: modelInfos } = useSWRImmutable<ModelInfo[]>("/api/chat/models", get, {
@@ -19,6 +22,11 @@ const Chat = () => {
   const { data: plugins } = useSWRImmutable<PluginEntry[]>("/api/chat/plugins", get, {
     keepPreviousData: true,
   });
+
+  if (BYE) {
+    router.push("/bye");
+    return null;
+  }
 
   return (
     <>

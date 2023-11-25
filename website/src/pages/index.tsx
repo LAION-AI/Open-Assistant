@@ -8,8 +8,10 @@ import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
 import { Hero } from "src/components/Hero";
 export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 const Home = () => {
+  const { BYE } = useBrowserConfig();
   const router = useRouter();
   const { status } = useSession();
   const { t } = useTranslation();
@@ -18,6 +20,11 @@ const Home = () => {
       router.push("/dashboard");
     }
   }, [router, status]);
+
+  if (BYE) {
+    router.push("/bye");
+    return null;
+  }
 
   return (
     <>
