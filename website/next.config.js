@@ -39,6 +39,11 @@ const nextConfig = {
           permanent: false,
         },
         {
+          source: "/dashboard",
+          destination: "/bye",
+          permanent: false,
+        },
+        {
           source: "/chat",
           destination: "/bye",
           permanent: false,
