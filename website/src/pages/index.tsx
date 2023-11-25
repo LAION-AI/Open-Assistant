@@ -16,15 +16,14 @@ const Home = () => {
   const { status } = useSession();
   const { t } = useTranslation();
   useEffect(() => {
+    if (BYE) {
+      router.push("/bye");
+    }
+
     if (status === "authenticated") {
       router.push("/dashboard");
     }
-  }, [router, status]);
-
-  if (BYE) {
-    router.push("/bye");
-    return null;
-  }
+  }, [router, status, BYE]);
 
   return (
     <>

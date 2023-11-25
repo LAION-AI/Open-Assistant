@@ -1,7 +1,8 @@
 import { Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { DashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
@@ -14,7 +15,6 @@ import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { API_ROUTES } from "src/lib/routes";
 import useSWR from "swr";
-import { useRouter } from "next/router";
 
 const Dashboard = () => {
   const { t } = useTranslation(["dashboard", "common", "tasks"]);
@@ -57,10 +57,11 @@ const Dashboard = () => {
     },
   };
 
-  if (BYE) {
-    router.push("/bye");
-    return null;
-  }
+  useEffect(() => {
+    if (BYE) {
+      router.push("/bye");
+    }
+  }, [BYE, router]);
 
   return (
     <>

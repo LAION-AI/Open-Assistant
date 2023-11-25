@@ -1,8 +1,12 @@
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const ContributorsPage = () => {
   const router = useRouter();
-  router.push("https://ykilcher.com/oa-contributors");
+  useEffect(() => {
+    router.push("https://ykilcher.com/oa-contributors");
+  }, [router]);
+
   return null;
 };
 
