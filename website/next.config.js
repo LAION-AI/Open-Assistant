@@ -31,6 +31,25 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async redirects() {
+    if (process.env.BYE === "true") {
+      return [
+        {
+          source: "/",
+          destination: "/bye",
+          permanent: false,
+        },
+        {
+          source: "/chat",
+          destination: "/bye",
+          permanent: false,
+        },
+        {
+          source: "/contributors",
+          destination: "https://ykilcher.com/oa-contributors",
+          permanent: false,
+        },
+      ];
+    }
     if (process.env.MAINTENANCE_MODE !== "true") {
       return [];
     }
