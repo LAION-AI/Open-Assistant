@@ -14,8 +14,8 @@ const ByePage = () => {
             <div>
               <h1 className="text-4xl mb-6">OpenAssistant has finished!</h1>
               <p className="text-2xl">
-                OpenAssistant collected data from over 13'000 humans and released it to the public.
-                Data, models, and code are publicly available.
+                OpenAssistant collected data from over 13&apos;000 humans and released it to the public. Data, models,
+                and code are publicly available.
               </p>
               <h2 className="text-2xl font-bold mt-4 mb-2">Links:</h2>
               <ul className="text-2xl list-none text-blue-500">
@@ -32,10 +32,12 @@ const ByePage = () => {
                   <a href="https://huggingface.co/OpenAssistant">HuggingFace org</a>
                 </li>
                 <li>
-                  <a href="https://youtu.be/gqtmUHhaplo">Yannic's conclusion video</a>
+                  <a href="https://youtu.be/gqtmUHhaplo">Yannic&apos;s conclusion video</a>
                 </li>
               </ul>
-              <p className="text-2xl mt-4 mb-2">If you're looking to support other open-data projects, check out these:</p>
+              <p className="text-2xl mt-4 mb-2">
+                If you&apos;re looking to support other open-data projects, check out these:
+              </p>
               <ul className="text-2xl list-none text-blue-500">
                 <li>
                   <a href="https://chat.lmsys.org/">LMSYS Chatbot Arena</a>
