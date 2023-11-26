@@ -1,4 +1,5 @@
 export interface BrowserConfig {
+  BYE: boolean;
   ENABLE_CHAT: boolean;
   ENABLE_DRAFTS_WITH_PLUGINS: boolean; // Whether draft messages should be generated if plugins are in use
   NUM_GENERATED_DRAFTS: number;

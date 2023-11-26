@@ -284,6 +284,7 @@
           INFERENCE_SERVER_API_KEY:
             "{{ lookup('ansible.builtin.env', 'WEB_INFERENCE_SERVER_API_KEY') }}"
           ENABLE_CHAT: "{{ lookup('ansible.builtin.env', 'WEB_ENABLE_CHAT') }}"
+          BYE: "{{ lookup('ansible.builtin.env', 'WEB_BYE') }}"
           ENABLE_DRAFTS_WITH_PLUGINS:
             "{{ lookup('ansible.builtin.env',
             'WEB_ENABLE_DRAFTS_WITH_PLUGINS')}}"

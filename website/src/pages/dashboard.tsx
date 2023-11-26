@@ -1,7 +1,8 @@
 import { Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { DashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
@@ -17,7 +18,8 @@ import useSWR from "swr";
 
 const Dashboard = () => {
   const { t } = useTranslation(["dashboard", "common", "tasks"]);
-  const { ENABLE_CHAT } = useBrowserConfig();
+  const { ENABLE_CHAT, BYE } = useBrowserConfig();
+  const router = useRouter();
   const lang = useCurrentLocale();
   const { data } = useSWR<AvailableTasks>(API_ROUTES.AVAILABLE_TASK({ lang }), get, {
     refreshInterval: 2 * 60 * 1000, //2 minutes
@@ -54,6 +56,12 @@ const Dashboard = () => {
       },
     },
   };
+
+  useEffect(() => {
+    if (BYE) {
+      router.push("/bye");
+    }
+  }, [BYE, router]);
 
   return (
     <>
