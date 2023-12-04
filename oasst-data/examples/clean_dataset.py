@@ -67,8 +67,11 @@ def main():
             print(f"Tree deleted: {msg.message_id}")
         else:
             parent_msg = message_by_id[msg.parent_id]
-            parent_msg.replies.remove(msg)
-            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
+            try:
+                parent_msg.replies.remove(msg)
+                print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
+            except ValueError:
+                print(f"Message not found: {msg.message_id}")
 
     # cleaning
     print("Cleaning...")
