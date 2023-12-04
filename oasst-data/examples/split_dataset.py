@@ -1,3 +1,12 @@
+"""
+Example usage:
+
+    python split_dataset.py /
+        "2023-11-05_oasst_all.messages.jsonl" /
+        --val_output "2023-11-05_oasst_all.messages.validation.jsonl" /
+        --train_output "2023-11-05_oasst_all.messages.train.jsonl"
+"""
+
 import argparse
 import random
 
