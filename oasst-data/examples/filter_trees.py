@@ -1,3 +1,12 @@
+"""
+Example usage:
+
+    python filter_trees.py /
+        "2023-11-05_oasst_all.jsonl" /
+        "2023-11-05_oasst_all.clean.jsonl" /
+        --states "ready_for_export"
+"""
+
 import argparse
 
 from oasst_data import read_message_trees, write_message_trees
