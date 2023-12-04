@@ -1,7 +1,10 @@
 """
 Example usage:
 
-    python clean_dataset.py "C:/Users/andre/Downloads/2023-11-05_oasst_all/2023-11-05_oasst_all.jsonl" "C:/Users/andre/Downloads/tmp.jsonl" --instructions "C:/Users/andre/Downloads/instructions.xlsx"
+    python clean_dataset.py /
+        "2023-11-05_oasst_all.jsonl" /
+        "2023-11-05_oasst_all.clean.jsonl" /
+        --instructions "instructions.xlsx"
 """
 import argparse
 from collections import OrderedDict
@@ -65,26 +68,32 @@ def main():
         else:
             parent_msg = message_by_id[msg.parent_id]
             parent_msg.replies.remove(msg)
-            print(
-                f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)"
-            )
+            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
 
     # cleaning
     print("Cleaning...")
     for index, row in instructions_df.iterrows():
         id = row["UUID"]
+        print(f"Cleaning id={id}")
         msg = message_by_id.get(id)
         if msg is None:
             print(f"Not found: {id}")
+            print(f"Skipping instructions for : {id}")
+            continue
 
         action = row["Action"]
+        print(f"Action={action}")
+
+        # Delete
         if action == "Delete":
             print(f"deleting: {id}")
             delete_message(msg)
+        # Replace
         elif action == "Replace":
             print(f"replace: {id}")
             replace = row["Replace"]
             msg.text = replace
+        # Edit
         elif action == "Edit":
             print(f"edit: {id}")
             if row["Category"] == "Copy Code":
@@ -93,8 +102,13 @@ def main():
             else:
                 find = row["Find"]
                 replace = row["Replace"]
-            msg.text.index(find)  # make sure text is present
-            msg.text = msg.text.replace(find, replace)
+            try:
+                msg.text.index(find)  # make sure text is present
+                msg.text = msg.text.replace(find, replace)
+            except ValueError as e:
+                print(e)
+                # print(f"find not found: {find}")
+                continue
         else:
             print(f"Unsupported action {action}")
 
