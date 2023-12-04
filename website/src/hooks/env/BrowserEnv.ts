@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 
 export interface BrowserConfig {
+  BYE: boolean;
   ENABLE_CHAT: boolean;
   ENABLE_DRAFTS_WITH_PLUGINS: boolean;
   NUM_GENERATED_DRAFTS: number;

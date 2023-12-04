@@ -10,7 +10,8 @@ export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import useSWRImmutable from "swr/immutable";
 
 const Chat = () => {
-  const { query } = useRouter();
+  const router = useRouter();
+  const { query } = router;
   const id = query.id as string;
   const { t } = useTranslation(["common", "chat"]);
   const { data: modelInfos } = useSWRImmutable<ModelInfo[]>("/api/chat/models", get, {

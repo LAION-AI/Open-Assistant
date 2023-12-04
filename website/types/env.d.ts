@@ -9,6 +9,7 @@ declare global {
       ADMIN_USERS: string;
       MODERATOR_USERS: string;
       INFERENCE_SERVER_HOST: string;
+      BYE: boolean;
       ENABLE_CHAT: boolean;
       ENABLE_DRAFTS_WITH_PLUGINS: boolean;
       NUM_GENERATED_DRAFTS: number;
