@@ -151,4 +151,5 @@ See
 To add translations, you can manually edit the JSON translation files in
 `website/public/locales`, use the
 [inlang](https://inlang.com/editor/github.com/LAION-AI/Open-Assistant) online
-editor, or run `npx @inlang/cli@latest lint --project ./project.inlang` to find missing translations.
+editor, or run `npx @inlang/cli@latest lint --project ./project.inlang` to find
+missing translations.
