@@ -4,7 +4,7 @@
 </h1>
 
 <blockquote>
-<p>:memo: <strong>NOTE</strong>: OpenAssistant is completed, and the project is now finished. Thank you to everyone who contributed! Check out our <a href="https://projects.laion.ai/Open-Assistant/blog/2023/10/25/open-assistant-is-completed">blog post</a> for more information.</p>
+<p>:memo: <strong>NOTE</strong>: OpenAssistant is completed, and the project is now finished. Thank you to everyone who contributed! Check out our <a href="https://projects.laion.ai/Open-Assistant/blog/2023/10/25/open-assistant-is-completed">blog post</a> for more information. The final published oasst2 dataset can be found on HuggingFace at <a href="https://huggingface.co/datasets/OpenAssistant/oasst2">OpenAssistant/oasst2</a></p>
 </blockquote>
 
 <div align="center">
