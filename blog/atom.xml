@@ -7,14 +7,15 @@
     <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
     <subtitle>Home of the OpenAssistant blog.</subtitle>
     <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
-    <rights>Copyright © 2023 OpenAssistant.</rights>
+    <rights>Copyright © 2024 OpenAssistant.</rights>
     <entry>
         <title type="html"><![CDATA[OpenAssistant is Completed!]]></title>
         <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed</id>
         <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed"/>
         <updated>2023-10-25T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[OpenAssistant is Completed!]]></summary>
-        <content type="html"><![CDATA[<div style="width:100%;height:360px"></div>]]></content>
+        <content type="html"><![CDATA[<div style="width:100%;height:360px"></div><p>The final published oasst2 dataset can be found on HuggingFace at
+<a href="https://huggingface.co/datasets/OpenAssistant/oasst2" target="_blank" rel="noopener noreferrer">OpenAssistant/oasst2</a>.</p>]]></content>
         <author>
             <name>Yannic Kilcher</name>
             <uri>https://www.ykilcher.com/</uri>

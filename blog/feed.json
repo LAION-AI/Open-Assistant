@@ -6,7 +6,7 @@
     "items": [
         {
             "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed",
-            "content_html": "<div style=\"width:100%;height:360px\"></div>",
+            "content_html": "<div style=\"width:100%;height:360px\"></div><p>The final published oasst2 dataset can be found on HuggingFace at\n<a href=\"https://huggingface.co/datasets/OpenAssistant/oasst2\" target=\"_blank\" rel=\"noopener noreferrer\">OpenAssistant/oasst2</a>.</p>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed",
             "title": "OpenAssistant is Completed!",
             "summary": "OpenAssistant is Completed!",

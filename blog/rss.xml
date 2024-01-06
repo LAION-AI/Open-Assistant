@@ -8,14 +8,15 @@
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
-        <copyright>Copyright © 2023 OpenAssistant.</copyright>
+        <copyright>Copyright © 2024 OpenAssistant.</copyright>
         <item>
             <title><![CDATA[OpenAssistant is Completed!]]></title>
             <link>https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed</link>
             <guid>https://LAION-AI.github.io/Open-Assistant/blog/2023/10/25/open-assistant-is-completed</guid>
             <pubDate>Wed, 25 Oct 2023 00:00:00 GMT</pubDate>
             <description><![CDATA[OpenAssistant is Completed!]]></description>
-            <content:encoded><![CDATA[<div style="width:100%;height:360px"></div>]]></content:encoded>
+            <content:encoded><![CDATA[<div style="width:100%;height:360px"></div><p>The final published oasst2 dataset can be found on HuggingFace at
+<a href="https://huggingface.co/datasets/OpenAssistant/oasst2" target="_blank" rel="noopener noreferrer">OpenAssistant/oasst2</a>.</p>]]></content:encoded>
             <category>open-assistant</category>
             <category>youtube</category>
         </item>
