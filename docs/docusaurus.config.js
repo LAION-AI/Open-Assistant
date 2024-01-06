@@ -41,6 +41,9 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
+          editUrl: ({ docPath }) => {
+            return `https://holocron.so/github/pr/LAION-AI/Open-Assistant/main/editor/docs/docs/${docPath}`
+          },
         },
         api: {
           path: "docs/api/",
