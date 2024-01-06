@@ -1,3 +1,11 @@
+"""
+Example usage:
+
+    python tree_to_messages.py /
+        "2023-11-05_oasst_all.jsonl" /
+        "2023-11-05_oasst_all.messages.jsonl"
+"""
+
 import argparse
 
 from oasst_data import ExportMessageNode, read_message_trees, visit_messages_depth_first, write_messages

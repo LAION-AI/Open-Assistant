@@ -26,7 +26,7 @@
 #
 # /WARNING!
 
-exclude: build|stubs|^bot/templates/$|openassistant/templates|docs/docs/api/openapi.json|scripts/postprocessing/regex_pii_detector.py
+exclude: build|stubs|^bot/templates/$|openassistant/templates|docs/docs/api/openapi.json|scripts/postprocessing/regex_pii_detector.py|oasst-data/examples/clean_dataset.py|oasst-data/examples/tree_to_messages.py
 
 default_language_version:
   python: python3

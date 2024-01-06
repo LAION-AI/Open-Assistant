@@ -126,7 +126,12 @@ def main():
         ):
             return False
 
-        if exclude_normal is True and not msg.deleted and not msg.synthetic and msg.review_result:
+        if (
+            exclude_normal is True
+            and not msg.deleted
+            and not msg.synthetic
+            and msg.review_result
+        ):
             return False
 
         if spam is not None and spam != (not msg.review_result):
