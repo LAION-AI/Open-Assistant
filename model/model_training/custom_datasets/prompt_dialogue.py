@@ -11,7 +11,8 @@ from model_training.custom_datasets.oasst_dataset import ListDataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
 from torch.utils.data import Dataset, random_split
-
+import datasets
+datasets.builder.has_sufficient_disk_space = lambda needed_bytes, directory='.': True
 
 def load_oig_file(
     source_url: str,
@@ -172,15 +173,18 @@ class Gpt4All(Dataset):
 class OrcaChat(Dataset):
     name = "orca-chat"
 
-    def __init__(self, data_files: Union[List[str], str] = "orca-chat-gpt4.json", cache_dir: str = None) -> None:
-        self.dataset = load_dataset("shahules786/orca-chat", split="train", data_files=data_files, cache_dir=cache_dir)
-
+    def __init__(self, rows_per_conv: int = 1, use_auth_token: Optional[Union[bool, str]] = None, cache_dir: str = None) -> None:
+        self.dataset = load_dataset("shahules786/orca-best", split="train", 
+                                    use_auth_token=use_auth_token,
+                                    cache_dir=cache_dir)
+        self.rows_per_conv = rows_per_conv
+        
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         conversation, instruction = [self.dataset[idx][key] for key in ("conversation", "instruction")]
-        conversation = [(item["input"], item["output"]) for item in conversation]
+        conversation = [(item["input"], item["output"]) for item in conversation["samples"][:self.rows_per_conv]]
         conversation = list(sum(conversation, ()))
         conv_utt: list[Utterance] = [
             (
@@ -194,6 +198,34 @@ class OrcaChat(Dataset):
 
         return DatasetEntrySft(conversation=conv_utt, system_message=instruction)
 
+
+class BestOfMegacode(Dataset):
+    name = "bestofmegacode"
+
+    def __init__(self, rows_per_conv: int = 1, use_auth_token: Optional[Union[bool, str]] = None, cache_dir: str = None) -> None:
+        self.dataset = load_dataset("shahules786/megacode-best", split="train", 
+                                    use_auth_token=use_auth_token,
+                                    cache_dir=cache_dir)
+        self.rows_per_conv = rows_per_conv
+        
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        conversation = [self.dataset[idx][key] for key in ("conversation")]
+        conversation = [(item["USER"], item["ASSISTANT"]) for item in conversation["samples"][:self.rows_per_conv]]
+        conversation = list(sum(conversation, ()))
+        conv_utt: list[Utterance] = [
+            (
+                Utterance(
+                    text=conv,
+                    role=Role.prompter if i % 2 == 0 else Role.assistant,
+                )
+            )
+            for i, conv in enumerate(conversation)
+        ]
+
+        return DatasetEntrySft(conversation=conv_utt)
 
 class DolphinMix(Dataset):
     name = "dophin-mix"
