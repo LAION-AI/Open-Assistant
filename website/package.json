@@ -126,7 +126,7 @@
     "storybook": "^7.0.9",
     "ts-essentials": "^9.3.2",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.5",
+    "typescript": "^5.2.2",
     "web-streams-polyfill": "^3.2.1"
   },
   "msw": {
