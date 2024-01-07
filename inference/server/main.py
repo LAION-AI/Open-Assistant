@@ -9,8 +9,7 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_limiter import FastAPILimiter
 from loguru import logger
-from oasst_inference_server import database, deps, models, plugins
-from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
+from oasst_inference_server import database, deps, models, plugins, routes
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -132,12 +131,13 @@ async def maybe_add_debug_api_keys():
 
 
 # add routes
-app.include_router(account.router)
-app.include_router(auth.router)
-app.include_router(admin.router)
-app.include_router(chats.router)
-app.include_router(workers.router)
-app.include_router(configs.router)
+app.include_router(routes.account.router)
+app.include_router(routes.auth.router)
+app.include_router(routes.admin.router)
+app.include_router(routes.chats.router)
+app.include_router(routes.workers.router)
+app.include_router(routes.configs.router)
+app.include_router(routes.plugins.router)
 
 # mount builtin plugins to be hosted on this server
 for app_prefix, sub_app in plugins.plugin_apps.items():

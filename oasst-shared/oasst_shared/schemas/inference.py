@@ -135,6 +135,11 @@ class PluginApiType(pydantic.BaseModel):
 
 class PluginAuthType(pydantic.BaseModel):
     type: str
+    client_url: str | None = None
+    scope: str | None = None
+    authorization_url: str | None = None
+    authorization_content_type: str | None = None
+    verification_tokens: dict[str, str] | None = None
 
 
 class PluginOpenAPIParameter(pydantic.BaseModel):
