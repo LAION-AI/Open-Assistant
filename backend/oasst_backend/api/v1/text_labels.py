@@ -76,7 +76,7 @@ def get_valid_lables(
 
 
 @router.get("/report_labels")
-def get_report_lables() -> ValidLabelsResponse:
+def get_report_lables(api_client: ApiClient = Depends(deps.get_api_client)) -> ValidLabelsResponse:
     report_labels = [
         TextLabel.spam,
         TextLabel.not_appropriate,
