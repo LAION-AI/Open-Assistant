@@ -140,7 +140,7 @@ def write_trees_to_file(filename: str | None, trees: list[ExportMessageTree], us
     with out_buff as f:
         for tree in trees:
             file_data = jsonable_encoder(tree, exclude_none=True)
-            json.dump(file_data, f)
+            json.dump(file_data, f, ensure_ascii=False)
             f.write("\n")
 
 
