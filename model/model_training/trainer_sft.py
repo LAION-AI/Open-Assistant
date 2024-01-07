@@ -27,7 +27,7 @@ from model_training.utils.utils import (
 from torch import nn
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
@@ -327,7 +327,10 @@ def main():
 
     init_rng(training_conf)
 
-    tokenizer = get_tokenizer(training_conf)
+    if training_conf.peft_model:
+        tokenizer = AutoTokenizer.from_pretrained(training_conf.model_name)
+    else:
+        tokenizer = get_tokenizer(training_conf)
 
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         tokenizer_sanity_check(tokenizer)
@@ -416,7 +419,13 @@ def main():
         sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-    model = get_model(training_conf, tokenizer)
+    if training_conf.peft_model:
+        logging.warning("PEFT model: make sure this is an adapted base model which has added special tokens!")
+        model = AutoModelForCausalLM.from_pretrained(
+            training_conf.model_name, torch_dtype=torch.bfloat16 if training_conf.dtype == "bf16" else torch.float16
+        )
+    else:
+        model = get_model(training_conf, tokenizer)
 
     superhot = RopePatch.from_config(training_conf) if training_conf.superhot else None
     if superhot:
