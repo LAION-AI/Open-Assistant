@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Nutrauktos žemos klasės",
+  "assistant": "Asistentas",
+  "backlog_ranking": "Atsilikimo reitingas",
+  "choose_a_language": "Pasirinkite kalbą",
+  "count": "Suskaičiuoti",
+  "growing": "Augantis",
+  "halted_by_moderator": "Sustabdė moderatorius",
+  "human_messages_by_lang": "Žmogaus pranešimai pagal kalbą",
+  "human_messages_by_role": "Žmogaus pranešimai pagal vaidmenį",
+  "initial_prompt_review": "Pradinė skubi peržiūra",
+  "language_stats": "Kalba",
+  "message_trees_by_state": "Pranešimų medžiai pagal valstijas",
+  "message_trees_states_by_lang": "Pranešimų medžiai pagal kalbą",
+  "prompt_lottery_waiting": "Greitas loterijos laukimas",
+  "prompter": "Sufleris",
+  "ranking": "Reitingai",
+  "ready_for_export": "Paruošta eksportui",
+  "stats": "Statistika",
+  "users_accepted_tos": "Vartotojai sutiko su sąlygomis"
+}
