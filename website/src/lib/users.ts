@@ -4,6 +4,8 @@ import { AuthMethod } from "src/types/Providers";
 import type { BackendUserCore } from "src/types/Users";
 
 import { logger } from "./logger";
+import { OasstError } from "./oasst_api_client";
+import { userlessApiClient } from "./oasst_client_factory";
 
 /**
  * Returns a `BackendUserCore` that can be used for interacting with the Backend service.
@@ -110,4 +112,76 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
   });
 
   return outputIds;
+};
+
+/**
+ * merges all backend users into one, and saves the value in the database
+ *
+ * This function is currently unused
+ *
+ * TODO: do we need to make this idempotent? should we check if the user is already merged
+ * before we continue with the merging?
+ */
+export const mergeUserAccountsInBackend = async (frontendId: string): Promise<string | null> => {
+  const user = await prisma.user.findUnique({
+    where: { id: frontendId },
+    select: { id: true, name: true, emailVerified: true, accounts: true },
+  });
+
+  const accounts = user.accounts
+    .map((x) => ({
+      auth_method: x.provider as AuthMethod,
+      id: x.providerAccountId,
+    }))
+    .concat([{ auth_method: "local", id: frontendId }]);
+
+  const backendUsers = await Promise.all(
+    accounts.map((account) =>
+      userlessApiClient.fetch_frontend_user(account).catch<null>((err) => {
+        // if 404, thats okay
+        if (!(err instanceof OasstError) || err.httpStatusCode !== 404) {
+          console.error(err);
+        }
+        return null;
+      })
+    )
+  );
+
+  const backendIds = backendUsers.filter(Boolean).map((user) => user.user_id);
+  if (backendIds.length === 0) {
+    logger.error({ message: `Wanted to merge user accounts but found none.`, frontendId, accounts });
+    return null;
+  }
+
+  // id after merge
+  let backendId: string;
+
+  if (backendIds.length === 1) {
+    backendId = backendIds[0];
+    logger.info({ message: `Wanted to merge user accounts, but found only one, skipping.`, frontendId, backendId });
+  } else {
+    logger.info({ message: "Merging user accounts", frontendId, accounts, backendIds });
+    let remainingIds: string[];
+
+    [backendId, ...remainingIds] = backendIds;
+
+    await userlessApiClient.merge_backend_users(backendId, remainingIds);
+    logger.info({ message: "Merging successful", frontendId, accounts, backendIds });
+  }
+
+  // write to database
+  await prisma.backendInfo.upsert({
+    where: {
+      frontendUserId: frontendId,
+    },
+    create: {
+      frontendUserId: frontendId,
+      backendUserId: backendId,
+    },
+    update: {
+      backendUserId: backendId,
+    },
+  });
+
+  return backendId;
 };
