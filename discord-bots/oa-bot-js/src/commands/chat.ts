@@ -24,13 +24,17 @@ export default {
         .setDescription("The model you want to use for the AI.")
         .setRequired(false)
         .addChoices(
+         {
+          name: "OA SFT LLaMA 30B 6",
+          value: "OA_SFT_Llama_30B_6",
+         },
           {
-            name: "OA_SFT_Llama_30B",
-            value: "OA_SFT_Llama_30B",
+            name: "OA SFT LLaMA 30B 7",
+            value: "OA_SFT_Llama_30B_7",
           },
           {
-            name: "oasst-sft-4-pythia-12b",
-            value: "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+            name: "OA RLHF 2 LLaMA 30b 7k steps",
+            value: "OA_RLHF_Llama_30b_2_7k",
           }
         )
     )
@@ -84,7 +88,7 @@ export default {
       if (userModel) {
         model = userModel;
       } else {
-        model = process.env.OPEN_ASSISTANT_DEFAULT_MODEL || "OA_SFT_Llama_30B";
+        model = process.env.OPEN_ASSISTANT_DEFAULT_MODEL || "OA_SFT_Llama_30B_6";
         redis.set(`model_${interaction.user.id}`, model);
       }
     } else {
