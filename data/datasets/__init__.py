@@ -41,4 +41,6 @@ SAFETY_DATASETS = {
     "prosocial-confessions": "shahules786/prosocial-confessions",
 }
 
-MULTI_TURN_DIALOG_DATASETS = {}
+MULTI_TURN_DIALOG_DATASETS = {
+    "words_operations_rewards_5k": "0x22almostEvil/words-operations-rewards-5k",
+}
