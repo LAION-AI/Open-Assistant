@@ -14,6 +14,7 @@ python check_dataset_appearances.py joke  --cache_dir .cache --mode sft
 
 python check_dataset_appearances.py -d webgpt gpt4all code_alpaca minimath humaneval_mbpp_codegen_qa humaneval_mbpp_testgen_qa grade_school_math_instructions recipes cmu_wiki_qa oa_wiki_qa_bart_10000row prosocial_dialogue explain_prosocial soda oa_leet10k dolly15k --cache_dir .cache --mode sft
 python check_dataset_appearances.py -d soda oa_leet10k dolly15k --cache_dir .cache --mode sft
+python check_dataset_appearances.py -d dolly15k --cache_dir .cache --mode sft
 """
 import argparse
 import pprint
