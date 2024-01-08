@@ -231,12 +231,14 @@ services:
       TRUSTED_CLIENT_KEYS: "6969"
       ALLOW_DEBUG_AUTH: "True"
       API_ROOT: "http://localhost:8000"
+      DEBUG: "True"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
     restart: unless-stopped
     ports:
       - "8000:8000"
+      - "5678:5678" # Port to attach debugger
     depends_on:
       inference-redis:
         condition: service_healthy
@@ -254,9 +256,12 @@ services:
       MODEL_CONFIG_NAME: ${MODEL_CONFIG_NAME:-distilgpt2}
       BACKEND_URL: "ws://inference-server:8000"
       PARALLELISM: 2
+      DEBUG: "True"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
+    ports:
+      - "5679:5679" # Port to attach debugger
     deploy:
       replicas: 1
     profiles: ["inference"]

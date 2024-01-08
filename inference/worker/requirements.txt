@@ -1,4 +1,5 @@
 aiohttp
+debugpy
 hf_transfer
 huggingface_hub
 langchain==0.0.142

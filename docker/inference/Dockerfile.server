@@ -78,8 +78,8 @@ USER ${APP_USER}
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
 VOLUME [ "${APP_BASE}/lib/oasst-data" ]
 
-
-CMD uvicorn main:app --reload --host 0.0.0.0 --port "${PORT}"
+# In the dev image, we start uvicorn from Python so that we can attach the debugger
+CMD python main.py
 
 
 

@@ -60,6 +60,26 @@ python __main__.py
 # You'll soon see a `User:` prompt, where you can type your prompts.
 ```
 
+## Debugging
+
+The inference server and the worker allow attaching a Python debugger. To do
+this from VS Code, start the inference server & worker using docker compose as
+described above (e.g. with `docker compose --profile inference up --build`),
+then simply pick one of the following launch profiles, depending on what you
+would like to debug:
+
+- Debug: Inference Server
+- Debug: Worker
+
+### Waiting for Debugger on Startup
+
+It can be helpful to wait for the debugger before starting the application. This
+can be achieved by uncommenting `debugpy.wait_for_client()` in the appropriate
+location:
+
+- `inference/server/main.py` for the inference server
+- `inference/worker/__main.py__` for the worker
+
 ## Distributed Testing
 
 We run distributed load tests using the
