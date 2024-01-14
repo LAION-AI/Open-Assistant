@@ -21,6 +21,7 @@
     "inlang:machine-translate": "npx inlang machine translate --config ../inlang.config.js",
     "inlang:open-editor": "npx inlang open editor",
     "jest": "jest --watch",
+    "test": "jest",
     "fix:lint": "eslint --fix src/ --ext .js,.jsx,.ts,.tsx",
     "fix:format": "prettier --write ./src",
     "fix": "npm run fix:format && npm run fix:lint"
