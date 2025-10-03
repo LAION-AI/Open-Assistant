@@ -1,20 +1,19 @@
-import React, { useState } from "react";
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   FormControl,
   FormLabel,
-  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Text,
   Textarea,
 } from "@chakra-ui/react";
 import { BookOpen } from "lucide-react";
 import { useTranslation } from "next-i18next";
+import React, { useState } from "react";
 import { CustomInstructionsType } from "src/types/Chat";
 
 const CHAR_LIMIT = 256;

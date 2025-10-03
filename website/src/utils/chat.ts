@@ -1,5 +1,5 @@
 import { PluginEntry } from "src/types/Chat";
-import { SamplingParameters, CustomInstructionsType } from "src/types/Chat";
+import { CustomInstructionsType,SamplingParameters } from "src/types/Chat";
 
 const CHAT_CONFIG_KEY = "CHAT_CONFIG_V2";
 

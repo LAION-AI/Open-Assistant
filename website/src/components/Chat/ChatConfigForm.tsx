@@ -22,19 +22,19 @@ import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import {
   ChatConfigFormData,
+  CustomInstructionsType,
   ModelParameterConfig,
   PluginEntry,
   SamplingParameters,
-  CustomInstructionsType,
 } from "src/types/Chat";
 import { CustomPreset, getConfigCache } from "src/utils/chat";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatInitialData } from "./ChatInitialDataContext";
+import CustomInstructions from "./CustomInstructions";
 import { DeletePresetButton } from "./DeletePresetButton";
 import { PluginsChooser } from "./PluginsChooser";
-import CustomInstructions from "./CustomInstructions";
 import { SavePresetButton } from "./SavePresetButton";
 import { areParametersEqual } from "./WorkParameters";
 
