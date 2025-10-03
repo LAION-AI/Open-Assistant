@@ -4,8 +4,10 @@ import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { RankingDisplayPreferences } from "src/components/Tasks/RankingDisplayPreferences";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
+import { useRankingDisplayPreferences } from "src/hooks/tasks/useRankingDisplayPreferences";
 import { Message } from "src/types/Conversation";
 import { TaskType } from "src/types/Task";
 import { EvaluateTaskReply } from "src/types/TaskResponses";
@@ -22,6 +24,8 @@ export const EvaluateTask = ({
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const [ranking, setRanking] = useState<number[] | null>(null);
   const [notRankable, setNotRankable] = useState(false);
+  const { preferences } = useRankingDisplayPreferences();
+
   let messages: Message[] = [];
   if (task.type !== TaskType.rank_initial_prompts) {
     messages = task.conversation.messages;
@@ -49,6 +53,10 @@ export const EvaluateTask = ({
   // @notmd: I haven't test `rank_initial_prompts` type yet
   const sortableItems =
     task.type === TaskType.rank_initial_prompts ? (task.prompts as unknown as Message[]) : task.reply_messages;
+
+  // Calculate max messages per row based on the number of items
+  const maxMessagesPerRow = Math.min(sortableItems.length, 6);
+
   return (
     <div data-cy="task" data-task-type="evaluate-task">
       <Box mb="4">
@@ -57,13 +65,22 @@ export const EvaluateTask = ({
           <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
             <MessageConversation messages={messages} highlightLastMessage />
           </Box>
-          <Box mt="8">
+
+          {/* Display Preferences Controls */}
+          <Box mt="4">
+            <RankingDisplayPreferences maxMessagesPerRow={maxMessagesPerRow} />
+          </Box>
+
+          <Box mt="4">
             <Sortable
               items={sortableItems}
               isDisabled={isDisabled}
               isEditable={isEditable}
               revealSynthetic={task.reveal_synthetic}
               onChange={setRanking}
+              displayMode={preferences.displayMode}
+              messagesPerRow={preferences.messagesPerRow}
+              removeContentLimit={preferences.removeContentLimit}
             />
             <Checkbox
               size="lg"

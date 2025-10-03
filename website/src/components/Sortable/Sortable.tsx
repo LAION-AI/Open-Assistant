@@ -1,5 +1,6 @@
 import {
   Flex,
+  Grid,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -21,6 +22,7 @@ import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
 import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   arrayMove,
+  rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -40,6 +42,9 @@ export interface SortableProps {
   isDisabled?: boolean;
   className?: string;
   revealSynthetic?: boolean;
+  displayMode?: "vertical" | "horizontal";
+  messagesPerRow?: number;
+  removeContentLimit?: boolean;
 }
 
 interface SortableItem {
@@ -48,7 +53,14 @@ interface SortableItem {
   item: Message;
 }
 
-export const Sortable = ({ onChange, revealSynthetic, ...props }: SortableProps) => {
+export const Sortable = ({
+  onChange,
+  revealSynthetic,
+  displayMode = "vertical",
+  messagesPerRow = 3,
+  removeContentLimit = false,
+  ...props
+}: SortableProps) => {
   const [itemsWithIds, setItemsWithIds] = useState<SortableItem[]>([]);
   const [modalText, setModalText] = useState<string | null>(null);
   useEffect(() => {
@@ -90,42 +102,82 @@ export const Sortable = ({ onChange, revealSynthetic, ...props }: SortableProps)
     [onChange]
   );
 
+  const isHorizontal = displayMode === "horizontal";
+  const sortingStrategy = isHorizontal ? rectSortingStrategy : verticalListSortingStrategy;
+  const modifiers = isHorizontal
+    ? [restrictToWindowEdges]
+    : [restrictToWindowEdges, restrictToVerticalAxis];
+
   return (
     <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
-        modifiers={[restrictToWindowEdges, restrictToVerticalAxis]}
+        modifiers={modifiers}
       >
-        <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
-          <Flex direction="column" gap={4} className={extraClasses}>
-            {itemsWithIds.map(({ id, item }, index) => (
-              <SortableItem
-                OpenModal={() => {
-                  setModalText(item.text);
-                  onOpen();
-                }}
-                key={id}
-                id={id}
-                index={index}
-                isEditable={props.isEditable}
-                isDisabled={!!props.isDisabled}
-                synthetic={item.synthetic && !!revealSynthetic}
-              >
-                <button
-                  className="w-full text-left"
-                  aria-label="show full text"
-                  onClick={() => {
+        <SortableContext items={itemsWithIds} strategy={sortingStrategy}>
+          {isHorizontal ? (
+            <Grid
+              templateColumns={`repeat(${messagesPerRow}, 1fr)`}
+              gap={4}
+              className={extraClasses}
+            >
+              {itemsWithIds.map(({ id, item }, index) => (
+                <SortableItem
+                  OpenModal={() => {
                     setModalText(item.text);
                     onOpen();
                   }}
+                  key={id}
+                  id={id}
+                  index={index}
+                  isEditable={props.isEditable}
+                  isDisabled={!!props.isDisabled}
+                  synthetic={item.synthetic && !!revealSynthetic}
                 >
-                  <CollapsableText text={item.text} />
-                </button>
-              </SortableItem>
-            ))}
-          </Flex>
+                  <button
+                    className="w-full text-left"
+                    aria-label="show full text"
+                    onClick={() => {
+                      setModalText(item.text);
+                      onOpen();
+                    }}
+                  >
+                    <CollapsableText text={item.text} disableCollapse={removeContentLimit} />
+                  </button>
+                </SortableItem>
+              ))}
+            </Grid>
+          ) : (
+            <Flex direction="column" gap={4} className={extraClasses}>
+              {itemsWithIds.map(({ id, item }, index) => (
+                <SortableItem
+                  OpenModal={() => {
+                    setModalText(item.text);
+                    onOpen();
+                  }}
+                  key={id}
+                  id={id}
+                  index={index}
+                  isEditable={props.isEditable}
+                  isDisabled={!!props.isDisabled}
+                  synthetic={item.synthetic && !!revealSynthetic}
+                >
+                  <button
+                    className="w-full text-left"
+                    aria-label="show full text"
+                    onClick={() => {
+                      setModalText(item.text);
+                      onOpen();
+                    }}
+                  >
+                    <CollapsableText text={item.text} disableCollapse={removeContentLimit} />
+                  </button>
+                </SortableItem>
+              ))}
+            </Flex>
+          )}
         </SortableContext>
       </DndContext>
       <Modal

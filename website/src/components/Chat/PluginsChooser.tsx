@@ -24,6 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { AlertCircle, CheckCircle2, Edit, Eye, Paperclip, Plus } from "lucide-react";
 import { X } from "lucide-react";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
 import { MouseEvent } from "react";
@@ -33,7 +34,6 @@ import { post } from "src/lib/api";
 import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
-import Link from "next/link";
 
 import { JsonCard } from "../JsonCard";
 

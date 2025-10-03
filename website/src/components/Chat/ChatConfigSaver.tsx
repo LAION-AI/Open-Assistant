@@ -1,6 +1,6 @@
 import { MutableRefObject, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { ChatConfigFormData, PluginEntry, CustomInstructionsType } from "src/types/Chat";
+import { ChatConfigFormData, CustomInstructionsType,PluginEntry } from "src/types/Chat";
 import { CachedChatConfig, CustomPreset, setConfigCache } from "src/utils/chat";
 
 export const ChatConfigSaver = ({
