@@ -93,3 +93,11 @@ class ExportMessageTree(BaseModel):
     tree_state: Optional[str]
     prompt: Optional[ExportMessageNode]
     origin: Optional[str]
+
+
+class DepthAnalysis(BaseModel):
+    """Analysis results for conversation tree depth metrics."""
+
+    max_depth: int  # Maximum depth of the conversation tree
+    average_depth: float  # Average depth across all leaf nodes
+    total_messages: int  # Total number of messages in the tree
