@@ -15,6 +15,15 @@ def reward_accuracy(eval_pred):
             logits_batch = b_logits[b_labels == i]
             pos_scores.append(logits_batch[0])
             neg_scores.append(logits_batch[-1])
+
+    if len(pos_scores) == 0:
+        return {
+            "pos_score": 0.0,
+            "neg_score": 0.0,
+            "score_diff": 0.0,
+            "accuracy": 0.0,
+        }
+
     pos_scores = np.array(pos_scores).reshape(-1, 1)
     neg_scores = np.array(neg_scores).reshape(-1, 1)
 
@@ -43,10 +52,17 @@ def kendall_tau(eval_pred):
         # b_logits = b_logits[:truncated_logits]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
+            if logits_batch.size < 2:
+                continue
             pred_rank = np.argsort(logits_batch)
             true_rank = np.arange(logits_batch.size - 1, -1, -1)
-            tau += st.kendalltau(pred_rank, true_rank)[0]
-        bsize += np.unique(b_labels).size
+            result = st.kendalltau(pred_rank, true_rank)[0]
+            if not np.isnan(result):
+                tau += result
+                bsize += 1
+
+    if bsize == 0:
+        return {"kendalltau": 0.0}
 
     return {"kendalltau": tau / bsize}
 
@@ -61,10 +77,17 @@ def spearmanr(eval_pred):
         b_logits = b_logits[b_logits != -100]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
+            if logits_batch.size < 2:
+                continue
             pred_rank = np.argsort(logits_batch)
             true_rank = np.arange(logits_batch.size - 1, -1, -1)
-            score += st.spearmanr(pred_rank, true_rank).statistic
-        bsize += np.unique(b_labels).size
+            result = st.spearmanr(pred_rank, true_rank).statistic
+            if not np.isnan(result):
+                score += result
+                bsize += 1
+
+    if bsize == 0:
+        return {"spearmanr": 0.0}
 
     return {"spearmanr": score / bsize}
 
