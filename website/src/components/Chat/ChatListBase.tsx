@@ -1,7 +1,7 @@
 import "simplebar-react/dist/simplebar.min.css";
 
-import { Box, CardProps, Flex } from "@chakra-ui/react";
-import { Plus } from "lucide-react";
+import { Box, Button, CardProps, Flex } from "@chakra-ui/react";
+import { EyeOff, Plus } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { memo, useCallback, useState } from "react";
 import SimpleBar from "simplebar-react";
@@ -11,6 +11,9 @@ import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
+import useSWRMutation from "swr/mutation";
+import { API_ROUTES } from "src/lib/routes";
+import { put } from "src/lib/api";
 
 export const ChatListBase = memo(function ChatListBase({
   allowViews,
@@ -22,6 +25,21 @@ export const ChatListBase = memo(function ChatListBase({
   const chats = responses?.flatMap((response) => response.chats) || [];
 
   const { t } = useTranslation(["common", "chat"]);
+
+  const { trigger: triggerHideAll, isMutating: isHidingAll } = useSWRMutation(
+    API_ROUTES.UPDATE_CHAT(),
+    put
+  );
+
+  const handleHideAllChats = useCallback(async () => {
+    // Hide all visible chats
+    const hidePromises = chats.map((chat) =>
+      triggerHideAll({ chat_id: chat.id, hidden: true })
+    );
+    await Promise.all(hidePromises);
+    // Refresh the list
+    mutateChatResponses();
+  }, [chats, triggerHideAll, mutateChatResponses]);
 
   const handleUpdateTitle = useCallback(
     ({ chatId, title }: { chatId: string; title: string }) => {
@@ -111,6 +129,20 @@ export const ChatListBase = memo(function ChatListBase({
           <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
         )}
       </Flex>
+      {chats.length > 0 && view === "visible" && (
+        <Flex px="2" pb="2">
+          <Button
+            leftIcon={<EyeOff size="16px" />}
+            variant="ghost"
+            size="sm"
+            onClick={handleHideAllChats}
+            isLoading={isHidingAll}
+            colorScheme="gray"
+          >
+            {t("chat:hide_all_chats")}
+          </Button>
+        </Flex>
+      )}
       {noScrollbar ? (
         content
       ) : (
