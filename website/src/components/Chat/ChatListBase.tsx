@@ -9,6 +9,7 @@ import SimpleBar from "simplebar-react";
 import { ChatListItem } from "./ChatListItem";
 import { ChatViewSelection } from "./ChatViewSelection";
 import { CreateChatButton } from "./CreateChatButton";
+import { HideAllChatsButton } from "./HideAllChatsButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { ChatListViewSelection, useListChatPagination } from "./useListChatPagination";
 
@@ -67,6 +68,20 @@ export const ChatListBase = memo(function ChatListBase({
     mutateChatResponses();
   }, [mutateChatResponses]);
 
+  const handleHideAllChats = useCallback(() => {
+    mutateChatResponses(
+      (chatResponses) => [
+        ...(chatResponses?.map((chatResponse) => ({
+          ...chatResponse,
+          chats: [],
+        })) || []),
+      ],
+      false
+    );
+  }, [mutateChatResponses]);
+
+  const chatIds = chats.map((chat) => chat.id);
+
   const content = (
     <>
       {chats.map((chat) => (
@@ -107,9 +122,12 @@ export const ChatListBase = memo(function ChatListBase({
         >
           {t("create_chat")}
         </CreateChatButton>
-        {allowViews && (
-          <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
-        )}
+        <Flex gap="2" alignItems="center">
+          {allowViews && (
+            <ChatViewSelection w={["full", "auto"]} onChange={(e) => setView(e.target.value as ChatListViewSelection)} />
+          )}
+          <HideAllChatsButton chatIds={chatIds} onHideAll={handleHideAllChats} />
+        </Flex>
       </Flex>
       {noScrollbar ? (
         content

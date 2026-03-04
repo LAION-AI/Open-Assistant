@@ -5,6 +5,10 @@
   "label": "Label",
   "dashboard": "Dashboard",
   "go": "Go",
+  "latest_updates": "Latest Updates",
+  "view_all": "View All",
+  "new": "NEW",
+  "no_updates": "No updates available",
   "welcome_message": {
     "label": "Welcome, {{username}}!",
     "contributor": "Contributor",

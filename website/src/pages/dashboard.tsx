@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useEffect, useMemo } from "react";
-import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
+import { LeaderboardWidget, TaskOption, UpdatesWidget, WelcomeCard } from "src/components/Dashboard";
 import { DashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
@@ -81,6 +81,7 @@ const Dashboard = () => {
         )}
 
         <TaskOption content={availableTaskTypes} />
+        <UpdatesWidget />
         <Card>
           <CardBody>
             <XPBar />
